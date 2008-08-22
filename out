@@ -1,0 +1,334 @@
+COMMAND     PID      USER   FD      TYPE     DEVICE      SIZE       NODE NAME
+init          1      root  cwd       DIR      253,0      4096          2 /
+init          1      root  rtd       DIR      253,0      4096          2 /
+init          1      root  txt       REG      253,0     38620    8609625 /sbin/init
+init          1      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+init          1      root  mem       REG      253,0     93508    7987795 /lib/libselinux.so.1
+init          1      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+init          1      root  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+init          1      root  mem       REG      253,0    242880    7987838 /lib/libsepol.so.1
+init          1      root   10u     FIFO       0,16                  860 /dev/initctl
+migration     2      root  cwd       DIR      253,0      4096          2 /
+migration     2      root  rtd       DIR      253,0      4096          2 /
+migration     2      root  txt   unknown                                 /proc/2/exe
+ksoftirqd     3      root  cwd       DIR      253,0      4096          2 /
+ksoftirqd     3      root  rtd       DIR      253,0      4096          2 /
+ksoftirqd     3      root  txt   unknown                                 /proc/3/exe
+watchdog/     4      root  cwd       DIR      253,0      4096          2 /
+watchdog/     4      root  rtd       DIR      253,0      4096          2 /
+watchdog/     4      root  txt   unknown                                 /proc/4/exe
+events/0      5      root  cwd       DIR      253,0      4096          2 /
+events/0      5      root  rtd       DIR      253,0      4096          2 /
+events/0      5      root  txt   unknown                                 /proc/5/exe
+khelper       6      root  cwd       DIR      253,0      4096          2 /
+khelper       6      root  rtd       DIR      253,0      4096          2 /
+khelper       6      root  txt   unknown                                 /proc/6/exe
+kthread       7      root  cwd       DIR      253,0      4096          2 /
+kthread       7      root  rtd       DIR      253,0      4096          2 /
+kthread       7      root  txt   unknown                                 /proc/7/exe
+kblockd/0    10      root  cwd       DIR      253,0      4096          2 /
+kblockd/0    10      root  rtd       DIR      253,0      4096          2 /
+kblockd/0    10      root  txt   unknown                                 /proc/10/exe
+kacpid       11      root  cwd       DIR      253,0      4096          2 /
+kacpid       11      root  rtd       DIR      253,0      4096          2 /
+kacpid       11      root  txt   unknown                                 /proc/11/exe
+cqueue/0     45      root  cwd       DIR      253,0      4096          2 /
+cqueue/0     45      root  rtd       DIR      253,0      4096          2 /
+cqueue/0     45      root  txt   unknown                                 /proc/45/exe
+khubd        48      root  cwd       DIR      253,0      4096          2 /
+khubd        48      root  rtd       DIR      253,0      4096          2 /
+khubd        48      root  txt   unknown                                 /proc/48/exe
+kseriod      50      root  cwd       DIR      253,0      4096          2 /
+kseriod      50      root  rtd       DIR      253,0      4096          2 /
+kseriod      50      root  txt   unknown                                 /proc/50/exe
+pdflush     108      root  cwd       DIR      253,0      4096          2 /
+pdflush     108      root  rtd       DIR      253,0      4096          2 /
+pdflush     108      root  txt   unknown                                 /proc/108/exe
+pdflush     109      root  cwd       DIR      253,0      4096          2 /
+pdflush     109      root  rtd       DIR      253,0      4096          2 /
+pdflush     109      root  txt   unknown                                 /proc/109/exe
+kswapd0     110      root  cwd       DIR      253,0      4096          2 /
+kswapd0     110      root  rtd       DIR      253,0      4096          2 /
+kswapd0     110      root  txt   unknown                                 /proc/110/exe
+aio/0       111      root  cwd       DIR      253,0      4096          2 /
+aio/0       111      root  rtd       DIR      253,0      4096          2 /
+aio/0       111      root  txt   unknown                                 /proc/111/exe
+kpsmoused   263      root  cwd       DIR      253,0      4096          2 /
+kpsmoused   263      root  rtd       DIR      253,0      4096          2 /
+kpsmoused   263      root  txt   unknown                                 /proc/263/exe
+ata/0       300      root  cwd       DIR      253,0      4096          2 /
+ata/0       300      root  rtd       DIR      253,0      4096          2 /
+ata/0       300      root  txt   unknown                                 /proc/300/exe
+ata_aux     301      root  cwd       DIR      253,0      4096          2 /
+ata_aux     301      root  rtd       DIR      253,0      4096          2 /
+ata_aux     301      root  txt   unknown                                 /proc/301/exe
+ksnapd      312      root  cwd       DIR      253,0      4096          2 /
+ksnapd      312      root  rtd       DIR      253,0      4096          2 /
+ksnapd      312      root  txt   unknown                                 /proc/312/exe
+kjournald   315      root  cwd       DIR      253,0      4096          2 /
+kjournald   315      root  rtd       DIR      253,0      4096          2 /
+kjournald   315      root  txt   unknown                                 /proc/315/exe
+kauditd     343      root  cwd       DIR      253,0      4096          2 /
+kauditd     343      root  rtd       DIR      253,0      4096          2 /
+kauditd     343      root  txt   unknown                                 /proc/343/exe
+udevd       377      root  cwd       DIR      253,0      4096          2 /
+udevd       377      root  rtd       DIR      253,0      4096          2 /
+udevd       377      root  txt       REG      253,0     71928    8609731 /sbin/udevd
+udevd       377      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+udevd       377      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+udevd       377      root  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+udevd       377      root  mem       REG      253,0     93508    7987795 /lib/libselinux.so.1
+udevd       377      root  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+udevd       377      root  mem       REG      253,0    242880    7987838 /lib/libsepol.so.1
+udevd       377      root    0u      CHR        1,3                 1080 /dev/null
+udevd       377      root    1u      CHR        1,3                 1080 /dev/null
+udevd       377      root    2u      CHR        1,3                 1080 /dev/null
+udevd       377      root    3u     unix 0xc1edce40                 1095 socket
+udevd       377      root    4u     sock        0,5                 1096 can't identify protocol
+udevd       377      root    5r     FIFO        0,6                 1106 pipe
+udevd       377      root    6w     FIFO        0,6                 1106 pipe
+udevd       377      root    7r      DIR        0,9         0        276 inotify
+kmpathd/0  3484      root  cwd       DIR      253,0      4096          2 /
+kmpathd/0  3484      root  rtd       DIR      253,0      4096          2 /
+kmpathd/0  3484      root  txt   unknown                                 /proc/3484/exe
+kjournald  3507      root  cwd       DIR      253,0      4096          2 /
+kjournald  3507      root  rtd       DIR      253,0      4096          2 /
+kjournald  3507      root  txt   unknown                                 /proc/3507/exe
+auditd     3976      root  cwd       DIR      253,0      4096          2 /
+auditd     3976      root  rtd       DIR      253,0      4096          2 /
+auditd     3976      root  txt       REG      253,0    108396    8609616 /sbin/auditd
+auditd     3976      root  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+auditd     3976      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+auditd     3976      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+auditd     3976      root  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+auditd     3976      root    0u      CHR        1,3                 1080 /dev/null
+auditd     3976      root    1u      CHR        1,3                 1080 /dev/null
+auditd     3976      root    2u      CHR        1,3                 1080 /dev/null
+auditd     3976      root    3u     sock        0,5                 6339 can't identify protocol
+auditd     3976      root    5w      REG      253,0    450031    5794710 /var/log/audit/audit.log
+auditd     3976      root    7u     unix 0xc1edc200                 6342 socket
+audispd    3978      root  cwd       DIR      253,0      4096          2 /
+audispd    3978      root  rtd       DIR      253,0      4096          2 /
+audispd    3978      root  txt       REG      253,0     75444    8609636 /sbin/audispd
+audispd    3978      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+audispd    3978      root  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+audispd    3978      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+audispd    3978      root    0u     unix 0xc1edc040                 6341 socket
+audispd    3978      root    1u      CHR        1,3                 1080 /dev/null
+audispd    3978      root    2u      CHR        1,3                 1080 /dev/null
+audispd    3978      root    3u     unix 0xc1edc040                 6341 socket
+audispd    3978      root    4w     FIFO        0,6                 6338 pipe
+audispd    3978      root    5u     unix 0xc1edc3c0                 6347 /var/run/audispd_events
+syslogd    4011      root  cwd       DIR      253,0      4096          2 /
+syslogd    4011      root  rtd       DIR      253,0      4096          2 /
+syslogd    4011      root  txt       REG      253,0     35832    8609717 /sbin/syslogd
+syslogd    4011      root  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+syslogd    4011      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+syslogd    4011      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+syslogd    4011      root    0u     unix 0xc1edc580                 6410 /dev/log
+syslogd    4011      root    1w      REG      253,0    582635    5794960 /var/log/messages
+syslogd    4011      root    2w      REG      253,0     40111    5794961 /var/log/secure
+syslogd    4011      root    3w      REG      253,0    119125    5794964 /var/log/maillog
+syslogd    4011      root    4w      REG      253,0     24110    5794967 /var/log/cron
+syslogd    4011      root    5w      REG      253,0         0    5794965 /var/log/spooler
+syslogd    4011      root    6w      REG      253,0       640    5794966 /var/log/boot.log
+klogd      4014      root  cwd       DIR      253,0      4096          2 /
+klogd      4014      root  rtd       DIR      253,0      4096          2 /
+klogd      4014      root  txt       REG      253,0     24104    8609754 /sbin/klogd
+klogd      4014      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+klogd      4014      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+klogd      4014      root    0r      REG        0,3         0 4026531849 /proc/kmsg
+klogd      4014      root    1u     unix 0xc1edc740                 6418 socket
+portmap    4066       rpc  cwd       DIR      253,0      4096          2 /
+portmap    4066       rpc  rtd       DIR      253,0      4096          2 /
+portmap    4066       rpc  txt       REG      253,0     35564    8609762 /sbin/portmap
+portmap    4066       rpc  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+portmap    4066       rpc  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+portmap    4066       rpc  mem       REG      253,0    101404    7987821 /lib/libnsl-2.5.so
+portmap    4066       rpc  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+portmap    4066       rpc    0u      CHR        1,3                 1080 /dev/null
+portmap    4066       rpc    1u      CHR        1,3                 1080 /dev/null
+portmap    4066       rpc    2u      CHR        1,3                 1080 /dev/null
+portmap    4066       rpc    3u     IPv4       6521                  UDP *:sunrpc 
+portmap    4066       rpc    4u     IPv4       6522                  TCP *:sunrpc (LISTEN)
+rpc.statd  4092   rpcuser  cwd       DIR      253,0      4096    5794671 /var/lib/nfs/statd
+rpc.statd  4092   rpcuser  rtd       DIR      253,0      4096          2 /
+rpc.statd  4092   rpcuser  txt       REG      253,0     47608    8609765 /sbin/rpc.statd
+rpc.statd  4092   rpcuser  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+rpc.statd  4092   rpcuser  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+rpc.statd  4092   rpcuser  mem       REG      253,0     32824      75633 /usr/lib/libwrap.so.0.7.6
+rpc.statd  4092   rpcuser  mem       REG      253,0    101404    7987821 /lib/libnsl-2.5.so
+rpc.statd  4092   rpcuser  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+rpc.statd  4092   rpcuser    0u      CHR        1,3                 1080 /dev/null
+rpc.statd  4092   rpcuser    1u      CHR        1,3                 1080 /dev/null
+rpc.statd  4092   rpcuser    2u      CHR        1,3                 1080 /dev/null
+rpc.statd  4092   rpcuser    3u     IPv4       6602                  UDP *:879 
+rpc.statd  4092   rpcuser    4w     FIFO        0,6                 6563 pipe
+rpc.statd  4092   rpcuser    5u     unix 0xc1edc900                 6566 socket
+rpc.statd  4092   rpcuser    6u     IPv4       6567                  UDP *:876 
+rpc.statd  4092   rpcuser    7u     IPv4       6605                  TCP *:882 (LISTEN)
+rpc.statd  4092   rpcuser    8w      REG      253,0         5    5794713 /var/run/rpc.statd.pid
+rpc.idmap  4139      root  cwd       DIR      253,0      4096          2 /
+rpc.idmap  4139      root  rtd       DIR      253,0      4096          2 /
+rpc.idmap  4139      root  txt       REG      253,0     39164      77930 /usr/sbin/rpc.idmapd
+rpc.idmap  4139      root  mem       REG      253,0      7748    7987677 /lib/libcom_err.so.2.1
+rpc.idmap  4139      root  mem       REG      253,0     75028      71751 /usr/lib/libz.so.1.2.3
+rpc.idmap  4139      root  mem       REG      253,0      7880    7989116 /lib/libkeyutils-1.2.so
+rpc.idmap  4139      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0     76400    7987813 /lib/libresolv-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0   1242192    7987808 /lib/libcrypto.so.0.9.8b
+rpc.idmap  4139      root  mem       REG      253,0    600052      76419 /usr/lib/libkrb5.so.3.3
+rpc.idmap  4139      root  mem       REG      253,0    242880    7987838 /lib/libsepol.so.1
+rpc.idmap  4139      root  mem       REG      253,0     36456      75753 /usr/lib/libnfsidmap.so.0.2.0
+rpc.idmap  4139      root  mem       REG      253,0     93508    7987795 /lib/libselinux.so.1
+rpc.idmap  4139      root  mem       REG      253,0    240552      82684 /usr/lib/libldap-2.3.so.0.2.15
+rpc.idmap  4139      root  mem       REG      253,0     99028      89695 /usr/lib/libsasl2.so.2.0.22
+rpc.idmap  4139      root  mem       REG      253,0    190712      76514 /usr/lib/libgssapi_krb5.so.2.2
+rpc.idmap  4139      root  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0    281116    7987811 /lib/libssl.so.0.9.8b
+rpc.idmap  4139      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0     53776      81205 /usr/lib/liblber-2.3.so.0.2.15
+rpc.idmap  4139      root  mem       REG      253,0     33648      76254 /usr/lib/libkrb5support.so.0.1
+rpc.idmap  4139      root  mem       REG      253,0     33044      72125 /usr/lib/libevent-1.1a.so.1.0.2
+rpc.idmap  4139      root  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0     45288    7987823 /lib/libcrypt-2.5.so
+rpc.idmap  4139      root  mem       REG      253,0    157304      76258 /usr/lib/libk5crypto.so.3.1
+rpc.idmap  4139      root    0u      CHR        1,3                 1080 /dev/null
+rpc.idmap  4139      root    1u      CHR        1,3                 1080 /dev/null
+rpc.idmap  4139      root    2u      CHR        1,3                 1080 /dev/null
+rpc.idmap  4139      root    3u      CHR        1,3                 1080 /dev/null
+rpc.idmap  4139      root    5r     0000       0,10         0       6714 eventpoll
+rpc.idmap  4139      root    6u     unix 0xc1edcac0                 6715 socket
+rpc.idmap  4139      root    7u     unix 0xc1edcc80                 6716 socket
+rpc.idmap  4139      root    8r      DIR       0,20         0          4 /var/lib/nfs/rpc_pipefs/nfs
+dbus-daem  4206      dbus  cwd       DIR      253,0      4096          2 /
+dbus-daem  4206      dbus  rtd       DIR      253,0      4096          2 /
+dbus-daem  4206      dbus  txt       REG      253,0    357200    1964256 /bin/dbus-daemon
+dbus-daem  4206      dbus  mem       REG      253,0     93508    7987795 /lib/libselinux.so.1
+dbus-daem  4206      dbus  mem       REG      253,0    342502      72740 /usr/lib/libexpat.so.0.5.0
+dbus-daem  4206      dbus  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+dbus-daem  4206      dbus  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+dbus-daem  4206      dbus  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+dbus-daem  4206      dbus  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+dbus-daem  4206      dbus  mem       REG      253,0     84976    7987799 /lib/libaudit.so.0.0.0
+dbus-daem  4206      dbus  mem       REG      253,0    242880    7987838 /lib/libsepol.so.1
+dbus-daem  4206      dbus  mem       REG      253,0     11560    7989114 /lib/libcap.so.1.10
+dbus-daem  4206      dbus  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+dbus-daem  4206      dbus    0u      CHR        1,3                 1080 /dev/null
+dbus-daem  4206      dbus    1u      CHR        1,3                 1080 /dev/null
+dbus-daem  4206      dbus    2u      CHR        1,3                 1080 /dev/null
+dbus-daem  4206      dbus    3u     unix 0xf6c43e40                 6940 /var/run/dbus/system_bus_socket
+dbus-daem  4206      dbus    4u      CHR        1,3                 1080 /dev/null
+dbus-daem  4206      dbus    5r      DIR      253,0      4096    8937238 /etc/dbus-1/system.d
+dbus-daem  4206      dbus    6u     unix 0xf6c43c80                 6942 socket
+dbus-daem  4206      dbus    7u     unix 0xf6c43ac0                 6943 socket
+dbus-daem  4206      dbus    8u     unix 0xf6c43580                 6997 /var/run/dbus/system_bus_socket
+dbus-daem  4206      dbus    9u     unix 0xf6aa1580                 8594 /var/run/dbus/system_bus_socket
+dbus-daem  4206      dbus   10u     unix 0xf6415740                 8609 /var/run/dbus/system_bus_socket
+hcid       4222      root  cwd       DIR      253,0      4096          2 /
+hcid       4222      root  rtd       DIR      253,0      4096          2 /
+hcid       4222      root  txt       REG      253,0    173484      78545 /usr/sbin/hcid
+hcid       4222      root  mem       REG      253,0     11560    7989114 /lib/libcap.so.1.10
+hcid       4222      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+hcid       4222      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+hcid       4222      root  mem       REG      253,0     82816      71325 /usr/lib/libbluetooth.so.2.4.1
+hcid       4222      root  mem       REG      253,0    238076    7989115 /lib/libdbus-1.so.3.2.0
+hcid       4222      root    0u      CHR        1,3                 1080 /dev/null
+hcid       4222      root    1u      CHR        1,3                 1080 /dev/null
+hcid       4222      root    2u      CHR        1,3                 1080 /dev/null
+hcid       4222      root    3u     unix 0xf6c43900                 6976 socket
+hcid       4222      root    4u     sock        0,5                 6991 can't identify protocol
+hcid       4222      root    5u     unix 0xf6c43740                 6992 socket
+sdpd       4234      root  cwd       DIR      253,0      4096          2 /
+sdpd       4234      root  rtd       DIR      253,0      4096          2 /
+sdpd       4234      root  txt       REG      253,0     22524      78548 /usr/sbin/sdpd
+sdpd       4234      root  mem       REG      253,0     82816      71325 /usr/lib/libbluetooth.so.2.4.1
+sdpd       4234      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+sdpd       4234      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+sdpd       4234      root    0u      CHR        1,3                 1080 /dev/null
+sdpd       4234      root    1u      CHR        1,3                 1080 /dev/null
+sdpd       4234      root    2u      CHR        1,3                 1080 /dev/null
+sdpd       4234      root    3u     unix 0xf6c433c0                 7004 socket
+sdpd       4234      root    4u     sock        0,5                 7005 can't identify protocol
+sdpd       4234      root    5u     unix 0xf6c43200                 7009 /var/run/sdp
+krfcommd   4245      root  cwd       DIR      253,0      4096          2 /
+krfcommd   4245      root  rtd       DIR      253,0      4096          2 /
+krfcommd   4245      root  txt   unknown                                 /proc/4245/exe
+pcscd      4295      root  cwd       DIR      253,0      4096          2 /
+pcscd      4295      root  rtd       DIR      253,0      4096          2 /
+pcscd      4295      root  txt       REG      253,0     94004      82675 /usr/sbin/pcscd
+pcscd      4295      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+pcscd      4295      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+pcscd      4295      root  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+pcscd      4295      root  mem       REG      253,0     32948      88519 /usr/lib/libusb-0.1.so.4.4.4
+pcscd      4295      root  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+pcscd      4295      root  mem       REG      253,0     65537    5794735 /var/run/pcscd.pub
+pcscd      4295      root    0u      CHR        1,3                 1080 /dev/null
+pcscd      4295      root    1u      CHR        1,3                 1080 /dev/null
+pcscd      4295      root    2u      CHR        1,3                 1080 /dev/null
+pcscd      4295      root    3u      REG      253,0     65537    5794735 /var/run/pcscd.pub
+pcscd      4295      root    4u     unix 0xf6c43040                 7118 socket
+pcscd      4295      root    5u     unix 0xf6fd2e40                 7119 /var/run/pcscd.comm
+hidd       4315      root  cwd       DIR      253,0      4096          2 /
+hidd       4315      root  rtd       DIR      253,0      4096          2 /
+hidd       4315      root  txt       REG      253,0     33708      78534 /usr/bin/hidd
+hidd       4315      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+hidd       4315      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+hidd       4315      root  mem       REG      253,0    208352    7987803 /lib/libm-2.5.so
+hidd       4315      root  mem       REG      253,0     82816      71325 /usr/lib/libbluetooth.so.2.4.1
+hidd       4315      root    0u      CHR        1,3                 1080 /dev/null
+hidd       4315      root    1u      CHR        1,3                 1080 /dev/null
+hidd       4315      root    2u      CHR        1,3                 1080 /dev/null
+hidd       4315      root    3u     sock        0,5                 7152 can't identify protocol
+hidd       4315      root    4u     sock        0,5                 7157 can't identify protocol
+hidd       4315      root    5u     sock        0,5                 7158 can't identify protocol
+hidd       4315      root    6u     unix 0xf6fd2c80                 7159 socket
+automount  4336      root  cwd       DIR      253,0      4096          2 /
+automount  4336      root  rtd       DIR      253,0      4096          2 /
+automount  4336      root  txt       REG      253,0    211996      75155 /usr/sbin/automount
+automount  4336      root  mem       REG      253,0   3209380      70537 /usr/lib/libxml2.so.2.6.28
+automount  4336      root  mem       REG      253,0    208352    7987803 /lib/libm-2.5.so
+automount  4336      root  mem       REG      253,0     21088     523869 /usr/lib/autofs/mount_bind.so
+automount  4336      root  mem       REG      253,0    103784    2651617 /usr/lib/autofs/lookup_file.so
+automount  4336      root  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+automount  4336      root  mem       REG      253,0    113136     523878 /usr/lib/autofs/parse_sun.so
+automount  4336      root  mem       REG      253,0    101404    7987821 /lib/libnsl-2.5.so
+automount  4336      root  mem       REG      253,0     43192     523875 /usr/lib/autofs/mount_nfs.so
+automount  4336      root  mem       REG      253,0     46548    7987608 /lib/libgcc_s-4.1.2-20080102.so.1
+automount  4336      root  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+automount  4336      root  mem       REG      253,0   1597968    7987663 /lib/libc-2.5.so
+automount  4336      root  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+automount  4336      root  mem       REG      253,0     75028      71751 /usr/lib/libz.so.1.2.3
+automount  4336      root  mem       REG      253,0     92612     523786 /usr/lib/autofs/lookup_hosts.so
+automount  4336      root    0u      CHR        1,3                 1080 /dev/null
+automount  4336      root    1u      CHR        1,3                 1080 /dev/null
+automount  4336      root    2u      CHR        1,3                 1080 /dev/null
+automount  4336      root    3r     FIFO        0,6                 7218 pipe
+automount  4336      root    5u     unix 0xf6fd2ac0                 7217 socket
+automount  4336      root    6w     FIFO        0,6                 7218 pipe
+automount  4336      root    7r     FIFO        0,6                 7219 pipe
+automount  4336      root    8w     FIFO        0,6                 7219 pipe
+automount  4336      root    9u     FIFO      253,0              5794744 /var/run/autofs.fifo-misc
+automount  4336      root   10r      DIR       0,21         0       7231 /misc
+automount  4336      root   11r     FIFO        0,6                 7232 pipe
+automount  4336      root   12w     FIFO        0,6                 7232 pipe
+automount  4336      root   13r     FIFO        0,6                 7233 pipe
+automount  4336      root   14w     FIFO        0,6                 7233 pipe
+automount  4336      root   15u     FIFO      253,0              5794788 /var/run/autofs.fifo-net
+automount  4336      root   16r      DIR       0,22         0       7235 /net
+nscd       4361      nscd  cwd       DIR      253,0      4096          2 /
+nscd       4361      nscd  rtd       DIR      253,0      4096          2 /
+nscd       4361      nscd  txt       REG      253,0    108532      75765 /usr/sbin/nscd
+nscd       4361      nscd  mem       REG      253,0    101404    7987821 /lib/libnsl-2.5.so
+nscd       4361      nscd  mem       REG      253,0     16428    7987674 /lib/libdl-2.5.so
+nscd       4361      nscd  mem       REG      253,0    242880    7987838 /lib/libsepol.so.1
+nscd       4361      nscd  mem       REG      253,0     46680    7987624 /lib/libnss_files-2.5.so
+nscd       4361      nscd  mem       REG      253,0     84976    7987799 /lib/libaudit.so.0.0.0
+nscd       4361      nscd  mem       REG      253,0    125744    7987831 /lib/libpthread-2.5.so
+nscd       4361      nscd  mem       REG      253,0     93508    7987795 /lib/libselinux.so.1
+nscd       4361      nscd  mem       REG      253,0     21788    7987622 /lib/libnss_dns-2.5.so
+nscd       4361      nscd  mem       REG      253,0     11560    7989114 /lib/libcap.so.1.10
+nscd       4361      nscd  mem       REG      253,0     76400    7987813 /lib/libresolv-2.5.so
+nscd       4361      nscd  mem       REG      253,0     44060    7987832 /lib/librt-2.5.so
+nscd       4361      nscd  mem       REG      253,0    125736    7987617 /lib/ld-2.5.so
+nscd       4361      n
