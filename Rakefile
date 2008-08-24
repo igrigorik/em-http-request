@@ -11,8 +11,8 @@ task :default => :compile
 # RDoc
 Rake::RDocTask.new(:rdoc) do |task|
   task.rdoc_dir = 'doc'
-  task.title    = 'EventMachine::HttpClient'
-  task.options = %w(--title HttpClient --main README --line-numbers)
+  task.title    = 'EventMachine::HttpRequest'
+  task.options = %w(--title HttpRequest --main README --line-numbers)
   task.rdoc_files.include(['lib/**/*.rb'])
   task.rdoc_files.include(['README', 'LICENSE'])
 end

@@ -1,7 +1,7 @@
 # #--
 # Copyright (C)2008 Ilya Grigorik
 # 
-# Includes portions originally Copyright (C)2007 Tony Arcieri 
+# Includes portion originally Copyright (C)2007 Tony Arcieri 
 # Includes portion originally Copyright (C)2005 Zed Shaw 
 # You can redistribute this under the terms of the Ruby 
 # license See file LICENSE for details 
