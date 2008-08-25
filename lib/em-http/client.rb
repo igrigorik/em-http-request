@@ -174,13 +174,13 @@ module EventMachine
       head['user-agent'] ||= "EventMachine HttpClient"
 
       # Default to Connection: close
-      head['connection'] ||= 'close'
+      #head['connection'] ||= 'close'
 
       # Build the request
       request_header = encode_request(@method, @uri.path, query)
       request_header << encode_headers(head)
       request_header << CRLF
-
+      p request_header
       send_data request_header
     end
 
