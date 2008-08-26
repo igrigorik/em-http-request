@@ -5,7 +5,7 @@
 # Includes portion originally Copyright (C)2005 Zed Shaw 
 # You can redistribute this under the terms of the Ruby 
 # license See file LICENSE for details 
-# #++ #--
+# #--
 
 module EventMachine
 
@@ -115,7 +115,6 @@ module EventMachine
     include EventMachine::Deferrable
     include HttpEncoding
    
-    # ALLOWED_METHODS=[:put, :get, :post, :delete, :head]
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
     SET_COOKIE="SET_COOKIE"
@@ -149,13 +148,13 @@ module EventMachine
 
     # request is done, invoke the callback
     def on_request_complete
-      succeed
+      unbind
     end
     
     # request failed, invoke errback
     def on_error(msg)
       @errors = msg
-      fail
+      unbind
     end
 
     def send_request_header
@@ -164,7 +163,6 @@ module EventMachine
       body    = @options[:body]
 
       # Set the Host header if it hasn't been specified already
-      #       TODO: wtf is this all about?
       head['host'] ||= encode_host
 
       # Set the Content-Length if body is given
@@ -173,14 +171,11 @@ module EventMachine
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
-      # Default to Connection: close
-      #head['connection'] ||= 'close'
-
       # Build the request
       request_header = encode_request(@method, @uri.path, query)
       request_header << encode_headers(head)
       request_header << CRLF
-      p request_header
+      
       send_data request_header
     end
 
