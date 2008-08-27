@@ -1,5 +1,6 @@
 require 'test/helper'
- 
+require 'test/stallion'
+
 describe EventMachine::HttpRequest do
 
   def failed
@@ -30,11 +31,12 @@ describe EventMachine::HttpRequest do
    
   it "should perform successfull GET" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://google.com/').get
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
       
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 301 
+	http.response_header.status.should == 200 
+	http.response.should match(/Hello/)
 	EventMachine.stop
       }
     }
@@ -42,7 +44,7 @@ describe EventMachine::HttpRequest do
    
   it "should return 404 on invalid path" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://www.google.com/path').get :query => {:keyname => 'value'}
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/fail').get
       
       http.errback { failed }
       http.callback {
@@ -52,9 +54,9 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should perform valid search" do
+  it "should pass query parameters" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://www.google.com/search').get :query => {:q => 'test'}
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :query => {:q => 'test'}
       
       http.errback { failed }
       http.callback {
@@ -65,33 +67,32 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  # google has post disabled  
   it "should perform successfull POST" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://www.google.com/search').post :body => "q=test"
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => "data"
    
       http.errback { failed }
       http.callback {
-	http.response_header.status == 501
+	http.response_header.status.should == 200
+	http.response.should match(/test/)
 	EventMachine.stop
       }
     }
   end
 
-  # need a better endpoint
   it "should perform successfull GET with custom header" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://www.google.com/').get :head => {'If-Modified-Since' => 'evar!'}
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :head => {'if-none-match' => 'evar!'}
    
       http.errback { failed }
       http.callback {
-	http.response_header.status == 200
+	http.response_header.status.should == 304
 	EventMachine.stop
       }
     }
   end
   
-  # need a better endpoint  
+  # need an actual streaming endpoint  
   it "should perform a streaming GET" do
     EventMachine.run {
    
