@@ -102,7 +102,7 @@ module EventMachine
       head.inject('') do |result, (key, value)|
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.capitalize }.join('-')
-	result << encode_field(key, value)
+        result << encode_field(key, value)
       end
     end
 
@@ -128,7 +128,6 @@ module EventMachine
     def post_init
       self.comm_inactivity_timeout = 5
 
-      @connected = EventMachine::DefaultDeferrable.new
       @parser = HttpClientParser.new
       @data = EventMachine::Buffer.new
       @response_header = HttpResponseHeader.new
@@ -230,7 +229,7 @@ module EventMachine
         @parser_nbytes = @parser.execute(header, @data.to_str, @parser_nbytes)
       rescue EventMachine::HttpClientParserError
         @state = :invalid
-	on_error "invalid HTTP format, parsing fails"
+        on_error "invalid HTTP format, parsing fails"
       end
       
       return false unless @parser.finished?

@@ -1,7 +1,8 @@
 EventMachine based HTTP Request interface. Supports streaming response processing / based on Zed Shaw's Ragel HTTP parser. 
- - Borrows a lot of good concepts from Rev's HttpClient.
+ - Borrows a lot of good concepts from Rev's HttpClient, Curb, and other libraries.
+ - Offers support for single or parallel request queries & via deferred callbacks
 
-Example: 
+Simple client example: 
 --------
 
 EventMachine.run {
@@ -15,4 +16,21 @@ EventMachine.run {
     EventMachine.stop
   }
 }
-    
+
+Multi request example:
+----------
+
+EventMachine.run {
+  multi = EventMachine::MultiRequest.new
+      
+  # add multiple requests to the multi-handler
+  multi.add(EventMachine::HttpRequest.new('http://www.google.com/').get)
+  multi.add(EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
+      
+  multi.callback  {
+    p multi.responses[:succeeded]
+    p multi.responses[:failed]
+       
+    EventMachine.stop
+  }
+}

@@ -13,8 +13,8 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://169.169.169.169/').get
       http.callback { failed }
       http.errback {
-	http.response_header.status.should == 0
-	EventMachine.stop
+        http.response_header.status.should == 0
+        EventMachine.stop
       }
     }
   end
@@ -22,7 +22,7 @@ describe EventMachine::HttpRequest do
   it "should fail GET on missing path" do
     EventMachine.run {
       lambda {
-	EventMachine::HttpRequest.new('http://www.google.com').get
+        EventMachine::HttpRequest.new('http://www.google.com').get
       }.should raise_error(ArgumentError)
    
       EventMachine.stop
@@ -35,9 +35,9 @@ describe EventMachine::HttpRequest do
       
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 200 
-	http.response.should match(/Hello/)
-	EventMachine.stop
+        http.response_header.status.should == 200 
+        http.response.should match(/Hello/)
+        EventMachine.stop
       }
     }
   end
@@ -48,8 +48,8 @@ describe EventMachine::HttpRequest do
       
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 404
-	EventMachine.stop
+        http.response_header.status.should == 404
+        EventMachine.stop
       }
     }
   end
@@ -60,9 +60,9 @@ describe EventMachine::HttpRequest do
       
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 200
-	http.response.should match(/test/)
-	EventMachine.stop
+        http.response_header.status.should == 200
+        http.response.should match(/test/)
+        EventMachine.stop
       }
     }
   end
@@ -73,9 +73,9 @@ describe EventMachine::HttpRequest do
    
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 200
-	http.response.should match(/test/)
-	EventMachine.stop
+        http.response_header.status.should == 200
+        http.response.should match(/test/)
+        EventMachine.stop
       }
     }
   end
@@ -86,8 +86,8 @@ describe EventMachine::HttpRequest do
    
       http.errback { failed }
       http.callback {
-	http.response_header.status.should == 304
-	EventMachine.stop
+        http.response_header.status.should == 304
+        EventMachine.stop
       }
     }
   end
@@ -100,8 +100,8 @@ describe EventMachine::HttpRequest do
    
       http.errback { failed }
       http.callback {
-	http.response_header.status == 200
-	EventMachine.stop
+        http.response_header.status == 200
+        EventMachine.stop
       }
     }
   end

@@ -10,5 +10,6 @@ require 'eventmachine'
 require 'http11_client'
 require 'em_buffer'
 
-require 'em-http/request'
 require 'em-http/client'
+require 'em-http/multi'
+require 'em-http/request'

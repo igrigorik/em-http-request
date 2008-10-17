@@ -53,9 +53,9 @@ module EventMachine
       method = method.to_s.upcase
 
       EventMachine.connect(@uri.host, @uri.port, EventMachine::HttpClient) { |c|
-	c.uri = @uri
-	c.method = method
-	c.options = options
+        c.uri = @uri
+        c.method = method
+        c.options = options
       }
     end
   end
