@@ -76,12 +76,15 @@ Stallion.saddle :spec do |stable|
       
     elsif stable.request.query_string == 'q=test'
       stable.response.body << 'test'
-     
+
+    elsif stable.request.path_info == '/echo_query'
+      stable.response.body << stable.request.query_string
+      
     elsif stable.request.post?  
       stable.response.body << 'test'
     
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
-	stable.response.status = 304
+      stable.response.status = 304
       
     elsif
       stable.response.body << 'Hello, World!'

@@ -88,11 +88,16 @@ module EventMachine
       path + "?" + query.map { |k, v| encode_param(k, v) }.join('&')
     end
 
-    # URL encodes a single k=v parameter.
+    # URL encodes query parameters: 
+    # single k=v, or a URL encoded array, if v is an array of values
     def encode_param(k, v)
-      escape(k) + "=" + escape(v)
+      if v.is_a?(Array)
+        v.map { |e| escape(k) + "[]=" + escape(e) }.join("&")
+      else
+        escape(k) + "=" + escape(v)
+      end
     end
-
+    
     # Encode a field in an HTTP header
     def encode_field(k, v)
       FIELD_ENCODING % [k, v]

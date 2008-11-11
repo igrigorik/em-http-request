@@ -67,6 +67,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+   it "should encode an array of query parameters" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_query').get :query => {:hash => ['value1', 'value2']}
+      
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/hash\[\]=value1&hash\[\]=value2/)
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should perform successfull POST" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => "data"
