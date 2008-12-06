@@ -67,7 +67,7 @@ describe EventMachine::HttpRequest do
     }
   end
 
-   it "should encode an array of query parameters" do
+  it "should encode an array of query parameters" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_query').get :query => {:hash => ['value1', 'value2']}
 
@@ -105,11 +105,11 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  # need an actual streaming endpoint
   it "should perform a streaming GET" do
     EventMachine.run {
 
-      http = EventMachine::HttpRequest.new('http://www.google.com/').get
+      # digg.com uses chunked encoding
+      http = EventMachine::HttpRequest.new('http://www.digg.com/').get
 
       http.errback { failed }
       http.callback {
@@ -132,4 +132,16 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should work with keep-alive servers" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status == 200
+        EventMachine.stop
+      }
+    }
+  end
 end

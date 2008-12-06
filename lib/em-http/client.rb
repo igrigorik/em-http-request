@@ -35,6 +35,10 @@ module EventMachine
     def chunked_encoding?
       /chunked/i === self[HttpClient::TRANSFER_ENCODING]
     end
+
+    def keep_alive?
+      /keep-alive/i === self[HttpClient::KEEP_ALIVE]
+    end
   end
 
   class HttpChunkHeader < Hash
@@ -132,6 +136,7 @@ module EventMachine
 
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
+    KEEP_ALIVE="CONNECTION"
     SET_COOKIE="SET_COOKIE"
     LOCATION="LOCATION"
     HOST="HOST"
@@ -353,12 +358,22 @@ module EventMachine
       on_body_data @data.read(@bytes_remaining)
       @bytes_remaining = 0
 
-      if @data.empty?
+      # If Keep-Alive is enabled, the server may be pushing more data to us
+      # after the first request is complete. Hence, finish first request, and
+      # reset state.
+      if @response_header.keep_alive?
+        @data.clear # hard reset, TODO: add support for keep-alive connections!
         @state = :finished
         on_request_complete
+
       else
-        @state = :invalid
-        on_error "garbage at end of body"
+        if @data.empty?
+          @state = :finished
+          on_request_complete
+        else
+          @state = :invalid
+          on_error "garbage at end of body"
+        end
       end
 
       false
