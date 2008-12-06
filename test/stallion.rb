@@ -1,6 +1,6 @@
 # #--
-# Includes portion originally Copyright (C)2008 Michael Fellinger 
-# license See file LICENSE for details 
+# Includes portion originally Copyright (C)2008 Michael Fellinger
+# license See file LICENSE for details
 # #--
 
 require 'rack'
@@ -57,7 +57,9 @@ module Stallion
   end
 
   def self.call(env)
+    #    p env
     request = Rack::Request.new(env)
+    #    p env
     response = Rack::Response.new
 
     STABLES.each do |name, stable|
@@ -73,25 +75,35 @@ Stallion.saddle :spec do |stable|
 
     if stable.request.path_info == '/fail'
       stable.response.status = 404
-      
+
     elsif stable.request.query_string == 'q=test'
       stable.response.body << 'test'
 
     elsif stable.request.path_info == '/echo_query'
       stable.response.body << stable.request.query_string
-      
-    elsif stable.request.post?  
+
+    elsif stable.request.post?
       stable.response.body << 'test'
-    
+
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
-      
+
+    elsif stable.request.env["HTTP_AUTHORIZATION"]
+      auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).chomp
+
+      if auth == stable.request.env["HTTP_AUTHORIZATION"]
+        stable.response.status = 200
+        stable.response.body = 'success'
+      else
+        stable.response.status = 401
+      end
+
     elsif
       stable.response.body << 'Hello, World!'
     end
+
   end
 end
-
 
 Thread.new do
   Stallion.run :Host => '127.0.0.1', :Port => 8080

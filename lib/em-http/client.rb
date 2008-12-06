@@ -1,10 +1,10 @@
 # #--
 # Copyright (C)2008 Ilya Grigorik
-# 
-# Includes portion originally Copyright (C)2007 Tony Arcieri 
-# Includes portion originally Copyright (C)2005 Zed Shaw 
-# You can redistribute this under the terms of the Ruby 
-# license See file LICENSE for details 
+#
+# Includes portion originally Copyright (C)2007 Tony Arcieri
+# Includes portion originally Copyright (C)2005 Zed Shaw
+# You can redistribute this under the terms of the Ruby
+# license See file LICENSE for details
 # #--
 
 module EventMachine
@@ -30,7 +30,7 @@ module EventMachine
     def content_length
       Integer(self[HttpClient::CONTENT_LENGTH]) rescue nil
     end
- 
+
     # Is the transfer encoding chunked?
     def chunked_encoding?
       /chunked/i === self[HttpClient::TRANSFER_ENCODING]
@@ -52,19 +52,20 @@ module EventMachine
   module HttpEncoding
     HTTP_REQUEST_HEADER="%s %s HTTP/1.1\r\n"
     FIELD_ENCODING = "%s: %s\r\n"
+    BASIC_AUTH_ENCODING = "%s: Basic %s\r\n"
 
     # Escapes a URI.
     def escape(s)
       s.to_s.gsub(/([^ a-zA-Z0-9_.-]+)/n) {
         '%'+$1.unpack('H2'*$1.size).join('%').upcase
-      }.tr(' ', '+') 
+      }.tr(' ', '+')
     end
 
     # Unescapes a URI escaped string.
     def unescape(s)
       s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n){
         [$1.delete('%')].pack('H*')
-      } 
+      }
     end
 
     # Map all header keys to a downcased string version
@@ -88,7 +89,7 @@ module EventMachine
       path + "?" + query.map { |k, v| encode_param(k, v) }.join('&')
     end
 
-    # URL encodes query parameters: 
+    # URL encodes query parameters:
     # single k=v, or a URL encoded array, if v is an array of values
     def encode_param(k, v)
       if v.is_a?(Array)
@@ -97,17 +98,26 @@ module EventMachine
         escape(k) + "=" + escape(v)
       end
     end
-    
+
     # Encode a field in an HTTP header
     def encode_field(k, v)
       FIELD_ENCODING % [k, v]
+    end
+
+    # Encode basic auth in an HTTP header
+    def encode_basic_auth(k,v)
+      BASIC_AUTH_ENCODING % [k, Base64.encode64(v.join(":")).chomp]
     end
 
     def encode_headers(head)
       head.inject('') do |result, (key, value)|
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.capitalize }.join('-')
-        result << encode_field(key, value)
+        unless key == "Authorization"
+          result << encode_field(key, value)
+        else
+          result << encode_basic_auth(key, value)
+        end
       end
     end
 
@@ -115,21 +125,21 @@ module EventMachine
       cookies.inject('') { |result, (k, v)| result << encode_field('Cookie', encode_param(k, v)) }
     end
   end
-  
+
   class HttpClient < Connection
     include EventMachine::Deferrable
     include HttpEncoding
-   
+
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
     SET_COOKIE="SET_COOKIE"
     LOCATION="LOCATION"
     HOST="HOST"
     CRLF="\r\n"
-    
+
     attr_accessor :method, :options, :uri
     attr_reader   :response, :response_header, :errors
-    
+
     def post_init
       self.comm_inactivity_timeout = 5
 
@@ -154,7 +164,7 @@ module EventMachine
     def on_request_complete
       unbind
     end
-    
+
     # request failed, invoke errback
     def on_error(msg)
       @errors = msg
@@ -162,7 +172,7 @@ module EventMachine
     end
 
     def send_request_header
-      query   = @options[:query] 
+      query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       body    = @options[:body]
 
@@ -179,7 +189,7 @@ module EventMachine
       request_header = encode_request(@method, @uri.path, query)
       request_header << encode_headers(head)
       request_header << CRLF
-      
+
       send_data request_header
     end
 
@@ -194,17 +204,17 @@ module EventMachine
 
     # Called when part of the body has been read
     def on_body_data(data)
-      @response << data 
+      @response << data
     end
-    
+
     def unbind
       (@state == :finished) ? succeed : fail
-      close_connection      
+      close_connection
     end
-     
-    # 
+
+    #
     # Response processing
-    # 
+    #
 
     def dispatch
       while case @state
@@ -229,21 +239,21 @@ module EventMachine
 
     def parse_header(header)
       return false if @data.empty?
-      
+
       begin
         @parser_nbytes = @parser.execute(header, @data.to_str, @parser_nbytes)
       rescue EventMachine::HttpClientParserError
         @state = :invalid
         on_error "invalid HTTP format, parsing fails"
       end
-      
+
       return false unless @parser.finished?
 
       # Clear parsed data from the buffer
       @data.read(@parser_nbytes)
       @parser.reset
       @parser_nbytes = 0
-      
+
       true
     end
 
@@ -255,14 +265,14 @@ module EventMachine
         on_error "no HTTP response"
         return false
       end
-      
+
       if @response_header.chunked_encoding?
         @state = :chunk_header
       else
         @state = :body
         @bytes_remaining = @response_header.content_length
       end
-      
+
       true
     end
 
@@ -272,7 +282,7 @@ module EventMachine
       @bytes_remaining = @chunk_header.chunk_size
       @chunk_header = HttpChunkHeader.new
 
-      @state = @bytes_remaining > 0 ? :chunk_body : :response_footer      
+      @state = @bytes_remaining > 0 ? :chunk_body : :response_footer
       true
     end
 
@@ -285,8 +295,8 @@ module EventMachine
 
       on_body_data @data.read(@bytes_remaining)
       @bytes_remaining = 0
-      
-      @state = :chunk_footer      
+
+      @state = :chunk_footer
       true
     end
 
@@ -299,13 +309,13 @@ module EventMachine
         @state = :invalid
         on_error "non-CRLF chunk footer"
       end
-      
+
       true
     end
 
     def process_response_footer
       return false if @data.size < 2
-      
+
       if @data.read(2) == CRLF
         if @data.empty?
           @state = :finished
@@ -318,7 +328,7 @@ module EventMachine
         @state = :invalid
         on_error "non-CRLF response footer"
       end
-      
+
       false
     end
 
@@ -327,7 +337,7 @@ module EventMachine
         on_body_data @data.read
         return false
       end
-      
+
       if @bytes_remaining.zero?
         @state = :finished
         on_request_complete
@@ -354,5 +364,5 @@ module EventMachine
       false
     end
   end
-  
+
 end
