@@ -90,7 +90,11 @@ module EventMachine
 
     def encode_query(path, query)
       return path unless query
-      path + "?" + query.map { |k, v| encode_param(k, v) }.join('&')
+      if query.kind_of? String
+        return "#{path}?#{query}"
+      else
+        return path + "?" + query.map { |k, v| encode_param(k, v) }.join('&')
+      end
     end
 
     # URL encodes query parameters:
