@@ -39,6 +39,10 @@ module EventMachine
     def keep_alive?
       /keep-alive/i === self[HttpClient::KEEP_ALIVE]
     end
+
+    def compressed?
+      /gzip|compressed/i === self[HttpClient::CONTENT_ENCODING]
+    end
   end
 
   class HttpChunkHeader < Hash
@@ -135,6 +139,7 @@ module EventMachine
     include HttpEncoding
 
     TRANSFER_ENCODING="TRANSFER_ENCODING"
+    CONTENT_ENCODING="CONTENT_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
     KEEP_ALIVE="CONNECTION"
     SET_COOKIE="SET_COOKIE"
@@ -155,6 +160,7 @@ module EventMachine
 
       @state = :response_header
       @parser_nbytes = 0
+      @inflate = false
       @response = ''
       @errors = ''
     end
@@ -167,6 +173,10 @@ module EventMachine
 
     # request is done, invoke the callback
     def on_request_complete
+      if @response_header.compressed? and @inflate
+        @response = Zlib::Inflate.inflate(@response)
+      end
+			
       unbind
     end
 
@@ -189,6 +199,9 @@ module EventMachine
 
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
+
+      # Set auto-inflate flag
+      @inflate = true if head['accept-encoding'] =~ /gzip|compressed/
 
       # Build the request
       request_header = encode_request(@method, @uri.path, query)

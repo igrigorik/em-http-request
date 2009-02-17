@@ -83,6 +83,10 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.post?
       stable.response.write 'test'
 
+    elsif stable.request.path_info == '/compress'
+      stable.response.write Zlib::Deflate.deflate("compressed")
+      stable.response["Content-Encoding"] = "gzip"
+
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 

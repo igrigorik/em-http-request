@@ -144,4 +144,20 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+
+  it "should detect gzip encoding" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/compress').get :head => {"accept-encoding" => "gzip, compressed"}
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == "compressed"
+
+        EventMachine.stop
+      }
+    }
+  end
 end
