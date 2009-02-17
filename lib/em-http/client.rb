@@ -41,7 +41,7 @@ module EventMachine
     end
 
     def compressed?
-      /gzip|compressed/i === self[HttpClient::CONTENT_ENCODING]
+      /gzip|compressed|deflate/i === self[HttpClient::CONTENT_ENCODING]
     end
   end
 
@@ -160,7 +160,7 @@ module EventMachine
 
       @state = :response_header
       @parser_nbytes = 0
-      @inflate = false
+      @inflate = []
       @response = ''
       @errors = ''
     end
@@ -173,8 +173,14 @@ module EventMachine
 
     # request is done, invoke the callback
     def on_request_complete
-      if @response_header.compressed? and @inflate
-        @response = Zlib::Inflate.inflate(@response)
+
+      if @response_header.compressed? and @inflate.include?(response_header[CONTENT_ENCODING])
+        case response_header[CONTENT_ENCODING]
+        when 'deflate' then 
+          @response = Zlib::Inflate.inflate(@response)
+        when 'gzip', 'compressed' then
+          @response = Zlib::GzipReader.new(StringIO.new(@response)).read
+        end
       end
 			
       unbind
@@ -200,8 +206,10 @@ module EventMachine
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
-      # Set auto-inflate flag
-      @inflate = true if head['accept-encoding'] =~ /gzip|compressed/
+      # Set auto-inflate flags
+      if head['accept-encoding']
+        @inflate = head['accept-encoding'].split(',').map {|t| t.strip}
+      end
 
       # Build the request
       request_header = encode_request(@method, @uri.path, query)

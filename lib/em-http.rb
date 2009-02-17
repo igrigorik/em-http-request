@@ -6,6 +6,7 @@
 
 require 'rubygems'
 require 'eventmachine'
+require 'zlib'
 
 require 'http11_client'
 require 'em_buffer'
