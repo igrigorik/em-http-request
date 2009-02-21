@@ -9,6 +9,7 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   s.authors = ["Ilya Grigorik"]
   s.add_dependency('eventmachine', '>= 0.12.2')
+  s.extensions = ["ext/buffer/extconf.rb" , "ext/http11_client/extconf.rb"]
 
   # ruby -rpp -e' pp `git ls-files`.split("\n") '
   s.files = [
