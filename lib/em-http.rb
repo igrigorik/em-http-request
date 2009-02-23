@@ -8,9 +8,10 @@ require 'rubygems'
 require 'eventmachine'
 require 'zlib'
 
-require 'http11_client'
-require 'em_buffer'
 
-require 'em-http/client'
-require 'em-http/multi'
-require 'em-http/request'
+require File.dirname(__FILE__) + '/http11_client'
+require File.dirname(__FILE__) + '/em_buffer'
+
+require File.dirname(__FILE__) + '/em-http/client'
+require File.dirname(__FILE__) + '/em-http/multi'
+require File.dirname(__FILE__) + '/em-http/request'
