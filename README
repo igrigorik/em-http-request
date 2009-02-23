@@ -1,36 +1,51 @@
-EventMachine based HTTP Request interface. Supports streaming response processing / based on Zed Shaw's Ragel HTTP parser. 
- - Borrows a lot of good concepts from Rev's HttpClient, Curb, and other libraries.
- - Offers support for single or parallel request queries & via deferred callbacks
+= EM-HTTP-Client
 
-Simple client example: 
---------
+EventMachine based HTTP Request interface. Supports streaming response processing, uses Ragel HTTP parser. 
+- Simple interface for single & parallel requests via deferred callbacks
+- Automatic gzip & deflate decoding
+- Basic-Auth support 
 
-EventMachine.run {
-  http = EventMachine::HttpRequest.new('http://127.0.0.1/').get :query => {'keyname' => 'value'}
+== Simple client example
+
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://127.0.0.1/').get :query => {'keyname' => 'value'}
  
-  http.callback {
-    p http.response_header.status
-    p http.response_header
-    p http.response
+    http.callback {
+      p http.response_header.status
+      p http.response_header
+      p http.response
     
-    EventMachine.stop
+      EventMachine.stop
+    }
   }
-}
 
-Multi request example:
-----------
+== Multi request example
 
-EventMachine.run {
-  multi = EventMachine::MultiRequest.new
+  EventMachine.run {
+    multi = EventMachine::MultiRequest.new
       
-  # add multiple requests to the multi-handler
-  multi.add(EventMachine::HttpRequest.new('http://www.google.com/').get)
-  multi.add(EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
+    # add multiple requests to the multi-handler
+    multi.add(EventMachine::HttpRequest.new('http://www.google.com/').get)
+    multi.add(EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
       
-  multi.callback  {
-    p multi.responses[:succeeded]
-    p multi.responses[:failed]
+    multi.callback  {
+      p multi.responses[:succeeded]
+      p multi.responses[:failed]
        
-    EventMachine.stop
+      EventMachine.stop
+    }
   }
-}
+
+== Basic-Auth example
+
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get :head => {'authorization' => ['user', 'pass']}
+ 
+    http.errback { failed }
+    http.callback {
+      p http.response_header
+
+      EventMachine.stop
+    }
+  }
+

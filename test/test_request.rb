@@ -54,9 +54,22 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should pass query parameters" do
+  it "should build query parameters from Hash" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :query => {:q => 'test'}
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/test/)
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should pass query parameters string" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :query => "q=test"
 
       http.errback { failed }
       http.callback {
