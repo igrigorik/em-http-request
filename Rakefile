@@ -5,6 +5,13 @@ require 'rake/gempackagetask'
 require 'fileutils'
 include FileUtils
 
+# copied from EventMachine.
+MAKE = ENV['MAKE'] || if RUBY_PLATFORM =~ /mswin/ # mingw uses make.
+  'nmake'
+else
+  'make'
+end
+
 # Default Rake task is compile
 task :default => :compile
 
@@ -28,7 +35,7 @@ task :ragel do
 end
 
 def make(makedir)
-  Dir.chdir(makedir) { sh 'make' }
+  Dir.chdir(makedir) { sh MAKE }
 end
 
 def extconf(dir)
@@ -51,13 +58,14 @@ def setup_extension(dir, extension)
   end
 
   desc "Builds just the #{extension} extension"
-  task extension.to_sym => ["#{ext}/Makefile", ext_so ]
 
-  file "#{ext}/Makefile" => ["#{ext}/extconf.rb"] do
+  mf = (extension + '_makefile').to_sym
+
+  task mf do |t|
     extconf "#{ext}"
   end
 
-  file ext_so => ext_files do
+  task extension.to_sym => [mf] do
     make "#{ext}"
     cp ext_so, "lib"
   end

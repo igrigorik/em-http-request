@@ -11,8 +11,13 @@
 
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <errno.h>
+
+#ifndef GetReadFile
+#define FPTR_TO_FD(fptr) (fptr->fd)
+#else
+#define FPTR_TO_FD(fptr) (fileno(GetReadFile(fptr)))
+#endif
 
 /* Default number of bytes in each node's buffer */
 #define DEFAULT_NODE_SIZE 16384
