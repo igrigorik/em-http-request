@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'em-http-request'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.date = '2009-02-15'
   s.summary = 'EventMachine based HTTP Request interface'
   s.description = s.summary
@@ -10,12 +10,13 @@ spec = Gem::Specification.new do |s|
   s.authors = ["Ilya Grigorik"]
   s.add_dependency('eventmachine', '>= 0.12.2')
   s.extensions = ["ext/buffer/extconf.rb" , "ext/http11_client/extconf.rb"]
+  s.rubyforge_project = "em-http-request" 
 
   # ruby -rpp -e' pp `git ls-files`.split("\n") '
   s.files = [
     ".autotest",
     "LICENSE",
-    "README",
+    "README.rdoc",
     "Rakefile",
     "ext/buffer/em_buffer.c",
     "ext/buffer/extconf.rb",
