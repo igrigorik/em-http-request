@@ -238,7 +238,7 @@ module EventMachine
     end
 
     def unbind
-      (@state == :finished) ? succeed : fail
+      (@state == :finished) ? succeed(self) : fail
       close_connection
     end
 
