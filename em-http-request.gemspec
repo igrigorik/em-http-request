@@ -1,7 +1,7 @@
 spec = Gem::Specification.new do |s|
   s.name = 'em-http-request'
-  s.version = '0.1.1'
-  s.date = '2009-02-15'
+  s.version = '0.1.2'
+  s.date = '2009-03-20'
   s.summary = 'EventMachine based HTTP Request interface'
   s.description = s.summary
   s.email = 'ilya@igvita.com'
