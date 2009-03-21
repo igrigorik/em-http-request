@@ -155,8 +155,6 @@ module EventMachine
     attr_reader   :response, :response_header, :errors
 
     def post_init
-      self.comm_inactivity_timeout = 5
-
       @parser = HttpClientParser.new
       @data = EventMachine::Buffer.new
       @response_header = HttpResponseHeader.new

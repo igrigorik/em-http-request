@@ -57,6 +57,7 @@ module EventMachine
         c.uri = @uri
         c.method = method
         c.options = options
+        c.comm_inactivity_timeout = options[:timeout] || 5
       }
     end
   end

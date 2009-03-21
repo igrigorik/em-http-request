@@ -83,6 +83,10 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.post?
       stable.response.write 'test'
 
+    elsif stable.request.path_info == '/timeout'
+      sleep(10)
+      stable.response.write 'timeout'
+
     elsif stable.request.path_info == '/gzip'
       io = StringIO.new
       gzip = Zlib::GzipWriter.new(io)

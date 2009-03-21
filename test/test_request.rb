@@ -10,7 +10,7 @@ describe EventMachine::HttpRequest do
 
   it "should fail GET on invalid host" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://169.169.169.169/').get
+      http = EventMachine::HttpRequest.new('http://127.1.1.1/').get
       http.callback { failed }
       http.errback {
         http.response_header.status.should == 0
@@ -174,7 +174,7 @@ describe EventMachine::HttpRequest do
     }
   end
 
-   it "should detect gzip encoding" do
+  it "should detect gzip encoding" do
     EventMachine.run {
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/gzip').get :head => {"accept-encoding" => "gzip, compressed"}
@@ -187,6 +187,19 @@ describe EventMachine::HttpRequest do
 
         EventMachine.stop
       }
+    }
+  end
+
+  it "should timeout after 10 seconds" do
+    EventMachine.run {
+      t = Time.now.to_i
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/timeout').get :timeout => 2
+
+      http.errback {
+        (Time.now.to_i - t).should == 2
+        EventMachine.stop
+      }
+      http.callback { failed }
     }
   end
 end
