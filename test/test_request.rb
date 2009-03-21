@@ -122,11 +122,11 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
 
       # digg.com uses chunked encoding
-      http = EventMachine::HttpRequest.new('http://www.digg.com/').get
+      http = EventMachine::HttpRequest.new('http://digg.com/').get
 
       http.errback { failed }
       http.callback {
-        http.response_header.status == 200
+        http.response_header.status.should == 200
         EventMachine.stop
       }
     }
@@ -139,7 +139,7 @@ describe EventMachine::HttpRequest do
 
       http.errback { failed }
       http.callback {
-        http.response_header.status == 200
+        http.response_header.status.should == 200
         EventMachine.stop
       }
     }
@@ -152,7 +152,7 @@ describe EventMachine::HttpRequest do
 
       http.errback { failed }
       http.callback {
-        http.response_header.status == 200
+        http.response_header.status.should == 200
         EventMachine.stop
       }
     }
@@ -165,7 +165,7 @@ describe EventMachine::HttpRequest do
 
       http.errback { failed }
       http.callback {
-        http.response_header.status == 200
+        http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "deflate"
         http.response.should == "compressed"
 
@@ -181,7 +181,7 @@ describe EventMachine::HttpRequest do
 
       http.errback { failed }
       http.callback {
-        http.response_header.status == 200
+        http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "gzip"
         http.response.should == "compressed"
 
