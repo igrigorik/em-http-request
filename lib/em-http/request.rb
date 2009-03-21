@@ -24,7 +24,6 @@ module EventMachine
   #
 
   class HttpRequest
-    attr_reader :response, :headers
 
     def initialize(host, headers = {})
       @headers = headers
@@ -52,13 +51,19 @@ module EventMachine
       raise ArgumentError, "invalid request path" unless /^\// === @uri.path
 
       method = method.to_s.upcase
-
-      EventMachine.connect(@uri.host, @uri.port, EventMachine::HttpClient) { |c|
-        c.uri = @uri
-        c.method = method
-        c.options = options
-        c.comm_inactivity_timeout = options[:timeout] || 5
-      }
+      begin
+       EventMachine.connect(@uri.host, @uri.port, EventMachine::HttpClient) { |c|
+          c.uri = @uri
+          c.method = method
+          c.options = options
+          c.comm_inactivity_timeout = options[:timeout] || 5
+        }
+      rescue RuntimeError => e 
+        raise e unless e.message == "no connection"
+        conn = EventMachine::HttpClient.new("")
+        conn.on_error("no connection")
+        conn
+      end
     end
   end
 end

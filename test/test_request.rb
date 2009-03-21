@@ -8,12 +8,24 @@ describe EventMachine::HttpRequest do
     fail
   end
 
-  it "should fail GET on invalid host" do
+  it "should fail GET on DNS timeout" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.1.1.1/').get
       http.callback { failed }
       http.errback {
         http.response_header.status.should == 0
+        EventMachine.stop
+      }
+    }
+  end
+
+ it "should fail GET on invalid host" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://google1.com/').get
+      http.callback { failed }
+      http.errback {
+        http.response_header.status.should == 0
+        http.errors.should match(/no connection/)
         EventMachine.stop
       }
     }
