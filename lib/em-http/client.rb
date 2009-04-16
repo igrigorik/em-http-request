@@ -232,7 +232,11 @@ module EventMachine
 
     # Called when part of the body has been read
     def on_body_data(data)
-      @response << data
+      if (on_response = @options[:on_response])
+        on_response.call(data)
+      else
+        @response << data
+      end
     end
 
     def unbind

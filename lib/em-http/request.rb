@@ -41,6 +41,10 @@ module EventMachine
     #   body: String
     #     Specify the request body (you must encode it for now)
     #
+    #   on_response: Proc
+    #     Called for each response body chunk (you may assume HTTP 200
+    #     OK then)
+    #
 
     def get  options = {};    send_request(:get,  options);    end
     def post options = {};    send_request(:post, options);    end
