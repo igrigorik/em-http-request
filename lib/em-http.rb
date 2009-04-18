@@ -6,7 +6,6 @@
 
 require 'rubygems'
 require 'eventmachine'
-require 'zlib'
 
 
 require File.dirname(__FILE__) + '/http11_client'

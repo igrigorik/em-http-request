@@ -1,3 +1,5 @@
+require 'zlib'
+
 ##
 # Provides a unified callback interface to decompression libraries.
 module EventMachine::HTTPDecoders
@@ -8,7 +10,6 @@ module EventMachine::HTTPDecoders
     end
 
     def decoder_for_encoding(encoding)
-      p :decoder_for_encoding => encoding
       DECODERS.each { |d|
         return d if encoding == d.to_s
       }
@@ -88,7 +89,29 @@ module EventMachine::HTTPDecoders
     end
   end
 
-  DECODERS = [Deflate]
+  ##
+  # Oneshot decompressor, due to lack of a streaming Gzip reader
+  # implementation. We may steal code from Zliby to improve this.
+  #
+  # For now, do not put `gzip' or `compressed' in your accept-encoding
+  # header if you expect much data through the :on_response interface.
+  class GZip < Base
+    def make_decompressor
+      @buf = ""
+      true
+    end
+
+    def decompress(a, compressed)
+      @buf += compressed
+      nil
+    end
+
+    def finalize(a)
+      Zlib::GzipReader.new(StringIO.new(@buf)).read
+    end
+  end
+
+  DECODERS = [Deflate, GZip]
 
 end
 
