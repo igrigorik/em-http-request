@@ -2,7 +2,7 @@ require 'zlib'
 
 ##
 # Provides a unified callback interface to decompression libraries.
-module EventMachine::HTTPDecoders
+module EventMachine::HttpDecoders
 
   class << self
     def accepted_encodings
