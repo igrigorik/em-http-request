@@ -162,9 +162,10 @@ module EventMachine
 
       @state = :response_header
       @parser_nbytes = 0
-      @inflate = []
       @response = ''
+      @inflate = []
       @errors = ''
+      @content_decoder = nil
     end
 
     # start HTTP request once we establish connection to host
@@ -175,16 +176,7 @@ module EventMachine
 
     # request is done, invoke the callback
     def on_request_complete
-
-      if @response_header.compressed? and @inflate.include?(response_header[CONTENT_ENCODING])
-        case response_header[CONTENT_ENCODING]
-        when 'deflate' then 
-          @response = Zlib::Inflate.inflate(@response)
-        when 'gzip', 'compressed' then
-          @response = Zlib::GzipReader.new(StringIO.new(@response)).read
-        end
-      end
-			
+      @content_decoder.finalize! if @content_decoder
       unbind
     end
 
@@ -232,6 +224,14 @@ module EventMachine
 
     # Called when part of the body has been read
     def on_body_data(data)
+      if @content_decoder
+        @content_decoder << data
+      else
+        on_decoded_body_data(data)
+      end
+    end
+
+    def on_decoded_body_data(data)
       if (on_response = @options[:on_response])
         on_response.call(data)
       else
@@ -303,6 +303,11 @@ module EventMachine
       else
         @state = :body
         @bytes_remaining = @response_header.content_length
+      end
+
+      if @inflate.include?(response_header[CONTENT_ENCODING]) &&
+          decoder_class = HTTPDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
+        @content_decoder = decoder_class.new do |s| on_decoded_body_data(s) end
       end
 
       true
