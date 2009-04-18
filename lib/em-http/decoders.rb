@@ -4,6 +4,9 @@ require 'zlib'
 # Provides a unified callback interface to decompression libraries.
 module EventMachine::HttpDecoders
 
+  class DecoderError < StandardError
+  end
+
   class << self
     def accepted_encodings
       DECODERS.inject([]) { |r,d| r + d.encoding_names }
@@ -54,7 +57,7 @@ module EventMachine::HttpDecoders
     ##
     # Must return a part of decompressed
     def decompress(compressed)
-      raise 'Abstract'
+      nil
     end
 
     ##
@@ -66,14 +69,24 @@ module EventMachine::HttpDecoders
 
   class Deflate < Base
     def decompress(compressed)
-      @zstream ||= Zlib::Inflate.new(nil)
-      @zstream.inflate(compressed)
+      begin
+        @zstream ||= Zlib::Inflate.new(nil)
+        @zstream.inflate(compressed)
+      rescue Zlib::Error
+        raise DecoderError
+      end
     end
 
     def finalize
-      r = @zstream.inflate(nil)
-      @zstream.close
-      r
+      return nil unless @zstream
+
+      begin
+        r = @zstream.inflate(nil)
+        @zstream.close
+        r
+      rescue Zlib::Error
+        raise DecoderError
+      end
     end
   end
 
