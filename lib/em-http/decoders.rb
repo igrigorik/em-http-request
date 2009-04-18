@@ -6,18 +6,23 @@ module EventMachine::HttpDecoders
 
   class << self
     def accepted_encodings
-      DECODERS.map { |d| d.to_s }
+      DECODERS.inject([]) { |r,d| r + d.encoding_names }
     end
 
     def decoder_for_encoding(encoding)
       DECODERS.each { |d|
-        return d if encoding == d.to_s
+        return d if d.encoding_names.include? encoding
       }
       nil
     end
   end
 
   class Base
+    def self.encoding_names
+      name = to_s.split('::').last.downcase
+      [name]
+    end
+
     ##
     # chunk_callback:: [Block] To handle a decompressed chunk
     def initialize(&chunk_callback)
@@ -36,10 +41,6 @@ module EventMachine::HttpDecoders
       receive_decompressed decompressed
     end
     
-    def self.to_s
-      super.split('::').last.downcase
-    end
-
     private
 
     def receive_decompressed(decompressed)
@@ -83,6 +84,10 @@ module EventMachine::HttpDecoders
   # For now, do not put `gzip' or `compressed' in your accept-encoding
   # header if you expect much data through the :on_response interface.
   class GZip < Base
+    def self.encoding_names
+      %w(gzip compressed)
+    end
+
     def decompress(compressed)
       @buf ||= ''
       @buf += compressed
