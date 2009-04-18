@@ -22,20 +22,17 @@ module EventMachine::HTTPDecoders
     # chunk_callback:: [Block] To handle a decompressed chunk
     def initialize(&chunk_callback)
       @chunk_callback = chunk_callback
-      @decompressor = nil  # Initialized on demand
     end
 
     def <<(compressed)
       return unless compressed && compressed.size > 0
 
-      @decompressor ||= make_decompressor
-      decompressed = decompress(@decompressor, compressed)
+      decompressed = decompress(compressed)
       receive_decompressed decompressed
     end
 
     def finalize!
-      decompressed = finalize(@decompressor)
-      @decompressor = nil
+      decompressed = finalize
       receive_decompressed decompressed
     end
     
@@ -54,37 +51,27 @@ module EventMachine::HTTPDecoders
     protected
 
     ##
-    # Supposed to return a new decompression library instance, such as
-    # GZipReader.
-    def make_decompressor
-      raise 'Abstract'
-    end
-    
-    ##
     # Must return a part of decompressed
-    def decompress(decompressor, compressed)
+    def decompress(compressed)
       raise 'Abstract'
     end
 
     ##
     # May return last part
-    def finalize(decompressor)
+    def finalize
       nil
     end
   end
 
   class Deflate < Base
-    def make_decompressor
-      Zlib::Inflate.new(nil)
-    end
-    
-    def decompress(zstream, compressed)
-      zstream.inflate(compressed)
+    def decompress(compressed)
+      @zstream ||= Zlib::Inflate.new(nil)
+      @zstream.inflate(compressed)
     end
 
-    def finalize(zstream)
-      r = zstream.inflate(nil)
-      zstream.close
+    def finalize
+      r = @zstream.inflate(nil)
+      @zstream.close
       r
     end
   end
@@ -96,17 +83,13 @@ module EventMachine::HTTPDecoders
   # For now, do not put `gzip' or `compressed' in your accept-encoding
   # header if you expect much data through the :on_response interface.
   class GZip < Base
-    def make_decompressor
-      @buf = ""
-      true
-    end
-
-    def decompress(a, compressed)
+    def decompress(compressed)
+      @buf ||= ''
       @buf += compressed
       nil
     end
 
-    def finalize(a)
+    def finalize
       Zlib::GzipReader.new(StringIO.new(@buf)).read
     end
   end
