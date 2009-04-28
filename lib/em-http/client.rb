@@ -219,7 +219,13 @@ module EventMachine
     end
 
     def send_request_body
-      send_data @options[:body] if @options[:body]
+      return unless @options[:body]
+      if @options[:body].is_a? Hash
+        body = @options.to_params
+      else
+        body = @options[:body]
+      end
+      send_data body
     end
 
     def receive_data(data)
@@ -423,6 +429,8 @@ module EventMachine
 
       false
     end
+
+  
   end
 
 end
