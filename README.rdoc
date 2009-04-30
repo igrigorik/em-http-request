@@ -50,3 +50,20 @@ EventMachine based HTTP Request interface. Supports streaming response processin
     }
   }
 
+== POST example
+
+  EventMachine.run {
+    http1 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => {"key1" => 1, "key2" => [2,3]}
+    http2 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => "some data"
+      
+    # ...
+  }
+
+== Streaming body processing
+  EventMachine.run {
+    body = ''
+    on_body = lambda { |chunk| body += chunk }
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get :on_response => on_body
+
+    # ...
+  }

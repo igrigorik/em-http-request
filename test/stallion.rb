@@ -81,7 +81,7 @@ Stallion.saddle :spec do |stable|
       stable.response.write stable.request.query_string
 
     elsif stable.request.post?
-      stable.response.write 'test'
+      stable.response.write stable.request.body.read
 
     elsif stable.request.path_info == '/timeout'
       sleep(10)

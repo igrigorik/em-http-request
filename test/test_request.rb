@@ -19,7 +19,7 @@ describe EventMachine::HttpRequest do
     }
   end
 
- it "should fail GET on invalid host" do
+  it "should fail GET on invalid host" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://google1.com/').get
       http.callback { failed }
@@ -112,7 +112,21 @@ describe EventMachine::HttpRequest do
       http.errback { failed }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should match(/test/)
+        http.response.should match(/data/)
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should perform successfull POST with Ruby Hash/Array as params" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => {"key1" => 1, "key2" => [2,3]}
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        
+        http.response.should match(/key1=1&key2\[0\]=2&key2\[1\]=3/)
         EventMachine.stop
       }
     }
@@ -236,7 +250,7 @@ describe EventMachine::HttpRequest do
       body = ''
       on_body = lambda { |chunk| body += chunk }
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/deflate').get :head => {"accept-encoding" => "deflate, compressed"},
-                                                                             :on_response => on_body
+      :on_response => on_body
 
       http.errback { failed }
       http.callback {

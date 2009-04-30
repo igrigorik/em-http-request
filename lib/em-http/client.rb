@@ -221,7 +221,7 @@ module EventMachine
     def send_request_body
       return unless @options[:body]
       if @options[:body].is_a? Hash
-        body = @options.to_params
+        body = @options[:body].to_params
       else
         body = @options[:body]
       end
