@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'em-http-request'
-  s.version = '0.1.3'
+  s.version = '0.1.5'
   s.date = '2009-03-20'
   s.summary = 'EventMachine based HTTP Request interface'
   s.description = s.summary
@@ -14,25 +14,29 @@ spec = Gem::Specification.new do |s|
 
   # ruby -rpp -e' pp `git ls-files`.split("\n") '
   s.files = [
-    ".autotest",
-    "LICENSE",
-    "README.rdoc",
-    "Rakefile",
-    "ext/buffer/em_buffer.c",
-    "ext/buffer/extconf.rb",
-    "ext/http11_client/ext_help.h",
-    "ext/http11_client/extconf.rb",
-    "ext/http11_client/http11_client.c",
-    "ext/http11_client/http11_parser.c",
-    "ext/http11_client/http11_parser.h",
-    "ext/http11_client/http11_parser.rl",
-    "lib/em-http.rb",
-    "lib/em-http/client.rb",
-    "lib/em-http/multi.rb",
-    "lib/em-http/request.rb",
-    "test/helper.rb",
-    "test/stallion.rb",
-    "test/test_multi.rb",
-    "test/test_request.rb"
-  ]
+ ".autotest",
+ ".gitignore",
+ "LICENSE",
+ "README.rdoc",
+ "Rakefile",
+ "em-http-request.gemspec",
+ "ext/buffer/em_buffer.c",
+ "ext/buffer/extconf.rb",
+ "ext/http11_client/ext_help.h",
+ "ext/http11_client/extconf.rb",
+ "ext/http11_client/http11_client.c",
+ "ext/http11_client/http11_parser.c",
+ "ext/http11_client/http11_parser.h",
+ "ext/http11_client/http11_parser.rl",
+ "lib/em-http.rb",
+ "lib/em-http/client.rb",
+ "lib/em-http/core_ext/hash.rb",
+ "lib/em-http/decoders.rb",
+ "lib/em-http/multi.rb",
+ "lib/em-http/request.rb",
+ "test/hash.rb",
+ "test/helper.rb",
+ "test/stallion.rb",
+ "test/test_multi.rb",
+ "test/test_request.rb"]
 end
