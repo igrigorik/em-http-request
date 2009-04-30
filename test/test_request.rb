@@ -214,4 +214,38 @@ describe EventMachine::HttpRequest do
       http.callback { failed }
     }
   end
+
+  it "should optionally pass the response body progressively" do
+    EventMachine.run {
+      body = ''
+      on_body = lambda { |chunk| body += chunk }
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :on_response => on_body
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == ''
+        body.should match(/Hello/)
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should optionally pass the deflate-encoded response body progressively" do
+    EventMachine.run {
+      body = ''
+      on_body = lambda { |chunk| body += chunk }
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/deflate').get :head => {"accept-encoding" => "deflate, compressed"},
+                                                                             :on_response => on_body
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "deflate"
+        http.response.should == ''
+        body.should == "compressed"
+        EventMachine.stop
+      }
+    }
+  end
 end
