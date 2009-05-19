@@ -27,7 +27,7 @@ module EventMachine
 
     def initialize(host, headers = {})
       @headers = headers
-      @uri = URI::parse(host) unless host.kind_of? URI
+      @uri = host.kind_of?(URI) ? host : URI::parse(host)
     end
 
     # Send an HTTP request and consume the response. Supported options:

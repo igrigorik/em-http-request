@@ -53,6 +53,20 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+  
+  it "should perform successfull GET with a URI passed as argument" do
+    EventMachine.run {
+      uri = URI.parse('http://127.0.0.1:8080/')
+      http = EventMachine::HttpRequest.new(uri).get
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/Hello/)
+        EventMachine.stop
+      }
+    }    
+  end
 
   it "should return 404 on invalid path" do
     EventMachine.run {
@@ -262,4 +276,5 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+
 end
