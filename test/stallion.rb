@@ -80,6 +80,9 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/echo_query'
       stable.response.write stable.request.query_string
 
+    elsif stable.request.path_info == '/echo_content_length'
+      stable.response.write stable.request.content_length
+
     elsif stable.request.post?
       stable.response.write stable.request.body.read
 
