@@ -171,6 +171,9 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
+      ssl = @options[:tls] || @options[:ssl] || {}
+      start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
+
       send_request_header
       send_request_body
     end
