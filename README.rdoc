@@ -6,6 +6,9 @@ EventMachine based HTTP Request interface. Supports streaming response processin
 - Basic-Auth support
 - Custom timeouts 
 
+Screencast / Demo of using EM-HTTP-Request: 
+ - http://everburning.com/news/eventmachine-screencast-em-http-request/
+
 == Simple client example
 
   EventMachine.run {
