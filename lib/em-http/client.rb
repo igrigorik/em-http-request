@@ -1,4 +1,3 @@
-# -*- coding: undecided -*-
 # #--
 # Copyright (C)2008 Ilya Grigorik
 #
