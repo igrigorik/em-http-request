@@ -34,6 +34,10 @@ task :ragel do
   end
 end
 
+task :spec do
+	sh 'spec test/test_*.rb'
+end
+
 def make(makedir)
   Dir.chdir(makedir) { sh MAKE }
 end
