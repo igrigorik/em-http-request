@@ -64,9 +64,8 @@ Screencast / Demo of using EM-HTTP-Request:
 
 == Streaming body processing
   EventMachine.run {
-    body = ''
-    on_body = lambda { |chunk| body += chunk }
-    http = EventMachine::HttpRequest.new('http://www.website.com/').get :on_response => on_body
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get
+    http.stream { |chunk| print chunk }
 
     # ...
   }

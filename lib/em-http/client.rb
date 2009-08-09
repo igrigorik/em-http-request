@@ -175,6 +175,7 @@ module EventMachine
       @inflate = []
       @errors = ''
       @content_decoder = nil
+      @stream = nil
     end
 
     # start HTTP request once we establish connection to host
@@ -200,6 +201,11 @@ module EventMachine
     def on_error(msg)
       @errors = msg
       unbind
+    end
+
+    # assign a stream processing block
+    def stream(&blk)
+      @stream = blk
     end
 
     def normalize_body
@@ -229,6 +235,7 @@ module EventMachine
         @inflate = head['accept-encoding'].split(',').map {|t| t.strip}
       end
 
+      # Set the cookie header if provided
       if cookie = head.delete('cookie')
         head['cookie'] = encode_cookie(cookie)
       end
@@ -266,8 +273,8 @@ module EventMachine
     end
 
     def on_decoded_body_data(data)
-      if (on_response = @options[:on_response])
-        on_response.call(data)
+      if @stream
+        @stream.call(data)
       else
         @response << data
       end
