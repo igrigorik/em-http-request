@@ -86,6 +86,13 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.post?
       stable.response.write stable.request.body.read
 
+    elsif stable.request.path_info == '/set_cookie'
+      stable.response["Set-Cookie"] = "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+      stable.response.write "cookie set"
+
+    elsif stable.request.path_info == '/echo_cookie'
+      stable.response.write stable.request.env["HTTP_COOKIE"]
+
     elsif stable.request.path_info == '/timeout'
       sleep(10)
       stable.response.write 'timeout'

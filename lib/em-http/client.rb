@@ -31,6 +31,11 @@ module EventMachine
       Integer(self[HttpClient::CONTENT_LENGTH]) rescue nil
     end
 
+    # Cookie header from the server
+    def cookie
+      self[HttpClient::SET_COOKIE]
+    end
+
     # Is the transfer encoding chunked?
     def chunked_encoding?
       /chunked/i === self[HttpClient::TRANSFER_ENCODING]
@@ -133,8 +138,12 @@ module EventMachine
       end
     end
 
-    def encode_cookies(cookies)
-      cookies.inject('') { |result, (k, v)| result << encode_field('Cookie', encode_param(k, v)) }
+    def encode_cookie(cookie)
+      if cookie.is_a? Hash
+        cookie.inject('') { |result, (k, v)| result <<  encode_param(k, v) + ";" }
+      else
+        cookie
+      end
     end
   end
 
@@ -218,6 +227,10 @@ module EventMachine
       # Set auto-inflate flags
       if head['accept-encoding']
         @inflate = head['accept-encoding'].split(',').map {|t| t.strip}
+      end
+
+      if cookie = head.delete('cookie')
+        head['cookie'] = encode_cookie(cookie)
       end
 
       # Build the request

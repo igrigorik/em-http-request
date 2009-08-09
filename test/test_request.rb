@@ -303,4 +303,41 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should accept & return cookie header to user" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/set_cookie').get
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header.cookie.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should pass cookie header to server from string" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_cookie').get :head => {'cookie' => 'id=2;'}
+
+      http.errback { failed }
+      http.callback {
+        http.response.should == "id=2;"
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should pass cookie header to server from Hash" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_cookie').get :head => {'cookie' => {'id' => 2}}
+
+      http.errback { failed }
+      http.callback {
+        http.response.should == "id=2;"
+        EventMachine.stop
+      }
+    }
+  end
+
 end
