@@ -20,6 +20,16 @@ module EventMachine
 
     # The status code (as a string!)
     attr_accessor :http_status
+    
+    # E-Tag
+    def etag
+      self["ETag"]
+    end
+    
+    def last_modified
+      time = self["Last-Modified"]
+      Time.parse(time) if time
+    end
 
     # HTTP response status as an integer
     def status
@@ -186,7 +196,7 @@ module EventMachine
       send_request_header
       send_request_body
     end
-
+    
     # request is done, invoke the callback
     def on_request_complete
       begin
@@ -196,7 +206,7 @@ module EventMachine
       end
       unbind
     end
-
+    
     # request failed, invoke errback
     def on_error(msg)
       @errors = msg
@@ -281,7 +291,7 @@ module EventMachine
     end
 
     def unbind
-      (@state == :finished) ? succeed(self) : fail
+      (@state == :finished || (@method == "HEAD" && @state == :body)) ? succeed(self) : fail
       close_connection
     end
 

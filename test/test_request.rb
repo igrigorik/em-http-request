@@ -1,13 +1,13 @@
 require 'test/helper'
 require 'test/stallion'
-
+ 
 describe EventMachine::HttpRequest do
 
   def failed
     EventMachine.stop
     fail
   end
-
+  
   it "should fail GET on DNS timeout" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.1.1.1/').get
@@ -63,6 +63,20 @@ describe EventMachine::HttpRequest do
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/Hello/)
+        EventMachine.stop
+      }
+    }    
+  end
+
+  it "should perform successfull HEAD with a URI passed as argument" do
+    EventMachine.run {
+      uri = URI.parse('http://127.0.0.1:8080/')
+      http = EventMachine::HttpRequest.new(uri).head
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == ""
         EventMachine.stop
       }
     }    

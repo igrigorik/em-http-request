@@ -83,6 +83,9 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/echo_content_length'
       stable.response.write stable.request.content_length
 
+    elsif stable.request.head?
+      stable.response.status = 200
+
     elsif stable.request.post?
       stable.response.write stable.request.body.read
 
