@@ -264,7 +264,7 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/timeout').get :timeout => 2
 
       http.errback {
-        (Time.now.to_i - t).should == 2
+        (Time.now.to_i - t).should >= 2
         EventMachine.stop
       }
       http.callback { failed }
