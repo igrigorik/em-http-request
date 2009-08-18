@@ -114,7 +114,7 @@ module EventMachine
         query.to_s
       end
       if !@uri.query.to_s.empty?
-        encoded_query = [encoded_query, @uri.query].reject(&:empty?).join("&")
+        encoded_query = [encoded_query, @uri.query].reject {|part| part.empty?}.join("&")
       end
       return path if encoded_query.to_s.empty?
       "#{path}?#{encoded_query}"
@@ -295,7 +295,13 @@ module EventMachine
     end
 
     def unbind
-      (@state == :finished || (@method == "HEAD" && @state == :body)) ? succeed(self) : fail
+      if (@state == :finished) || 
+         (@state == :body && @method == "HEAD") ||
+         (@state == :body && @response_header.content_length == 0)
+        succeed(self) 
+      else
+        fail
+      end
       close_connection
     end
 
@@ -357,7 +363,7 @@ module EventMachine
         @state = :chunk_header
       else
         @state = :body
-        @bytes_remaining = @response_header.content_length
+        @bytes_remaining = @response_header.content_length if @response_header.content_length > 0
       end
 
       if @inflate.include?(response_header[CONTENT_ENCODING]) &&
