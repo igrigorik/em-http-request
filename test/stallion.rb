@@ -131,7 +131,11 @@ Stallion.saddle :spec do |stable|
 end
 
 Thread.new do
-  Stallion.run :Host => '127.0.0.1', :Port => 8080
+  begin
+    Stallion.run :Host => '127.0.0.1', :Port => 8080  
+  rescue Exception => e
+    print e
+  end
 end
 
-sleep(2)
+sleep(1)

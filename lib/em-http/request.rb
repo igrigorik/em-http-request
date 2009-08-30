@@ -65,7 +65,7 @@ module EventMachine
       rescue RuntimeError => e 
         raise e unless e.message == "no connection"
         conn = EventMachine::HttpClient.new("")
-        conn.on_error("no connection")
+        conn.on_error("no connection", true)
         conn
       end
     end

@@ -198,9 +198,12 @@ module EventMachine
     end
 
     # request failed, invoke errback
-    def on_error(msg)
+    def on_error(msg, dns_error = false)
       @errors = msg
-      unbind
+      
+      # no connection signature on DNS failures
+      # fail the connection directly
+      dns_error == true ? fail : unbind
     end
 
     # assign a stream processing block
