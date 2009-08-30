@@ -108,12 +108,16 @@ module EventMachine
     end
 
     def encode_query(path, query)
-      return path unless query
-      if query.kind_of? String
-        return "#{path}?#{query}"
+      encoded_query = if query.kind_of?(Hash)
+        query.map { |k, v| encode_param(k, v) }.join('&')
       else
-        return path + "?" + query.map { |k, v| encode_param(k, v) }.join('&')
+        query.to_s
       end
+      if !@uri.query.to_s.empty?
+        encoded_query = [encoded_query, @uri.query].reject {|part| part.empty?}.join("&")
+      end
+      return path if encoded_query.to_s.empty?
+      "#{path}?#{encoded_query}"
     end
 
     # URL encodes query parameters:
@@ -294,7 +298,13 @@ module EventMachine
     end
 
     def unbind
-      (@state == :finished || (@method == "HEAD" && @state == :body)) ? succeed(self) : fail
+      if (@state == :finished) || 
+         (@state == :body && @method == "HEAD") ||
+         (@state == :body && @response_header.content_length == 0)
+        succeed(self) 
+      else
+        fail
+      end
       close_connection
     end
 
@@ -356,7 +366,7 @@ module EventMachine
         @state = :chunk_header
       else
         @state = :body
-        @bytes_remaining = @response_header.content_length
+        @bytes_remaining = @response_header.content_length if @response_header.content_length > 0
       end
 
       if @inflate.include?(response_header[CONTENT_ENCODING]) &&
