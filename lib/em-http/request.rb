@@ -47,7 +47,7 @@ module EventMachine
     #
 
     def get  options = {};    send_request(:get,  options);    end
-    def head  options = {};   send_request(:head,options);     end
+    def head options = {};    send_request(:head, options);    end
     def post options = {};    send_request(:post, options);    end
 
     protected
