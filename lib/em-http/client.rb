@@ -300,7 +300,7 @@ module EventMachine
     def unbind
       if (@state == :finished) || 
          (@state == :body && @method == "HEAD") ||
-         (@state == :body && @response_header.content_length == 0)
+         (@state == :body && (@response_header.content_length == 0 || @response_header.content_length.nil?))
         succeed(self) 
       else
         fail
@@ -366,7 +366,9 @@ module EventMachine
         @state = :chunk_header
       else
         @state = :body
-        @bytes_remaining = @response_header.content_length if @response_header.content_length > 0
+        if @response_header.content_length && @response_header.content_length > 0
+          @bytes_remaining = @response_header.content_length
+        end
       end
 
       if @inflate.include?(response_header[CONTENT_ENCODING]) &&
