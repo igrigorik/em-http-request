@@ -371,8 +371,7 @@ module EventMachine
         end
       end
 
-      if @inflate.include?(response_header[CONTENT_ENCODING]) &&
-          decoder_class = HttpDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
+      if decoder_class = HttpDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
         begin
           @content_decoder = decoder_class.new do |s| on_decoded_body_data(s) end
         rescue HttpDecoders::DecoderError
