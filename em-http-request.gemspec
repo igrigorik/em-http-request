@@ -34,9 +34,9 @@ spec = Gem::Specification.new do |s|
  "lib/em-http/decoders.rb",
  "lib/em-http/multi.rb",
  "lib/em-http/request.rb",
- "test/hash.rb",
  "test/helper.rb",
  "test/stallion.rb",
+ "test/test_hash.rb",
  "test/test_multi.rb",
  "test/test_request.rb"]
 end
