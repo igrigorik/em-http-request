@@ -9,6 +9,7 @@ spec = Gem::Specification.new do |s|
   s.has_rdoc = true
   s.authors = ["Ilya Grigorik"]
   s.add_dependency('eventmachine', '>= 0.12.2')
+  s.add_dependency('addressable', '>= 2.0.0')
   s.extensions = ["ext/buffer/extconf.rb" , "ext/http11_client/extconf.rb"]
   s.rubyforge_project = "em-http-request" 
 
