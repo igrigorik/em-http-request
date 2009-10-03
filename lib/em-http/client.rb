@@ -298,12 +298,10 @@ module EventMachine
     end
 
     def unbind
-      if (@state == :finished) || 
-         (@state == :body && @method == "HEAD") ||
-         (@state == :body && (@response_header.content_length == 0 || @response_header.content_length.nil?))
+      if @state == :finished
         succeed(self) 
       else
-        fail
+        fail(self)
       end
       close_connection
     end
@@ -362,12 +360,21 @@ module EventMachine
         return false
       end
 
+      # shortcircuit on HEAD requests 
+      if @method == "HEAD"
+        @state = :finished
+        on_request_complete
+      end
+
       if @response_header.chunked_encoding?
         @state = :chunk_header
       else
-        @state = :body
-        if @response_header.content_length && @response_header.content_length > 0
-          @bytes_remaining = @response_header.content_length
+        if @response_header.content_length > 0
+          @state = :body
+          @bytes_remaining = @response_header.content_length 
+        else
+          @state = :finished
+          on_request_complete
         end
       end
 

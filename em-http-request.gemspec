@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'em-http-request'
-  s.version = '0.1.7'
+  s.version = '0.1.8'
   s.date = '2009-03-20'
   s.summary = 'EventMachine based HTTP Request interface'
   s.description = s.summary
@@ -35,9 +35,9 @@ spec = Gem::Specification.new do |s|
  "lib/em-http/decoders.rb",
  "lib/em-http/multi.rb",
  "lib/em-http/request.rb",
+ "test/test_hash.rb",
  "test/helper.rb",
  "test/stallion.rb",
- "test/test_hash.rb",
  "test/test_multi.rb",
  "test/test_request.rb"]
 end
