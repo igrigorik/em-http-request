@@ -58,6 +58,10 @@ module EventMachine
     def compressed?
       /gzip|compressed|deflate/i === self[HttpClient::CONTENT_ENCODING]
     end
+
+    def location
+      self[HttpClient::LOCATION]
+    end
   end
 
   class HttpChunkHeader < Hash
@@ -100,7 +104,7 @@ module EventMachine
     # you include port 80 then further redirects will tack on the :80 which is
     # annoying.
     def encode_host
-      @uri.host + (@uri.port.to_i != 80 ? ":#{@uri.port}" : "")
+      @uri.host + (@uri.port != @uri.default_port ? ":#{@uri.port}" : "")
     end
 
     def encode_request(method, path, query)
@@ -236,6 +240,7 @@ module EventMachine
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
+      @options[:head] = head
       body    = normalize_body
 
       # Set the Host header if it hasn't been specified already
@@ -360,6 +365,20 @@ module EventMachine
         return false
       end
 
+      # correct location header - some servers will incorrectly give a relative URI
+      if @response_header.location
+        begin
+          location = URI.parse @response_header.location
+          if location.relative?
+            location = (@uri.merge location).to_s
+            @response_header[LOCATION] = location
+          end
+        rescue
+          on_error "Location header format error"
+          return false
+        end
+      end
+
       # shortcircuit on HEAD requests 
       if @method == "HEAD"
         @state = :finished
@@ -386,7 +405,7 @@ module EventMachine
           on_error "Content-decoder error"
         end
       end
-
+      
       true
     end
 
