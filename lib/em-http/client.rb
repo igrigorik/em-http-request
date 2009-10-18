@@ -104,7 +104,7 @@ module EventMachine
     # you include port 80 then further redirects will tack on the :80 which is
     # annoying.
     def encode_host
-      @uri.host + (@uri.port != @uri.default_port ? ":#{@uri.port}" : "")
+      @uri.host + (@uri.port != 80 ? ":#{@uri.port}" : "")
     end
 
     def encode_request(method, path, query)
@@ -190,7 +190,6 @@ module EventMachine
       @state = :response_header
       @parser_nbytes = 0
       @response = ''
-      @inflate = []
       @errors = ''
       @content_decoder = nil
       @stream = nil
@@ -250,11 +249,6 @@ module EventMachine
 
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
-
-      # Set auto-inflate flags
-      if head['accept-encoding']
-        @inflate = head['accept-encoding'].split(',').map {|t| t.strip}
-      end
 
       # Set the cookie header if provided
       if cookie = head.delete('cookie')

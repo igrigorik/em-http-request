@@ -116,5 +116,3 @@ module EventMachine::HttpDecoders
   DECODERS = [Deflate, GZip]
 
 end
-
-    
