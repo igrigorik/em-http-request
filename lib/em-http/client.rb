@@ -240,7 +240,6 @@ module EventMachine
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
-      @options[:head] = head
       body    = normalize_body
 
       # Set the Host header if it hasn't been specified already
