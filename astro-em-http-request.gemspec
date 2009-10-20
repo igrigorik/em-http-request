@@ -1,18 +1,18 @@
 spec = Gem::Specification.new do |s|
-  s.name = 'em-http-request'
-  s.version = '0.1.9'
-  s.date = '2009-10-17'
+  s.name = 'astro-em-http-request'
+  s.version = '0.1.12'
+  s.date = '2009-10-20'
   s.summary = 'EventMachine based HTTP Request interface'
   s.description = s.summary
-  s.email = 'ilya@igvita.com'
+  s.email = 'astro@spaceboyz.net'
   s.homepage = "http://github.com/igrigorik/em-http-request"
   s.has_rdoc = true
-  s.authors = ["Ilya Grigorik"]
+  s.authors = ["Ilya Grigorik", "Stephan Maka"]
   s.add_dependency('eventmachine', '>= 0.12.9')
   s.add_dependency('addressable', '>= 2.0.0')
   s.extensions = ["ext/buffer/extconf.rb" , "ext/http11_client/extconf.rb"]
   s.rubyforge_project = "em-http-request" 
-
+  
   # ruby -rpp -e' pp `git ls-files`.split("\n") '
   s.files = [
  ".autotest",
