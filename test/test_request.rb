@@ -365,14 +365,14 @@ describe EventMachine::HttpRequest do
           end
         end
 
-        @s = EventMachine::start_server("127.0.0.1", 8081, StubServer)
+        @sig = EventMachine::start_server("127.0.0.1", 8081, StubServer)
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
         http.errback { failed }
         http.callback {
           http.response.should match(/Foo/)
 
-          @s.close_connection
+          EventMachine.stop_server @sig
           EventMachine.stop
         }
       }
