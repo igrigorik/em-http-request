@@ -365,6 +365,7 @@ describe EventMachine::HttpRequest do
         http.errback { failed }
         http.callback {
           http.response.should match(/Foo/)
+          http.response_header['CONTENT_LENGTH'].should_not == 0
 
           @s.stop
           EventMachine.stop

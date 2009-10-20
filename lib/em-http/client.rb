@@ -38,7 +38,8 @@ module EventMachine
 
     # Length of content as an integer, or nil if chunked/unspecified
     def content_length
-      Integer(self[HttpClient::CONTENT_LENGTH]) rescue nil
+      @content_length ||= ((s = self[HttpClient::CONTENT_LENGTH]) &&
+                           (s =~ /^(\d+)$/)) ? $1.to_i : nil
     end
 
     # Cookie header from the server
@@ -380,14 +381,12 @@ module EventMachine
 
       if @response_header.chunked_encoding?
         @state = :chunk_header
+      elsif @response_header.content_length
+        @state = :body
+        @bytes_remaining = @response_header.content_length 
       else
-        if @response_header.content_length > 0
-          @state = :body
-          @bytes_remaining = @response_header.content_length 
-        else
-          @state = :body
-          @bytes_remaining = nil
-        end
+        @state = :body
+        @bytes_remaining = nil
       end
 
       if decoder_class = HttpDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
