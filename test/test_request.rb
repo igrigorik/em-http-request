@@ -1,5 +1,6 @@
 require 'test/helper'
 require 'test/stallion'
+require 'test/stub_server'
  
 describe EventMachine::HttpRequest do
 
@@ -358,21 +359,14 @@ describe EventMachine::HttpRequest do
   context "when talking to a stub HTTP/1.0 server" do
     it "should get the body" do
       EventMachine.run {
-        module StubServer
-          def post_init
-            send_data "HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo"
-            close_connection_after_writing
-          end
-        end
-
-        @sig = EventMachine::start_server("127.0.0.1", 8081, StubServer)
+        @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
         http.errback { failed }
         http.callback {
           http.response.should match(/Foo/)
 
-          EventMachine.stop_server @sig
+          @s.stop
           EventMachine.stop
         }
       }
