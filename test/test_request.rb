@@ -354,5 +354,28 @@ describe EventMachine::HttpRequest do
       }
     }
   end
-  
+
+  context "when talking to a stub HTTP/1.0 server" do
+    it "should get the body" do
+      EventMachine.run {
+        module StubServer
+          def post_init
+            send_data "HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo"
+            close_connection_after_writing
+          end
+        end
+
+        @s = EventMachine::start_server("127.0.0.1", 8081, StubServer)
+
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+        http.errback { failed }
+        http.callback {
+          http.response.should match(/Foo/)
+
+          @s.close_connection
+          EventMachine.stop
+        }
+      }
+    end
+  end
 end
