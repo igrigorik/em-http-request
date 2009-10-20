@@ -62,7 +62,7 @@
   }
 
 # line endings
-  CRLF = "\r\n";
+  CRLF = ("\r\n" | "\n");
 
 # character types
   CTL = (cntrl | 127);
