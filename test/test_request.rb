@@ -357,13 +357,30 @@ describe EventMachine::HttpRequest do
   end
 
   context "when talking to a stub HTTP/1.0 server" do
-    it "should get the body" do
+    it "should get the body without Content-Length" do
       EventMachine.run {
         @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
         http.errback { failed }
         http.callback {
+          http.response.should match(/Foo/)
+
+          @s.stop
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should work with \\n instead of \\r\\n" do
+      EventMachine.run {
+        @s = StubServer.new("HTTP/1.0 200 OK\nContent-Type: text/plain\nContent-Length: 3\nConnection: close\n\nFoo")
+
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header['CONTENT_TYPE'].should == 'text/plain'
           http.response.should match(/Foo/)
 
           @s.stop
