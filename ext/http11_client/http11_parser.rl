@@ -140,8 +140,7 @@ size_t httpclient_parser_execute(httpclient_parser *parser, const char *buffer, 
 
   if(parser->body_start) {
     /* final \r\n combo encountered so stop right here */
-    %%write eof;
-    parser->nread++;
+    parser->nread = parser->body_start;
   }
 
   return(parser->nread);
@@ -150,8 +149,6 @@ size_t httpclient_parser_execute(httpclient_parser *parser, const char *buffer, 
 int httpclient_parser_finish(httpclient_parser *parser)
 {
   int cs = parser->cs;
-
-  %%write eof;
 
   parser->cs = cs;
 
