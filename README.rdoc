@@ -9,6 +9,17 @@ EventMachine based HTTP Request interface. Supports streaming response processin
 Screencast / Demo of using EM-HTTP-Request: 
 - http://everburning.com/news/eventmachine-screencast-em-http-request/
 
+== Getting started
+
+  # install & configure gemcutter repos
+  gem update --system
+  gem install gemcutter
+  gem tumble
+
+  gem install em-http-request
+
+  irb:0> require 'em-http'
+
 == Simple client example
 
   EventMachine.run {
