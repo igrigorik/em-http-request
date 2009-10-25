@@ -15,7 +15,6 @@ spec = Gem::Specification.new do |s|
 
   # ruby -rpp -e' pp `git ls-files`.split("\n") '
   s.files = [
- ".autotest",
  ".gitignore",
  "LICENSE",
  "README.rdoc",
