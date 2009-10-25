@@ -221,7 +221,7 @@ module EventMachine
       
       # no connection signature on DNS failures
       # fail the connection directly
-      dns_error == true ? fail : unbind
+      dns_error == true ? fail(self) : unbind
     end
 
     # assign a stream processing block
