@@ -109,7 +109,11 @@ module EventMachine::HttpDecoders
     end
 
     def finalize
-      Zlib::GzipReader.new(StringIO.new(@buf)).read
+      begin
+        Zlib::GzipReader.new(StringIO.new(@buf.to_s)).read
+      rescue Zlib::Error
+        raise DecoderError
+      end
     end
   end
 
