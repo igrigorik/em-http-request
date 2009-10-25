@@ -1,5 +1,6 @@
+require 'rubygems'
 require 'eventmachine'
-require 'em-http'
+require '../lib/em-http'
 
 urls = ARGV
 if urls.size < 1
@@ -13,7 +14,8 @@ EM.run do
   urls.each do |url|
     http = EM::HttpRequest.new(url).get
     http.callback {
-      puts "#{url}\n#{http.response_header.status} - #{http.response.length} bytes"
+      puts "#{url}\n#{http.response_header.status} - #{http.response.length} bytes\n"
+      puts http.response
 
       pending -= 1
       EM.stop if pending < 1
