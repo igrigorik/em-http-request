@@ -92,6 +92,7 @@ begin
     gemspec.email = "ilya@igvita.com"
     gemspec.homepage = "http://github.com/igrigorik/em-http-request"
     gemspec.authors = ["Ilya Grigorik"]
+    gemspec.extensions = ["ext/buffer/extconf.rb" , "ext/http11_client/extconf.rb"]
     gemspec.add_dependency('eventmachine', '>= 0.12.9')
     gemspec.add_dependency('addressable', '>= 2.0.0')
     gemspec.rubyforge_project = "em-http-request"
