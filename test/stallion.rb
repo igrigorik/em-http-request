@@ -87,7 +87,11 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 200
 
     elsif stable.request.post?
-      stable.response.write stable.request.body.read
+      if stable.request.path_info == '/echo_content_type'
+        stable.response.write stable.request.env["CONTENT_TYPE"]
+      else
+        stable.response.write stable.request.body.read
+      end
 
     elsif stable.request.path_info == '/set_cookie'
       stable.response["Set-Cookie"] = "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"

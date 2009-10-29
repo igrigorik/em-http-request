@@ -256,6 +256,11 @@ module EventMachine
         head['cookie'] = encode_cookie(cookie)
       end
 
+      # Set content-type header if missing and body is a Ruby hash
+      if not head['content-type'] and options[:body].is_a? Hash
+        head['content-type'] = "application/x-www-form-urlencoded"
+      end
+
       # Build the request
       request_header = encode_request(@method, @uri.path, query)
       request_header << encode_headers(head)

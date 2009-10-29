@@ -390,4 +390,46 @@ describe EventMachine::HttpRequest do
       }
     end
   end
+
+  context "body content-type encoding" do
+    it "should not set content type on string in body" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post :body => "data"
+
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should be_empty
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should set content-type automatically when passed a ruby hash/array for body" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post :body => {:a => :b}
+
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match("application/x-www-form-urlencoded")
+          EventMachine.stop
+        }
+      }
+    end
+
+     it "should not override content-type when passing in ruby hash/array for body" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
+            :body => {:a => :b}, :head => {'content-type' => 'text'}})
+
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match("text")
+          EventMachine.stop
+        }
+      }
+    end
+  end
 end
