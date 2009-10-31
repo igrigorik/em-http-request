@@ -130,6 +130,10 @@ Stallion.saddle :spec do |stable|
         stable.response.status = 401
       end
 
+    elsif stable.request.path_info == '/relative-location'
+      stable.response.status = 301
+      stable.response["Location"] = '/forwarded'
+
     elsif
       stable.response.write  'Hello, World!'
     end

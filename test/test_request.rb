@@ -432,4 +432,16 @@ describe EventMachine::HttpRequest do
       }
     end
   end
+
+  it "should complete a Location: with a relative path" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/relative-location').get
+
+        http.errback { failed }
+        http.callback {
+          http.response_header['LOCATION'].should == 'http://127.0.0.1:8080/forwarded'
+          EventMachine.stop
+        }
+      }
+  end
 end
