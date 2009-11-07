@@ -70,10 +70,9 @@ module EventMachine
           c.comm_inactivity_timeout = options[:timeout]
           c.pending_connect_timeout = options[:timeout]
         }
-      rescue RuntimeError => e 
-        raise e unless e.message == "no connection"
+      rescue EventMachine::ConnectionError => e
         conn = EventMachine::HttpClient.new("")
-        conn.on_error("no connection", true)
+        conn.on_error(e.message, true)
         conn
       end
     end
