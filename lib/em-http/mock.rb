@@ -8,6 +8,10 @@ module EventMachine
         succeed(self) 
       end
       
+      def unbind
+        succeed(self) 
+      end
+      
     end
     
     @@registry = Hash.new{|h,k| h[k] = {}}
@@ -34,14 +38,15 @@ module EventMachine
     
     protected
     def send_request
-      if s = @@registry[@uri.to_s] and fake = s[@method]
-        client = FakeHttpClient.new
+      query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{HttpEncoding.encode_query(@uri.path, @options[:query], @uri.query)}"
+      if s = @@registry[query] and fake = s[@method]
+        client = FakeHttpClient.new(nil)
         client.setup(fake)
         client
       elsif @@pass_through_requests
-        real_send_request @method, @options
+        real_send_request
       else
-        raise "this request #{@uri.to_s} #{@method} isn't registered, and pass_through_requests is current set to false"
+        raise "this request #{query} for method #{@method} isn't registered, and pass_through_requests is current set to false"
       end
     end
   end
