@@ -15,6 +15,14 @@ module EventMachine
     end
     
     @@registry = Hash.new{|h,k| h[k] = {}}
+    @@registry_count = nil
+    
+    def self.reset_counts!
+      @@registry_count = Hash.new{|h,k| h[k] = Hash.new(0)}
+    end
+    
+    reset_counts!
+    
     @@pass_through_requests = true
 
     def self.pass_through_requests=(pass_through_requests)
@@ -34,12 +42,18 @@ module EventMachine
       register(uri, method, File.read(file))
     end
     
+    def self.count(uri, method)
+      method = method.to_s.upcase
+      @@registry_count[uri][method]
+    end
+    
     alias_method :real_send_request, :send_request
     
     protected
     def send_request
       query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{HttpEncoding.encode_query(@uri.path, @options[:query], @uri.query)}"
       if s = @@registry[query] and fake = s[@method]
+        @@registry_count[query][@method] += 1
         client = FakeHttpClient.new(nil)
         client.setup(fake)
         client
