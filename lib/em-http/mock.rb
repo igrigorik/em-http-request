@@ -9,19 +9,23 @@ module EventMachine
       end
       
       def unbind
-        succeed(self) 
       end
       
     end
     
-    @@registry = Hash.new{|h,k| h[k] = {}}
+    @@registry = nil
     @@registry_count = nil
     
     def self.reset_counts!
       @@registry_count = Hash.new{|h,k| h[k] = Hash.new(0)}
     end
     
+    def self.reset_registry!
+      @@registry = Hash.new{|h,k| h[k] = {}}
+    end
+    
     reset_counts!
+    reset_registry!
     
     @@pass_through_requests = true
 
