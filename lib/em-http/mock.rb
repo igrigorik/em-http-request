@@ -1,6 +1,8 @@
 module EventMachine
   class HttpRequest
     
+    include HttpEncoding
+    
     class FakeHttpClient < EventMachine::HttpClient
 
       def setup(response)
@@ -55,7 +57,7 @@ module EventMachine
     
     protected
     def send_request
-      query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{HttpEncoding.encode_query(@uri.path, @options[:query], @uri.query)}"
+      query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{encode_query(@uri.path, @options[:query], @uri.query)}"
       if s = @@registry[query] and fake = s[@method]
         @@registry_count[query][@method] += 1
         client = FakeHttpClient.new(nil)
