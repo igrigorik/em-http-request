@@ -24,6 +24,8 @@ module EventMachine
   #
 
   class HttpRequest
+    
+    attr_reader :options, :method
 
     def initialize(host, headers = {})
       @headers = headers
@@ -45,32 +47,38 @@ module EventMachine
     #     Called for each response body chunk (you may assume HTTP 200
     #     OK then)
     #
-
-    def get  options = {};    send_request(:get,  options);    end
-    def head options = {};    send_request(:head, options);    end
-    def delete options = {};    send_request(:delete, options);    end
-    def put options = {};    send_request(:put, options);    end
-    def post options = {};    send_request(:post, options);    end
+                                   
+    def get    options = {};  setup_request(:get,  options);    end
+    def head   options = {};  setup_request(:head, options);    end
+    def delete options = {};  setup_request(:delete, options);  end
+    def put    options = {};  setup_request(:put, options);     end
+    def post   options = {};  setup_request(:post, options);    end
 
     protected
 
-    def send_request(method, options)
+    def setup_request(method, options)
       raise ArgumentError, "invalid request path" unless /^\// === @uri.path
 
+      @options = options
+
       # default connect & inactivity timeouts
-      options[:timeout] = 5 if not options[:timeout]
+      @options[:timeout] = 5 if not @options[:timeout]
 
       # Make sure the port is set as Addressable::URI doesn't set the
       # port if it isn't there.
-      @uri.port = @uri.port ? @uri.port : 80
-      method = method.to_s.upcase
+      @uri.port ||= 80
+      @method = method.to_s.upcase
+      send_request
+    end
+    
+    def send_request
       begin
        EventMachine.connect(@uri.host, @uri.port, EventMachine::HttpClient) { |c|
           c.uri = @uri
-          c.method = method
-          c.options = options
-          c.comm_inactivity_timeout = options[:timeout]
-          c.pending_connect_timeout = options[:timeout]
+          c.method = @method
+          c.options = @options
+          c.comm_inactivity_timeout = @options[:timeout]
+          c.pending_connect_timeout = @options[:timeout]
         }
       rescue EventMachine::ConnectionError => e
         conn = EventMachine::HttpClient.new("")

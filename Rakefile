@@ -36,6 +36,7 @@ end
 
 task :spec do
 	sh 'spec test/test_*.rb'
+	sh 'spec test/mock/test_*.rb'
 end
 
 def make(makedir)
@@ -96,6 +97,7 @@ begin
     gemspec.add_dependency('eventmachine', '>= 0.12.9')
     gemspec.add_dependency('addressable', '>= 2.0.0')
     gemspec.rubyforge_project = "em-http-request"
+    gemspec.files = FileList["[A-Z]*", "{lib,test,ext}/**/*"]
   end
   
   Jeweler::GemcutterTasks.new

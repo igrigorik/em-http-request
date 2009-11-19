@@ -17,7 +17,7 @@ describe EventMachine::HttpRequest do
         http.response_header.status.should == 0
         EventMachine.stop
       }
-    }
+    }         
   end
 
   it "should fail GET on invalid host" do

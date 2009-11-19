@@ -108,18 +108,18 @@ module EventMachine
       @uri.host + (@uri.port != 80 ? ":#{@uri.port}" : "")
     end
 
-    def encode_request(method, path, query)
-      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(path, query)]
+    def encode_request(method, path, query, uri_query)
+      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(path, query, uri_query)]
     end
 
-    def encode_query(path, query)
+    def encode_query(path, query, uri_query)
       encoded_query = if query.kind_of?(Hash)
         query.map { |k, v| encode_param(k, v) }.join('&')
       else
         query.to_s
       end
-      if !@uri.query.to_s.empty?
-        encoded_query = [encoded_query, @uri.query].reject {|part| part.empty?}.join("&")
+      if !uri_query.to_s.empty?
+        encoded_query = [encoded_query, uri_query].reject {|part| part.empty?}.join("&")
       end
       return path if encoded_query.to_s.empty?
       "#{path}?#{encoded_query}"
@@ -262,7 +262,7 @@ module EventMachine
       end
 
       # Build the request
-      request_header = encode_request(@method, @uri.path, query)
+      request_header = encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
       request_header << CRLF
 
