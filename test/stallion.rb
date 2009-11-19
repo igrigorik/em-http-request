@@ -85,7 +85,13 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.head?
       stable.response.status = 200
-
+      
+    elsif stable.request.delete?
+      stable.response.status = 200
+      
+    elsif stable.request.put?
+      stable.response.write stable.request.body.read
+      
     elsif stable.request.post?
       if stable.request.path_info == '/echo_content_type'
         stable.response.write stable.request.env["CONTENT_TYPE"]

@@ -82,6 +82,21 @@ describe EventMachine::HttpRequest do
       }
     }    
   end
+  
+  # should be no different than a GET
+  it "should perform successfull DELETE with a URI passed as argument" do
+    EventMachine.run {
+      uri = URI.parse('http://127.0.0.1:8080/')
+      http = EventMachine::HttpRequest.new(uri).delete
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == ""
+        EventMachine.stop
+      }
+    }    
+  end
 
   it "should return 404 on invalid path" do
     EventMachine.run {
@@ -129,6 +144,20 @@ describe EventMachine::HttpRequest do
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/hash\[\]=value1&hash\[\]=value2/)
+        EventMachine.stop
+      }
+    }
+  end
+
+  # should be no different than a POST
+  it "should perform successfull PUT" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').put :body => "data"
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/data/)
         EventMachine.stop
       }
     }
