@@ -148,11 +148,12 @@ module EventMachine
     def encode_headers(head)
       head.inject('') do |result, (key, value)|
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
-        key = key.split('-').map { |k| k.capitalize }.join('-')
-        unless key == "Authorization"
-          result << encode_field(key, value)
+        key = key.split('-').map { |k| k.to_s.capitalize }.join('-')
+        result << case key
+        when 'Authorization', 'Proxy-authorization'
+          encode_basic_auth(key, value)
         else
-          result << encode_basic_auth(key, value)
+          encode_field(key, value)
         end
       end
     end
@@ -260,7 +261,7 @@ module EventMachine
       if not head['content-type'] and options[:body].is_a? Hash
         head['content-type'] = "application/x-www-form-urlencoded"
       end
-
+      
       # Build the request
       request_header = encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
