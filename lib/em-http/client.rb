@@ -266,7 +266,6 @@ module EventMachine
       request_header = encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
       request_header << CRLF
-
       send_data request_header
     end
 

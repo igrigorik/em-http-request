@@ -76,9 +76,9 @@ Screencast / Demo of using EM-HTTP-Request:
 == Proxy example
   EventMachine.run {
     http1 = EventMachine::HttpRequest.new('http://www.website.com/').get :proxy => {
-      :host => 'www.myproxy.com'
+      :host => 'www.myproxy.com',
       :port => 8080,
-      :authorization => ['username', 'password']
+      :authorization => ['username', 'password'] # authorization is optional
     }
 
 == Streaming body processing

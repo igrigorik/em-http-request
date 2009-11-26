@@ -67,8 +67,10 @@ module EventMachine
       if proxy = options.delete(:proxy)
         @host_to_connect = proxy[:host]
         @port_to_connect = proxy[:port]
-        @options[:head] ||= {}
-        @options[:head]['proxy-authorization'] = proxy[:authorization]
+        if proxy[:authorization]
+          @options[:head] ||= {}
+          @options[:head]['proxy-authorization'] = proxy[:authorization]
+        end
       else
         @host_to_connect = @uri.host
         @port_to_connect = @uri.port
