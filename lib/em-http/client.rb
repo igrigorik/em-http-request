@@ -186,10 +186,9 @@ module EventMachine
     def post_init
       @parser = HttpClientParser.new
       @data = EventMachine::Buffer.new
-      @response_header = HttpResponseHeader.new
       @chunk_header = HttpChunkHeader.new
-
-      @state = :response_header
+      @response_header = HttpResponseHeader.new
+      
       @parser_nbytes = 0
       @response = ''
       @errors = ''
@@ -199,11 +198,16 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
-      ssl = @options[:tls] || @options[:ssl] || {}
-      start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
+      @state ||= @options[:proxy] ? :response_proxy : :response_header
 
-      send_request_header
-      send_request_body
+      if @state == :response_proxy
+        send_proxy_header
+      else
+        ssl = @options[:tls] || @options[:ssl] || {}
+        start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
+        send_request_header
+        send_request_body
+      end
     end
     
     # request is done, invoke the callback
@@ -236,6 +240,22 @@ module EventMachine
       else
         @options[:body]
       end
+    end
+
+    def send_proxy_header
+      proxy = @options[:proxy]
+
+      head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
+      head['host'] ||= encode_host
+      # Set the User-Agent if it hasn't been specified
+      head['user-agent'] ||= "EventMachine HttpClient"
+      
+      head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
+      
+      request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
+      request_header << encode_headers(head)
+      request_header << CRLF
+      send_data request_header
     end
 
     def send_request_header
@@ -316,6 +336,8 @@ module EventMachine
 
     def dispatch
       while case @state
+        when :response_proxy
+          parse_response_proxy
         when :response_header
           parse_response_header
         when :chunk_header
@@ -353,6 +375,27 @@ module EventMachine
       @parser_nbytes = 0
 
       true
+    end
+
+    def parse_response_proxy
+      return false unless parse_header(@response_header)
+
+      unless @response_header.http_status and @response_header.http_reason
+        @state = :invalid
+        on_error "no HTTP response"
+        return false
+      end
+
+      if @response_header.http_status == '200'
+        # we can re-enter here, it won't try and connect twice to the proxy
+        @response_header = HttpResponseHeader.new
+        @state = :response_header
+        connection_completed
+      else
+        @state = :invalid
+        on_error "no HTTP response"
+        return false
+      end
     end
 
     def parse_response_header

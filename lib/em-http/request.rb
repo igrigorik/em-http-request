@@ -62,20 +62,16 @@ module EventMachine
       @options = options
 
       # default connect & inactivity timeouts
-      @options[:timeout] = 5 if not @options[:timeout]
 
-      if proxy = options.delete(:proxy)
+      if proxy = options[:proxy]
         @host_to_connect = proxy[:host]
         @port_to_connect = proxy[:port]
-        if proxy[:authorization]
-          @options[:head] ||= {}
-          @options[:head]['proxy-authorization'] = proxy[:authorization]
-        end
+        @options[:timeout] = 10 if not @options[:timeout]
       else
         @host_to_connect = @uri.host
         @port_to_connect = @uri.port
+        @options[:timeout] = 5 if not @options[:timeout]
       end
-
 
       # Make sure the port is set as Addressable::URI doesn't set the
       # port if it isn't there.
