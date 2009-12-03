@@ -155,4 +155,38 @@ Thread.new do
   end
 end
 
+Thread.new do
+  server = TCPServer.new('127.0.0.1', 8081)
+  loop do
+    session = server.accept
+    request = ""
+    while (data = session.gets) != "\r\n"
+      request << data
+    end
+    parts = request.split("\r\n")
+    method, destination, http_version = parts.first.split(' ')
+    if method == 'CONNECT'
+      target_host, target_port = destination.split(':')
+      client = TCPSocket.open(target_host, target_port)
+      session.write "HTTP/1.1 200 Connection established\r\nProxy-agent: Whatever\r\n\r\n"
+      session.flush
+      while data = session.gets
+        client.write data
+        if data == "\r\n"
+          client.flush
+          client.close_write
+          break
+        end
+      end
+      
+      while data = client.gets
+        session.write data
+      end
+      session.flush
+      client.close
+    end
+    session.close
+  end
+end
+
 sleep(1)
