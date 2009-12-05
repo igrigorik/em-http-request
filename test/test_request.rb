@@ -223,7 +223,7 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://digg.com/').get
 
       http.errback { failed }
-      http.callback {
+      http.callback { 
         http.response_header.status.should == 200
         EventMachine.stop
       }
@@ -259,12 +259,10 @@ describe EventMachine::HttpRequest do
   it "should work with proxy servers" do
     EventMachine.run {
 
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {:host => '127.0.0.1', :port => 8081}
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {:host => '127.0.0.1', :port => 8082}
 
-      http.errback { 
-        failed
-      }
-      http.callback {
+      http.errback { failed }
+      http.callback { 
         http.response_header.status.should == 200
         http.response.should == 'Hello, World!'
         EventMachine.stop

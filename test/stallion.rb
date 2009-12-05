@@ -155,8 +155,11 @@ Thread.new do
   end
 end
 
+#
+# HTTP Proxy server
+#
 Thread.new do
-  server = TCPServer.new('127.0.0.1', 8081)
+  server = TCPServer.new('127.0.0.1', 8082)
   loop do
     session = server.accept
     request = ""

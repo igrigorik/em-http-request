@@ -188,21 +188,29 @@ module EventMachine
       @data = EventMachine::Buffer.new
       @chunk_header = HttpChunkHeader.new
       @response_header = HttpResponseHeader.new
-      
       @parser_nbytes = 0
       @response = ''
       @errors = ''
       @content_decoder = nil
       @stream = nil
+      @state = :response_header
     end
 
     # start HTTP request once we establish connection to host
-    def connection_completed
-      @state ||= @options[:proxy] ? :response_proxy : :response_header
-
-      if @state == :response_proxy
+    def connection_completed        
+      
+      # if connecting to proxy, then first negotiate the connection
+      # to intermediate server and wait for 200 response 
+      if @options[:proxy] and @state == :response_header 
+        @state = :response_proxy  
         send_proxy_header
-      else
+        
+      # if connecting via proxy, then state will be :proxy_connected,
+      # indicating successful tunnel. from here, initiate normal http
+      # exchange         
+      else  
+        @state = :response_header
+                      
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
@@ -241,12 +249,15 @@ module EventMachine
         @options[:body]
       end
     end
-
+                  
+    # TODO: refactor with send_request_header
+    # TODO: POST's don't work with current implementation
     def send_proxy_header
       proxy = @options[:proxy]
 
       head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
       head['host'] ||= encode_host
+      
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
       
@@ -376,7 +387,8 @@ module EventMachine
 
       true
     end
-
+    
+    # TODO: refactor with parse_response_header
     def parse_response_proxy
       return false unless parse_header(@response_header)
 
@@ -385,15 +397,15 @@ module EventMachine
         on_error "no HTTP response"
         return false
       end
-
-      if @response_header.http_status == '200'
-        # we can re-enter here, it won't try and connect twice to the proxy
+          
+      # when a successfull tunnel is established, the proxy responds with a
+      # 200 response code. from here, the tunnel is transparent.
+      if @response_header.http_status.to_i == 200                          
         @response_header = HttpResponseHeader.new
-        @state = :response_header
         connection_completed
       else
         @state = :invalid
-        on_error "no HTTP response"
+        on_error "proxy not accessible"
         return false
       end
     end

@@ -9,7 +9,6 @@ module EventMachine
   #
   # == Example
   #
-  #
   #  EventMachine.run {
   #    http = EventMachine::HttpRequest.new('http://127.0.0.1/').get :query => {'keyname' => 'value'}
   #
@@ -58,24 +57,24 @@ module EventMachine
 
     def setup_request(method, options)
       raise ArgumentError, "invalid request path" unless /^\// === @uri.path
-
       @options = options
-
-      # default connect & inactivity timeouts
-
+      
       if proxy = options[:proxy]
         @host_to_connect = proxy[:host]
         @port_to_connect = proxy[:port]
-        @options[:timeout] = 10 if not @options[:timeout]
       else
         @host_to_connect = @uri.host
         @port_to_connect = @uri.port
-        @options[:timeout] = 5 if not @options[:timeout]
-      end
+      end                                      
+      
+      # default connect & inactivity timeouts        
+      @options[:timeout] = 10 if not @options[:timeout]  
 
-      # Make sure the port is set as Addressable::URI doesn't set the
-      # port if it isn't there.
+      # Make sure the ports are set as Addressable::URI doesn't
+      # set the port if it isn't there
       @uri.port ||= 80
+      @port_to_connect ||= 80
+      
       @method = method.to_s.upcase
       send_request
     end
