@@ -481,7 +481,7 @@ describe EventMachine::HttpRequest do
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {:host => '127.0.0.1', :port => 8082}
 
-        http.errback { failed }
+        http.errback { p http.inspect; failed }
         http.callback { 
           http.response_header.status.should == 200
           http.response.should == 'Hello, World!'
@@ -491,8 +491,8 @@ describe EventMachine::HttpRequest do
     end 
 
     it "should proxy POST data" do
-      pending
-      
+      pending "works against real proxies, but TCPServer doesn't want to play nice"
+
       EventMachine.run {
 
          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({

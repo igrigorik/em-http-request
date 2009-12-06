@@ -39,7 +39,7 @@ module EventMachine
     # Length of content as an integer, or nil if chunked/unspecified
     def content_length
       @content_length ||= ((s = self[HttpClient::CONTENT_LENGTH]) &&
-                           (s =~ /^(\d+)$/)) ? $1.to_i : nil
+          (s =~ /^(\d+)$/)) ? $1.to_i : nil
     end
 
     # Cookie header from the server
@@ -197,17 +197,16 @@ module EventMachine
     end
 
     # start HTTP request once we establish connection to host
-    def connection_completed        
-      
+    def connection_completed              
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response 
       if @options[:proxy] and @state == :response_header 
-        @state = :response_proxy  
-        send_proxy_header
+        @state = :response_proxy
+        send_request_header
         
-      # if connecting via proxy, then state will be :proxy_connected,
-      # indicating successful tunnel. from here, initiate normal http
-      # exchange         
+        # if connecting via proxy, then state will be :proxy_connected,
+        # indicating successful tunnel. from here, initiate normal http
+        # exchange
       else  
         @state = :response_header
                       
@@ -250,51 +249,43 @@ module EventMachine
       end
     end
                   
-    # TODO: refactor with send_request_header
-    # TODO: POST's don't work with current implementation
-    def send_proxy_header
-      proxy = @options[:proxy]
-
-      head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
-      head['host'] ||= encode_host
-      
-      # Set the User-Agent if it hasn't been specified
-      head['user-agent'] ||= "EventMachine HttpClient"
-      
-      head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
-      
-      request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-      request_header << encode_headers(head)
-      request_header << CRLF
-      send_data request_header
-    end
-
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       body    = normalize_body
+      request_header = nil
 
-      # Set the Host header if it hasn't been specified already
+      if @state == :response_proxy
+        proxy = @options[:proxy]
+
+        # initialize headers to establish the HTTP tunnel
+        head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
+        head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
+        request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
+
+      else
+        # Set the Content-Length if body is given
+        head['content-length'] =  body.length if body
+
+        # Set the cookie header if provided
+        if cookie = head.delete('cookie')
+          head['cookie'] = encode_cookie(cookie)
+        end
+
+        # Set content-type header if missing and body is a Ruby hash
+        if not head['content-type'] and options[:body].is_a? Hash
+          head['content-type'] = "application/x-www-form-urlencoded"
+        end
+      end
+
+       # Set the Host header if it hasn't been specified already
       head['host'] ||= encode_host
-
-      # Set the Content-Length if body is given
-      head['content-length'] =  body.length if body
 
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
-      # Set the cookie header if provided
-      if cookie = head.delete('cookie')
-        head['cookie'] = encode_cookie(cookie)
-      end
-
-      # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and options[:body].is_a? Hash
-        head['content-type'] = "application/x-www-form-urlencoded"
-      end
-      
-      # Build the request
-      request_header = encode_request(@method, @uri.path, query, @uri.query)
+      # Build the request headers
+      request_header ||= encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
       request_header << CRLF
       send_data request_header
@@ -334,7 +325,7 @@ module EventMachine
 
     def unbind
       if @state == :finished || (@state == :body && @bytes_remaining.nil?)
-        succeed(self) 
+        succeed(self)
       else
         fail(self)
       end
@@ -400,7 +391,7 @@ module EventMachine
           
       # when a successfull tunnel is established, the proxy responds with a
       # 200 response code. from here, the tunnel is transparent.
-      if @response_header.http_status.to_i == 200                          
+      if @response_header.http_status.to_i == 200
         @response_header = HttpResponseHeader.new
         connection_completed
       else
@@ -433,7 +424,7 @@ module EventMachine
         end
       end
 
-      # shortcircuit on HEAD requests 
+      # shortcircuit on HEAD requests
       if @method == "HEAD"
         @state = :finished
         on_request_complete
@@ -443,7 +434,7 @@ module EventMachine
         @state = :chunk_header
       elsif @response_header.content_length
         @state = :body
-        @bytes_remaining = @response_header.content_length 
+        @bytes_remaining = @response_header.content_length
       else
         @state = :body
         @bytes_remaining = nil

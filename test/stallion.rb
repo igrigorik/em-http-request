@@ -173,9 +173,30 @@ Thread.new do
       client = TCPSocket.open(target_host, target_port)
       session.write "HTTP/1.1 200 Connection established\r\nProxy-agent: Whatever\r\n\r\n"
       session.flush
+
+      content_length = -1
+      read_data = 0
+      body = false
+      verb = ""
+      req = ""
+
       while data = session.gets
-        client.write data
-        if data == "\r\n"
+        if request = data.match(/(\w+).*HTTP\/1\.1/)
+          verb = request[1]
+        end
+
+        if post = data.match(/Content-Length: (\d+)/)
+          content_length = post[1].to_i
+        end
+
+        req += data
+
+        # track number of recieved body bytes
+        read_data += data.size if body
+        body = true if data == "\r\n"
+
+        if (data == "\r\n" and verb == "GET") or (verb == "POST" and content_length == read_data)
+          client.write req
           client.flush
           client.close_write
           break
