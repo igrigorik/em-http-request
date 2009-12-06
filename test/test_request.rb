@@ -491,8 +491,6 @@ describe EventMachine::HttpRequest do
     end 
 
     it "should proxy POST data" do
-      pending "works against real proxies, but TCPServer doesn't want to play nice"
-
       EventMachine.run {
 
          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({

@@ -175,8 +175,6 @@ Thread.new do
       session.flush
 
       content_length = -1
-      read_data = 0
-      body = false
       verb = ""
       req = ""
 
@@ -191,11 +189,12 @@ Thread.new do
 
         req += data
 
-        # track number of recieved body bytes
-        read_data += data.size if body
-        body = true if data == "\r\n"
+        # read POST data
+        if data == "\r\n" and verb == "POST"
+          req += session.read(content_length)
+        end
 
-        if (data == "\r\n" and verb == "GET") or (verb == "POST" and content_length == read_data)
+        if data == "\r\n"
           client.write req
           client.flush
           client.close_write
