@@ -242,6 +242,20 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+  
+  it "should send proper OAuth auth header" do 
+    EventMachine.run {
+      oauth_header = 'OAuth oauth_nonce="oqwgSYFUD87MHmJJDv7bQqOF2EPnVus7Wkqj5duNByU", b=c, d=e'
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/oauth_auth').get :head => {'authorization' => oauth_header}
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == oauth_header
+        EventMachine.stop
+      }
+    } 
+  end
 
   it "should work with keep-alive servers" do
     EventMachine.run {

@@ -80,7 +80,6 @@ module EventMachine
   module HttpEncoding
     HTTP_REQUEST_HEADER="%s %s HTTP/1.1\r\n"
     FIELD_ENCODING = "%s: %s\r\n"
-    BASIC_AUTH_ENCODING = "%s: Basic %s\r\n"
 
     # Escapes a URI.
     def escape(s)
@@ -141,8 +140,14 @@ module EventMachine
     end
 
     # Encode basic auth in an HTTP header
-    def encode_basic_auth(k,v)
-      BASIC_AUTH_ENCODING % [k, Base64.encode64(v.join(":")).chomp]
+    # In: Array ([user, pass]) - for basic auth
+    #     String - custom auth string (OAuth, etc)
+    def encode_auth(k,v)
+      if v.is_a? Array
+        FIELD_ENCODING % [k, ["Basic", Base64.encode64(v.join(":")).chomp].join(" ")]
+      else
+        encode_field(k,v)
+      end      
     end
 
     def encode_headers(head)
@@ -150,8 +155,8 @@ module EventMachine
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.to_s.capitalize }.join('-')
         result << case key
-        when 'Authorization', 'Proxy-authorization'
-          encode_basic_auth(key, value)
+        when 'Authorization', 'Proxy-authorization'          
+          encode_auth(key, value)
         else
           encode_field(key, value)
         end

@@ -127,15 +127,19 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 304
 
     elsif stable.request.env["HTTP_AUTHORIZATION"]
-      auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).chomp
-
-      if auth == stable.request.env["HTTP_AUTHORIZATION"]
+      if stable.request.path_info == '/oauth_auth'
         stable.response.status = 200
-        stable.response.write 'success'
+        stable.response.write stable.request.env["HTTP_AUTHORIZATION"]      
       else
-        stable.response.status = 401
-      end
+        auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).chomp
 
+        if auth == stable.request.env["HTTP_AUTHORIZATION"]
+          stable.response.status = 200
+          stable.response.write 'success'
+        else
+          stable.response.status = 401
+        end
+      end
     elsif stable.request.path_info == '/relative-location'
       stable.response.status = 301
       stable.response["Location"] = '/forwarded'

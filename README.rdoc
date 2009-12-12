@@ -59,17 +59,35 @@ Screencast / Demo of using EM-HTTP-Request:
     http.errback { failed }
     http.callback {
       p http.response_header
-
       EventMachine.stop
     }
   }
 
-== POST example
+== OAuth example
 
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get :head => {'authorization' => 'OAuth oauth_nonce=...'}
+    http.errback { failed }
+    http.callback {
+      p http.response_header
+      EventMachine.stop
+    }
+  }
+
+
+== POST example
   EventMachine.run {
     http1 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => {"key1" => 1, "key2" => [2,3]}
     http2 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => "some data"
       
+    # ...
+  }
+
+== Streaming body processing
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get
+    http.stream { |chunk| print chunk }
+
     # ...
   }
 
@@ -81,10 +99,3 @@ Screencast / Demo of using EM-HTTP-Request:
       :authorization => ['username', 'password'] # authorization is optional
     }
 
-== Streaming body processing
-  EventMachine.run {
-    http = EventMachine::HttpRequest.new('http://www.website.com/').get
-    http.stream { |chunk| print chunk }
-
-    # ...
-  }
