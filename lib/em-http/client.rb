@@ -212,7 +212,12 @@ module EventMachine
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
-      else  
+      elsif @uri.scheme == 'ws'
+        @state = :response_header # TODO: refactor
+        puts "WebSocket!"
+        send_request_header
+        
+      else
         @state = :response_header
                       
         ssl = @options[:tls] || @options[:ssl] || {}
@@ -246,6 +251,12 @@ module EventMachine
       @stream = blk
     end
 
+    # raw data push from the client (WebSocket)
+    def push(data)
+      p "\x00#{data}\xff"
+      send_data "\x00#{data}\xff"
+    end
+
     def normalize_body
       if @options[:body].is_a? Hash
         @options[:body].to_params
@@ -267,7 +278,12 @@ module EventMachine
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
         request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-
+        
+      elsif @uri.scheme == 'ws'
+        head['upgrade'] = 'WebSocket'
+        head['connection'] = 'Upgrade'
+        head['origin'] = @uri.host # TODO: verify? override with params[:origin] ???
+        
       else
         # Set the Content-Length if body is given
         head['content-length'] =  body.length if body
@@ -303,6 +319,7 @@ module EventMachine
     end
 
     def receive_data(data)
+      p "got: #{data.inspect}"
       @data << data
       dispatch
     end
@@ -357,6 +374,8 @@ module EventMachine
           process_response_footer
         when :body
           process_body
+        when :websocket
+          process_websocket
         when :finished, :invalid
           break
         else raise RuntimeError, "invalid state: #{@state}"
@@ -440,6 +459,20 @@ module EventMachine
       elsif @response_header.content_length
         @state = :body
         @bytes_remaining = @response_header.content_length
+        
+      elsif @uri.scheme == 'ws'
+        if @response_header.status == 101
+          # @state = :websocket
+          # p @data.to_str
+          # p @data.clear
+          
+          push "wtfffff"
+          @state = :websocket
+          # succeed
+          puts 'setting state to :websocket'
+        else
+          fail "WebSocket handshake failed"
+        end
       else
         @state = :body
         @bytes_remaining = nil
@@ -554,6 +587,19 @@ module EventMachine
       false
     end
 
+    def process_websocket
+       @response << @data
+       @stream.call(@data)
+       @response = ''
+       @data.clear
+        # if @response_header.status == 101 
+          # push ("test")
+          # sleep(1)
+          # succeed(self)
+        # else
+          # fail(self)
+        # end
+    end
   
   end
 
