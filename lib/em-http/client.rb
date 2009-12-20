@@ -212,11 +212,6 @@ module EventMachine
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
-      elsif @uri.scheme == 'ws'
-        @state = :response_header # TODO: refactor
-        puts "WebSocket!"
-        send_request_header
-        
       else
         @state = :response_header
                       
@@ -264,7 +259,9 @@ module EventMachine
         @options[:body]
       end
     end
-                  
+
+    def websocket?; @uri.scheme == 'ws'; end
+    
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
@@ -279,10 +276,10 @@ module EventMachine
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
         request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
         
-      elsif @uri.scheme == 'ws'
+      elsif websocket?
         head['upgrade'] = 'WebSocket'
         head['connection'] = 'Upgrade'
-        head['origin'] = @uri.host # TODO: verify? override with params[:origin] ???
+        head['origin'] = @options[:origin] || @uri.host
         
       else
         # Set the Content-Length if body is given
@@ -426,6 +423,7 @@ module EventMachine
     end
 
     def parse_response_header
+      puts 'parsing header'
       return false unless parse_header(@response_header)
 
       unless @response_header.http_status and @response_header.http_reason
@@ -433,7 +431,7 @@ module EventMachine
         on_error "no HTTP response"
         return false
       end
-
+p 'wtf'
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location
         begin
@@ -454,25 +452,18 @@ module EventMachine
         on_request_complete
       end
 
-      if @response_header.chunked_encoding?
+      if websocket?
+        if @response_header.status == 101
+          @state = :websocket
+        else
+          fail "websocket handshake failed"
+        end
+       
+      elsif @response_header.chunked_encoding?
         @state = :chunk_header
       elsif @response_header.content_length
         @state = :body
         @bytes_remaining = @response_header.content_length
-        
-      elsif @uri.scheme == 'ws'
-        if @response_header.status == 101
-          # @state = :websocket
-          # p @data.to_str
-          # p @data.clear
-          
-          push "wtfffff"
-          @state = :websocket
-          # succeed
-          puts 'setting state to :websocket'
-        else
-          fail "WebSocket handshake failed"
-        end
       else
         @state = :body
         @bytes_remaining = nil
@@ -588,10 +579,12 @@ module EventMachine
     end
 
     def process_websocket
+      # if @data =~ /\x00\x00(.*)\xff/
        @response << @data
        @stream.call(@data)
        @response = ''
        @data.clear
+      # end
         # if @response_header.status == 101 
           # push ("test")
           # sleep(1)

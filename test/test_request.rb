@@ -464,7 +464,7 @@ describe EventMachine::HttpRequest do
     it "should not override content-type when passing in ruby hash/array for body" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => 'text'}})
+            :body => {:a => :b}, :head => {'content-type' => 'text'}})
 
         http.errback { failed }
         http.callback {
@@ -508,7 +508,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({
-        :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082}})
+            :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082}})
 
         http.errback { failed }
         http.callback {
@@ -521,10 +521,23 @@ describe EventMachine::HttpRequest do
   end
 
   context "websocket connection" do
+    it "should invoke errback on failed upgrade" do
+      EventMachine.run {
+
+        http = EventMachine::HttpRequest.new('ws://127.0.0.1:8080/').get :timeout => 0
+
+        http.callback { failed }
+        http.errback {
+          http.response_header.status.should == 200
+          EventMachine.stop
+        }
+      }
+    end
+
     it "should complete websocket handshake" do
       EventMachine.run {
 
-        http = EventMachine::HttpRequest.new('ws://127.0.0.1:2200/').get :timeout => 0
+        http = EventMachine::HttpRequest.new('ws://127.0.0.1:2200/').get :timeout => 1
 
         http.errback { failed }
         http.callback {
@@ -552,7 +565,7 @@ describe EventMachine::HttpRequest do
         }
         
         # Needs to delayed as a callback until the handshake is complete
-        http.push "data" 
+        # http.push "data" 
       }
     end
   end
