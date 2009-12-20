@@ -521,9 +521,14 @@ describe EventMachine::HttpRequest do
   end
 
   context "websocket connection" do
+    # Spec: http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-55
+    #
+    # ws.onopen     = http.callback
+    # ws.onmessage  = http.stream { |msg| }
+    #
+
     it "should invoke errback on failed upgrade" do
       EventMachine.run {
-
         http = EventMachine::HttpRequest.new('ws://127.0.0.1:8080/').get :timeout => 0
 
         http.callback { failed }
@@ -536,7 +541,7 @@ describe EventMachine::HttpRequest do
 
     it "should complete websocket handshake" do
       EventMachine.run {
-
+        MSG = "hello bi-directional data exchange"
         http = EventMachine::HttpRequest.new('ws://127.0.0.1:2200/').get :timeout => 1
 
         http.errback { failed }
@@ -544,28 +549,16 @@ describe EventMachine::HttpRequest do
           http.response_header.status.should == 101
           http.response_header['CONNECTION'].should match(/Upgrade/)
           http.response_header['UPGRADE'].should match(/WebSocket/)
-          
-          EventMachine.stop
-          
-          p "connected!"
-          p http;
 
-          http.push("hello world")
-          p 'sent data?'
-          
+          # push should only be invoked after handshake is complete
+          http.send(MSG)
         }
         
-        num = 0
-        http.stream {
-          # p http.response
-          puts "recieved: #{http.response.inspect}"
-          sleep (1)
-          http.push "yo.. #{num}"
-          num+=1
+        http.stream { |chunk|
+          chunk.should == MSG
+          EventMachine.stop
         }
         
-        # Needs to delayed as a callback until the handshake is complete
-        # http.push "data" 
       }
     end
   end

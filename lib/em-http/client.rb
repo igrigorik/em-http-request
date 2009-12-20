@@ -246,10 +246,18 @@ module EventMachine
       @stream = blk
     end
 
-    # raw data push from the client (WebSocket)
-    def push(data)
-      p "\x00#{data}\xff"
-      send_data "\x00#{data}\xff"
+    # raw data push from the client (WebSocket) should
+    # only be invoked after handshake, otherwise it will
+    # inject data into the header exchange
+    #
+    # frames need to start with 0x00-0x7f byte and end with
+    # an 0xFF byte. Per spec, we can also set the first
+    # byte to a value betweent 0x80 and 0xFF, followed by
+    # a leading length indicator
+    def send(data)
+      if @state == :websocket
+        send_data("\x00#{data}\xff")
+      end
     end
 
     def normalize_body
@@ -296,7 +304,7 @@ module EventMachine
         end
       end
 
-       # Set the Host header if it hasn't been specified already
+      # Set the Host header if it hasn't been specified already
       head['host'] ||= encode_host
 
       # Set the User-Agent if it hasn't been specified
@@ -316,7 +324,6 @@ module EventMachine
     end
 
     def receive_data(data)
-      p "got: #{data.inspect}"
       @data << data
       dispatch
     end
@@ -423,7 +430,6 @@ module EventMachine
     end
 
     def parse_response_header
-      puts 'parsing header'
       return false unless parse_header(@response_header)
 
       unless @response_header.http_status and @response_header.http_reason
@@ -431,7 +437,7 @@ module EventMachine
         on_error "no HTTP response"
         return false
       end
-p 'wtf'
+
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location
         begin
@@ -455,6 +461,7 @@ p 'wtf'
       if websocket?
         if @response_header.status == 101
           @state = :websocket
+          succeed
         else
           fail "websocket handshake failed"
         end
@@ -579,19 +586,10 @@ p 'wtf'
     end
 
     def process_websocket
-      # if @data =~ /\x00\x00(.*)\xff/
-       @response << @data
-       @stream.call(@data)
-       @response = ''
-       @data.clear
-      # end
-        # if @response_header.status == 101 
-          # push ("test")
-          # sleep(1)
-          # succeed(self)
-        # else
-          # fail(self)
-        # end
+      if not @data.empty?
+        @stream.call(@data.read.gsub(/^(\x00)|(\xff)$/, ""))
+        @data.clear
+      end
     end
   
   end
