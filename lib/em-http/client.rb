@@ -462,9 +462,6 @@ module EventMachine
         if @response_header.status == 101
           @state = :websocket
           succeed
-          
-          # halt processing chain, no body in handshake
-          return false
         else
           fail "websocket handshake failed"
         end
@@ -589,6 +586,8 @@ module EventMachine
     end
 
     def process_websocket
+      return false if @data.empty?
+
       @stream.call(@data.read.gsub(/^(\x00)|(\xff)$/, ""))
       @data.clear
 

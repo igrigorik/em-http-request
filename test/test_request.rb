@@ -525,6 +525,7 @@ describe EventMachine::HttpRequest do
     #
     # ws.onopen     = http.callback
     # ws.onmessage  = http.stream { |msg| }
+    # ws.errback    = no connection
     #
 
     it "should invoke errback on failed upgrade" do
@@ -539,11 +540,15 @@ describe EventMachine::HttpRequest do
       }
     end
 
-    it "should complete websocket handshake" do
+    it "should complete websocket handshake and transfer data from client to server and back" do
       EventMachine.run {
         MSG = "hello bi-directional data exchange"
-        http = EventMachine::HttpRequest.new('ws://127.0.0.1:2200/').get :timeout => 1
 
+        EventMachine::WebSocket.start(:host => "0.0.0.0", :port => 8085) do |ws|
+          ws.onmessage {|msg| ws.send msg}
+        end
+
+        http = EventMachine::HttpRequest.new('ws://127.0.0.1:8085/').get :timeout => 1
         http.errback { failed }
         http.callback {
           http.response_header.status.should == 101
@@ -558,8 +563,36 @@ describe EventMachine::HttpRequest do
           chunk.should == MSG
           EventMachine.stop
         }
-        
       }
     end
+
+    #  it "should split multiple messages into separate callbacks" do
+    #    EM.run do
+    #      messages = %w[1 2]
+    #      recieved = []
+    #
+    #      EventMachine.add_timer(0.1) do
+    #        http = EventMachine::HttpRequest.new('ws://127.0.0.1:8080/').get :timeout => 0
+    #        http.errback { failed }
+    #        http.callback { http.response_header.status.should == 101 }
+    #        http.stream {|msg|
+    #          p msg.inspect
+    #
+    #          msg.should == messages[recieved.size]
+    #          recieved.push msg
+    #
+    #          EventMachine.stop if recieved.size == messages.size
+    #        }
+    #      end
+    #
+    #      EventMachine::WebSocket.start(:host => "0.0.0.0", :port => 8080, :debug => true) do |ws|
+    #        ws.onopen {
+    #          puts "WebSocket connection open"
+    #          ws.send messages[0]
+    #          ws.send messages[1]
+    #        }
+    #      end
+    #    end
+    #  end
   end
 end
