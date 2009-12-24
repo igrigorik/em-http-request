@@ -588,10 +588,18 @@ module EventMachine
     def process_websocket
       return false if @data.empty?
 
-      @stream.call(@data.read.gsub(/^(\x00)|(\xff)$/, ""))
-      @data.clear
+      # slice the message out of the buffer and pass in
+      # for processing, and buffer data otherwise
+      buffer = @data.read
+      while msg = buffer.slice!(/\000([^\377]*)\377/)
+        msg.gsub!(/^\x00|\xff$/, '')
+        @stream.call(msg)
+      end
 
-      # TODO: buffer logic for incoming data
+      # store remainder if message boundary has not yet
+      # been recieved
+      @data << buffer if not buffer.empty?
+
       false
     end
   end
