@@ -488,6 +488,25 @@ describe EventMachine::HttpRequest do
       }
   end   
   
+  it 'should let you pass a block to be called once the client is created' do
+    client = nil
+    EventMachine.run {
+      request = EventMachine::HttpRequest.new('http://127.0.0.1:8080/')
+      http = request.post { |c|
+        c.options[:body] = {:callback_run => 'yes'}
+        client = c
+      }
+      http.errback { failed }
+      http.callback {
+        client.should be_kind_of(EventMachine::HttpClient)
+        http.response_header.status.should == 200
+        http.response.should match(/callback_run=yes/)
+        client.normalize_uri.should == Addressable::URI.parse('http://127.0.0.1:8080/')
+        EventMachine.stop
+      }
+    }
+  end
+  
   context "connections via proxy" do
     
     it "should work with proxy servers" do

@@ -247,10 +247,23 @@ module EventMachine
     end
 
     def normalize_body
-      if @options[:body].is_a? Hash
-        @options[:body].to_params
-      else
-        @options[:body]
+      @normalized_body ||= begin
+        if @options[:body].is_a? Hash
+          @options[:body].to_params
+        else
+          @options[:body]
+        end
+      end
+    end
+    
+    def normalize_uri
+      @normalized_uri ||= begin
+        uri = @uri.dup
+        encoded_query = encode_query(@uri.path, @options[:query], @uri.query)
+        path, query = encoded_query.split("?", 2)
+        uri.query = query unless encoded_query.empty?
+        uri.path  = path
+        uri
       end
     end
                   

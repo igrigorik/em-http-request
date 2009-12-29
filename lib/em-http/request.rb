@@ -47,15 +47,15 @@ module EventMachine
     #     OK then)
     #
                                    
-    def get    options = {};  setup_request(:get,  options);    end
-    def head   options = {};  setup_request(:head, options);    end
-    def delete options = {};  setup_request(:delete, options);  end
-    def put    options = {};  setup_request(:put, options);     end
-    def post   options = {};  setup_request(:post, options);    end
+    def get    options = {}, &blk;  setup_request(:get,  options, &blk);    end
+    def head   options = {}, &blk;  setup_request(:head, options, &blk);    end
+    def delete options = {}, &blk;  setup_request(:delete, options, &blk);  end
+    def put    options = {}, &blk;  setup_request(:put, options, &blk);     end
+    def post   options = {}, &blk;  setup_request(:post, options, &blk);    end
 
     protected
 
-    def setup_request(method, options)
+    def setup_request(method, options, &blk)
       raise ArgumentError, "invalid request path" unless /^\// === @uri.path
       @options = options
       
@@ -76,10 +76,10 @@ module EventMachine
       @port_to_connect ||= 80
       
       @method = method.to_s.upcase
-      send_request
+      send_request(&blk)
     end
     
-    def send_request
+    def send_request(&blk)
       begin
        EventMachine.connect(@host_to_connect, @port_to_connect, EventMachine::HttpClient) { |c|
           c.uri = @uri
@@ -87,6 +87,7 @@ module EventMachine
           c.options = @options
           c.comm_inactivity_timeout = @options[:timeout]
           c.pending_connect_timeout = @options[:timeout]
+          blk.call(c) unless blk.nil?
         }
       rescue EventMachine::ConnectionError => e
         conn = EventMachine::HttpClient.new("")
