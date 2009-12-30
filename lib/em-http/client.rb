@@ -212,7 +212,7 @@ module EventMachine
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
-      else  
+      else
         @state = :response_header
                       
         ssl = @options[:tls] || @options[:ssl] || {}
@@ -246,6 +246,20 @@ module EventMachine
       @stream = blk
     end
 
+    # raw data push from the client (WebSocket) should
+    # only be invoked after handshake, otherwise it will
+    # inject data into the header exchange
+    #
+    # frames need to start with 0x00-0x7f byte and end with
+    # an 0xFF byte. Per spec, we can also set the first
+    # byte to a value betweent 0x80 and 0xFF, followed by
+    # a leading length indicator
+    def send(data)
+      if @state == :websocket
+        send_data("\x00#{data}\xff")
+      end
+    end
+
     def normalize_body
       @normalized_body ||= begin
         if @options[:body].is_a? Hash
@@ -266,7 +280,9 @@ module EventMachine
         uri
       end
     end
-                  
+
+    def websocket?; @uri.scheme == 'ws'; end
+    
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
@@ -280,7 +296,12 @@ module EventMachine
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
         request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-
+        
+      elsif websocket?
+        head['upgrade'] = 'WebSocket'
+        head['connection'] = 'Upgrade'
+        head['origin'] = @options[:origin] || @uri.host
+        
       else
         # Set the Content-Length if body is given
         head['content-length'] =  body.length if body
@@ -296,7 +317,7 @@ module EventMachine
         end
       end
 
-       # Set the Host header if it hasn't been specified already
+      # Set the Host header if it hasn't been specified already
       head['host'] ||= encode_host
 
       # Set the User-Agent if it hasn't been specified
@@ -370,6 +391,8 @@ module EventMachine
           process_response_footer
         when :body
           process_body
+        when :websocket
+          process_websocket
         when :finished, :invalid
           break
         else raise RuntimeError, "invalid state: #{@state}"
@@ -448,7 +471,15 @@ module EventMachine
         on_request_complete
       end
 
-      if @response_header.chunked_encoding?
+      if websocket?
+        if @response_header.status == 101
+          @state = :websocket
+          succeed
+        else
+          fail "websocket handshake failed"
+        end
+       
+      elsif @response_header.chunked_encoding?
         @state = :chunk_header
       elsif @response_header.content_length
         @state = :body
@@ -567,7 +598,23 @@ module EventMachine
       false
     end
 
-  
+    def process_websocket
+      return false if @data.empty?
+
+      # slice the message out of the buffer and pass in
+      # for processing, and buffer data otherwise
+      buffer = @data.read
+      while msg = buffer.slice!(/\000([^\377]*)\377/)
+        msg.gsub!(/^\x00|\xff$/, '')
+        @stream.call(msg)
+      end
+
+      # store remainder if message boundary has not yet
+      # been recieved
+      @data << buffer if not buffer.empty?
+
+      false
+    end
   end
 
 end

@@ -3,3 +3,4 @@ require 'spec'
 require 'pp'
 
 require 'lib/em-http'
+require 'em-websocket'

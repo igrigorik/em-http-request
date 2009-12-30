@@ -5,7 +5,8 @@ module EventMachine
     
     class FakeHttpClient < EventMachine::HttpClient
 
-      def setup(response)
+      def setup(response, uri)
+        @uri = uri
         receive_data(response)
         succeed(self) 
       end
@@ -61,7 +62,7 @@ module EventMachine
       if s = @@registry[query] and fake = s[@method]
         @@registry_count[query][@method] += 1
         client = FakeHttpClient.new(nil)
-        client.setup(fake)
+        client.setup(fake, @uri)
         client
       elsif @@pass_through_requests
         real_send_request
