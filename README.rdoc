@@ -3,8 +3,10 @@
 EventMachine based HTTP Request interface. Supports streaming response processing, uses Ragel HTTP parser. 
 - Simple interface for single & parallel requests via deferred callbacks
 - Automatic gzip & deflate decoding
-- Basic-Auth support
-- Custom timeouts 
+- Basic-Auth & OAuth support
+- Custom timeouts
+- Proxy support (with SSL Tunneling)
+- Bi-directional communication with web-socket services
 
 Screencast / Demo of using EM-HTTP-Request: 
 - http://everburning.com/news/eventmachine-screencast-em-http-request/
@@ -35,6 +37,7 @@ Screencast / Demo of using EM-HTTP-Request:
   }
 
 == Multi request example
+Fire and wait for multiple requess to complete via the MultiRequest interface.
 
   EventMachine.run {
     multi = EventMachine::MultiRequest.new
@@ -52,21 +55,11 @@ Screencast / Demo of using EM-HTTP-Request:
   }
 
 == Basic-Auth example
+Full basic author support. For OAuth, check examples/oauth-tweet.rb file.
 
   EventMachine.run {
     http = EventMachine::HttpRequest.new('http://www.website.com/').get :head => {'authorization' => ['user', 'pass']}
  
-    http.errback { failed }
-    http.callback {
-      p http.response_header
-      EventMachine.stop
-    }
-  }
-
-== OAuth example
-
-  EventMachine.run {
-    http = EventMachine::HttpRequest.new('http://www.website.com/').get :head => {'authorization' => 'OAuth oauth_nonce=...'}
     http.errback { failed }
     http.callback {
       p http.response_header
@@ -84,6 +77,9 @@ Screencast / Demo of using EM-HTTP-Request:
   }
 
 == Streaming body processing
+Allows you to consume an HTTP stream of content in real-time. Each time a new piece of conent is pushed
+to the client, it is passed to the stream callback for you to operate on.
+
   EventMachine.run {
     http = EventMachine::HttpRequest.new('http://www.website.com/').get
     http.stream { |chunk| print chunk }
@@ -92,10 +88,33 @@ Screencast / Demo of using EM-HTTP-Request:
   }
 
 == Proxy example
+Full transparent proxy support with support for SSL tunneling.
+
   EventMachine.run {
-    http1 = EventMachine::HttpRequest.new('http://www.website.com/').get :proxy => {
+    http = EventMachine::HttpRequest.new('http://www.website.com/').get :proxy => {
       :host => 'www.myproxy.com',
       :port => 8080,
       :authorization => ['username', 'password'] # authorization is optional
+  }
+
+== WebSocket example
+Bi-directional communication with WebSockets: simply pass in a ws:// resource and the client will
+negotiate the connection upgrade for you. On successfull handshake the callback is invoked, and
+any incoming messages will be passed to the stream callback. The client can also send data to the
+server at will by calling the "send" method!
+- http://www.igvita.com/2009/12/22/ruby-websockets-tcp-for-the-browser/
+
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new("ws://yourservice.com/websocket").get :timeout => 0
+ 
+    http.errback { puts "oops" }
+    http.callback {
+      puts "WebSocket connected!"
+      http.send("Hello client")
     }
 
+    http.stream { |msg|
+      puts "Recieved: #{msg}"
+      http.send "Pong: #{msg}"
+    }
+  }
