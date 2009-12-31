@@ -1,4 +1,4 @@
-require 'test/helper'
+require 'spec/helper'
 
 describe Hash do
   

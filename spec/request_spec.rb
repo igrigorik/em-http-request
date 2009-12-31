@@ -1,6 +1,6 @@
-require 'test/helper'
-require 'test/stallion'
-require 'test/stub_server'
+require 'spec/helper'
+require 'spec/stallion'
+require 'spec/stub_server'
 
 describe EventMachine::HttpRequest do
 

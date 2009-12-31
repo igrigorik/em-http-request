@@ -1,5 +1,5 @@
-require 'test/helper'
-require 'test/stallion'
+require 'spec/helper'
+require 'spec/stallion'
 
 describe EventMachine::MultiRequest do
 
