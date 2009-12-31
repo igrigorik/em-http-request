@@ -36,7 +36,6 @@ end
 
 task :spec do
 	sh 'spec test/test_*.rb'
-	sh 'spec test/mock/test_*.rb'
 end
 
 def make(makedir)

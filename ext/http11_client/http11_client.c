@@ -27,6 +27,7 @@ void client_http_field(void *data, const char *field, size_t flen, const char *v
   VALUE req = (VALUE)data;
   VALUE v = Qnil;
   VALUE f = Qnil;
+  VALUE el = Qnil;
 
   v = rb_str_new(value, vlen);
   f = rb_str_new(field, flen);
@@ -41,7 +42,18 @@ void client_http_field(void *data, const char *field, size_t flen, const char *v
     }
   }
 
-  rb_hash_aset(req, f, v);
+  el = rb_hash_lookup(req, f);
+  switch(TYPE(el)) {
+    case T_ARRAY:
+      rb_ary_push(el, v);
+      break;
+    case T_STRING:
+      rb_hash_aset(req, f, rb_ary_new3(2, el, v));
+      break;
+    default:
+      rb_hash_aset(req, f, v);
+      break;
+  }
 }
 
 void client_reason_phrase(void *data, const char *at, size_t length)

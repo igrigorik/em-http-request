@@ -1,32 +1,25 @@
-require 'rubygems'
-require 'spec'
-require 'pp'
-
-require 'lib/em-http'
-require 'lib/em-http/mock'
+require 'test/helper'
 
 describe 'em-http mock' do
 
   before(:each) do
-    EM::HttpRequest.reset_registry!
-    EM::HttpRequest.reset_counts!
+    EventMachine::MockHttpRequest.reset_registry!
+    EventMachine::MockHttpRequest.reset_counts!
   end
   
   it "should serve a fake http request from a file" do
-    EM::HttpRequest.register_file('http://www.google.ca:80/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
-    EM.run do 
-      http = EM::HttpRequest.new('http://www.google.ca/').get
-      http.callback do
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EM.run {
+      
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
         http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
-        EM.stop
-      end
-      http.errback do
-        fail
-        EM.stop
-      end
-    end
+        EventMachine.stop
+      }
+    }
     
-    EM::HttpRequest.count('http://www.google.ca:80/', :get).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
   end
   
   it "should serve a fake http request from a string" do
@@ -52,32 +45,28 @@ window._gjp && _gjp()</script><style>td{line-height:.8em;}.gac_m td{line-height:
 ;google.y.first.push(function(){google.ac.b=true;google.ac.i(document.f,document.f.q,'','')});google.xjs&&google.j&&google.j.xi&&google.j.xi()</script></div><script>(function(){
 function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.timers.load.t.xjs&&google.report(google.timers.load,google.kCSI)}if(window.addEventListener)window.addEventListener("load",a,false);else if(window.attachEvent)window.attachEvent("onload",a);google.timers.load.t.prt=(new Date).getTime();
 })();
-HEREDOC
-    EM::HttpRequest.register('http://www.google.ca:80/', :get, data)
-    EM.run do 
-      http = EM::HttpRequest.new('http://www.google.ca/').get
-      http.callback do
+    HEREDOC
+    EventMachine::MockHttpRequest.register('http://www.google.ca:80/', :get, data)
+    EventMachine.run {
+      
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
         http.response.should == data.split("\n\n", 2).last
-        EM.stop
-      end
-      http.errback do
-        fail
-        EM.stop
-      end
-    end
+        EventMachine.stop
+      }
+    }
     
-    EM::HttpRequest.count('http://www.google.ca:80/', :get).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
   end
 
   it "should raise an exception if pass-thru is disabled" do
-    EM::HttpRequest.pass_through_requests = false
-    EM.run do 
+    EventMachine::MockHttpRequest.pass_through_requests = false
+    EventMachine.run {
       proc {
-        http = EM::HttpRequest.new('http://www.google.ca/').get
+        http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
       }.should raise_error
-      EM.stop
-    end
-    
+      EventMachine.stop
+    }
   end
-  
 end

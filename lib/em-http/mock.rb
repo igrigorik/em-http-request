@@ -1,5 +1,5 @@
 module EventMachine
-  class HttpRequest
+  class MockHttpRequest < EventMachine::HttpRequest
     
     include HttpEncoding
     
@@ -57,7 +57,7 @@ module EventMachine
     alias_method :real_send_request, :send_request
     
     protected
-    def send_request
+    def send_request(&blk)
       query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{encode_query(@uri.path, @options[:query], @uri.query)}"
       if s = @@registry[query] and fake = s[@method]
         @@registry_count[query][@method] += 1

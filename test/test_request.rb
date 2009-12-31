@@ -506,7 +506,25 @@ describe EventMachine::HttpRequest do
       }
     }
   end
-  
+
+  it "should retrieve multiple cookies" do
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine.run {
+
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
+        c1 = "PREF=ID=9454187d21c4a6a6:TM=1258403955:LM=1258403955:S=2-mf1n5oV5yAeT9-; expires=Wed, 16-Nov-2011 20:39:15 GMT; path=/; domain=.google.ca"
+        c2 = "NID=28=lvxxVdiBQkCetu_WFaUxLyB7qPlHXS5OdAGYTqge_laVlCKVN8VYYeVBh4bNZiK_Oan2gm8oP9GA-FrZfMPC3ZMHeNq37MG2JH8AIW9LYucU8brOeuggMEbLNNXuiWg4; expires=Tue, 18-May-2010 20:39:15 GMT; path=/; domain=.google.ca; HttpOnly"
+        http.response_header.cookie.should == [c1, c2]
+
+        EventMachine.stop
+      }
+    }
+
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
+  end
+
   context "connections via proxy" do
 
     it "should work with proxy servers" do
