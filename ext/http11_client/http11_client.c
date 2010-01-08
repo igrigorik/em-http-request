@@ -21,6 +21,20 @@ static VALUE eHttpClientParserError;
 #define  id_chunk_size rb_intern("@http_chunk_size")
 #define  id_last_chunk rb_intern("@last_chunk")
 
+#ifndef rb_hash_lookup
+/* rb_hash_lookup() is only in Ruby 1.8.7 */
+static VALUE rb_hash_lookup(VALUE hash, VALUE key)
+{
+  VALUE val;
+
+  if (!st_lookup(RHASH(hash)->tbl, key, &val)) {
+    return Qnil; /* without Hash#default */
+  }
+
+  return val;
+}
+#endif
+
 void client_http_field(void *data, const char *field, size_t flen, const char *value, size_t vlen)
 {
   char *ch, *end;
