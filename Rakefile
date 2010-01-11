@@ -35,7 +35,7 @@ task :ragel do
 end
 
 task :spec do
-	sh 'spec test/test_*.rb'
+	sh 'spec spec/*_spec.rb'
 end
 
 def make(makedir)
