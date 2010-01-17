@@ -71,8 +71,13 @@ module EventMachine
 
       # Make sure the ports are set as Addressable::URI doesn't
       # set the port if it isn't there
-      @uri.port ||= 80
-      @port_to_connect ||= 80
+      if @uri.scheme == "https"
+        @uri.port ||= 443
+        @port_to_connect ||= 443
+      else
+        @uri.port ||= 80
+        @port_to_connect ||= 80
+      end
       
       @method = method.to_s.upcase
       send_request(&blk)
