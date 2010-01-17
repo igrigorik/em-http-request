@@ -26,8 +26,7 @@ module EventMachine
     
     attr_reader :options, :method
 
-    def initialize(host, headers = {})
-      @headers = headers
+    def initialize(host)
       @uri = host.kind_of?(Addressable::URI) ? host : Addressable::URI::parse(host)
     end
 
