@@ -104,7 +104,12 @@ module EventMachine
     # you include port 80 then further redirects will tack on the :80 which is
     # annoying.
     def encode_host
-      @uri.host + (@uri.port != 80 ? ":#{@uri.port}" : "")
+      if @uri.port == 80 || @uri.port = 443
+        return @uri.host
+      else
+        p [:encode_host, @uri.host, @uri.port]
+        @uri.host +  ":#{@uri.port}"
+      end
     end
 
     def encode_request(method, path, query, uri_query)
