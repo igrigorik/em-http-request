@@ -14,7 +14,7 @@ describe EventMachine::MultiRequest do
       multi.add(EventMachine::HttpRequest.new('http://0.0.0.0:8083/').get(:timeout => 1))
       
       multi.callback  {
-        # verify successfull request
+        # verify successful request
         multi.responses[:succeeded].size.should == 1
         multi.responses[:succeeded].first.response.should match(/test/)
         
@@ -22,6 +22,28 @@ describe EventMachine::MultiRequest do
         multi.responses[:failed].size.should == 1
         multi.responses[:failed].first.response_header.status.should == 0
         
+        EventMachine.stop
+      }
+    } 
+  end
+
+  it "should handle multiple mock requests" do
+    EventMachine::MockHttpRequest.register_file('http://127.0.0.1:8080/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://0.0.0.0:8083/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+
+    EventMachine.run {
+      
+      # create an instance of multi-request handler, and the requests themselves
+      multi = EventMachine::MultiRequest.new
+      
+      # add multiple requests to the multi-handler
+      multi.add(EventMachine::MockHttpRequest.new('http://127.0.0.1:8080/').get)
+      multi.add(EventMachine::MockHttpRequest.new('http://0.0.0.0:8083/').get)
+      
+      multi.callback  {
+        # verify successful request
+        multi.responses[:succeeded].size.should == 2
+
         EventMachine.stop
       }
     } 

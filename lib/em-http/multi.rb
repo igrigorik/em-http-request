@@ -34,10 +34,10 @@ module EventMachine
     end
     
     def add(conn)
+      @requests.push(conn)
+
       conn.callback { @responses[:succeeded].push(conn); check_progress }
       conn.errback  { @responses[:failed].push(conn); check_progress }
-      
-      @requests.push(conn)
     end
     
     protected
