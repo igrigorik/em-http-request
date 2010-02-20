@@ -84,7 +84,7 @@ module EventMachine
     # Escapes a URI.
     def escape(s)
       s.to_s.gsub(/([^ a-zA-Z0-9_.-]+)/n) {
-        '%'+$1.unpack('H2'*$1.size).join('%').upcase
+        '%'+$1.unpack('H2'*$1.bytesize).join('%').upcase
       }.tr(' ', '+')
     end
 
@@ -304,7 +304,7 @@ module EventMachine
         
       else
         # Set the Content-Length if body is given
-        head['content-length'] =  body.length if body
+        head['content-length'] =  body.bytesize if body
 
         # Set the cookie header if provided
         if cookie = head.delete('cookie')
