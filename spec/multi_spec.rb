@@ -28,8 +28,8 @@ describe EventMachine::MultiRequest do
   end
 
   it "should handle multiple mock requests" do
-    EventMachine::MockHttpRequest.register_file('http://127.0.0.1:8080/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
-    EventMachine::MockHttpRequest.register_file('http://0.0.0.0:8083/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://127.0.0.1:8080/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://0.0.0.0:8083/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
 
     EventMachine.run {
       
