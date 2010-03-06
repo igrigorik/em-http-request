@@ -8,7 +8,7 @@ describe 'em-http mock' do
   end
   
   it "should serve a fake http request from a file" do
-    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EM.run {
       
       http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
@@ -19,7 +19,7 @@ describe 'em-http mock' do
       }
     }
     
-    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
   
   it "should serve a fake http request from a string" do
@@ -46,7 +46,7 @@ window._gjp && _gjp()</script><style>td{line-height:.8em;}.gac_m td{line-height:
 function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.timers.load.t.xjs&&google.report(google.timers.load,google.kCSI)}if(window.addEventListener)window.addEventListener("load",a,false);else if(window.attachEvent)window.attachEvent("onload",a);google.timers.load.t.prt=(new Date).getTime();
 })();
     HEREDOC
-    EventMachine::MockHttpRequest.register('http://www.google.ca:80/', :get, data)
+    EventMachine::MockHttpRequest.register('http://www.google.ca:80/', :get, {}, data)
     EventMachine.run {
       
       http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
@@ -57,7 +57,36 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       }
     }
     
-    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+  end
+  
+  it "should distinguish the cache by the given headers" do
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get,  {:user_agent => 'BERT'}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EM.run {
+      
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        EventMachine.stop
+      }
+    }
+    
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 0
+    
+    EM.run {
+      
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get({:head => {:user_agent => 'BERT'}})
+      http.errback { fail }
+      http.callback {
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        EventMachine.stop
+      }
+    }
+    
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 1
   end
 
   it "should raise an exception if pass-thru is disabled" do

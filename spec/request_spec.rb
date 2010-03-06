@@ -508,7 +508,7 @@ describe EventMachine::HttpRequest do
   end
 
   it "should retrieve multiple cookies" do
-    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EventMachine.run {
 
       http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
@@ -522,7 +522,7 @@ describe EventMachine::HttpRequest do
       }
     }
 
-    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get).should == 1
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
   context "connections via proxy" do
