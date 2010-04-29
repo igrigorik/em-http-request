@@ -59,6 +59,22 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
     
     EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
+
+  it "should serve a fake failing http request" do
+    EventMachine::MockHttpRequest.register('http://www.google.ca:80/', :get, {}, :fail)
+    error = false
+
+    EventMachine.run {
+      http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
+      http.errback {
+        error = true
+        EventMachine.stop
+      }
+    }
+
+    error.should be_true
+    EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+  end
   
   it "should distinguish the cache by the given headers" do
     EventMachine::MockHttpRequest.register_file('http://www.google.ca:80/', :get,  {:user_agent => 'BERT'}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))

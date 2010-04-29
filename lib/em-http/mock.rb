@@ -7,8 +7,12 @@ module EventMachine
 
       def setup(response, uri)
         @uri = uri
-        receive_data(response)
-        succeed(self) 
+        if response == :fail
+          fail(self)
+        else
+          receive_data(response)
+          succeed(self)
+        end
       end
       
       def unbind
