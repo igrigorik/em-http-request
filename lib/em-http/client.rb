@@ -291,6 +291,7 @@ module EventMachine
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       body    = normalize_body
+      file    = @options[:file]
       request_header = nil
 
       if @state == :response_proxy
@@ -307,6 +308,9 @@ module EventMachine
         head['origin'] = @options[:origin] || @uri.host
         
       else
+        # Set the Content-Length if file is given
+        head['content-length'] = File.size(file) if file
+
         # Set the Content-Length if body is given
         head['content-length'] =  body.bytesize if body
 
@@ -335,9 +339,13 @@ module EventMachine
     end
 
     def send_request_body
-      return unless @options[:body]
-      body = normalize_body
-      send_data body
+      if @options[:body]
+        body = normalize_body
+        send_data body
+        return
+      elsif @options[:file]
+        stream_file_data @options[:file], :http_chunks => false
+      end
     end
 
     def receive_data(data)
