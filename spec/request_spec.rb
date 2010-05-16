@@ -26,7 +26,7 @@ describe EventMachine::HttpRequest do
       http.callback { failed }
       http.errback {
         http.response_header.status.should == 0
-        http.errors.should match(/unable to resolve server address/)
+        http.error.should match(/unable to resolve server address/)
         EventMachine.stop
       }
     }
@@ -486,8 +486,8 @@ describe EventMachine::HttpRequest do
         EventMachine.stop
       }
     }
-  end   
-  
+  end
+
   it 'should let you pass a block to be called once the client is created' do
     client = nil
     EventMachine.run {
@@ -595,7 +595,7 @@ describe EventMachine::HttpRequest do
           # push should only be invoked after handshake is complete
           http.send(MSG)
         }
-        
+
         http.stream { |chunk|
           chunk.should == MSG
           EventMachine.stop

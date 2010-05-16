@@ -20,12 +20,12 @@ module EventMachine
 
     # The status code (as a string!)
     attr_accessor :http_status
-    
+
     # E-Tag
     def etag
       self["ETag"]
     end
-    
+
     def last_modified
       time = self["Last-Modified"]
       Time.parse(time) if time
@@ -151,7 +151,7 @@ module EventMachine
         FIELD_ENCODING % [k, ["Basic", Base64.encode64(v.join(":")).chomp].join(" ")]
       else
         encode_field(k,v)
-      end      
+      end
     end
 
     def encode_headers(head)
@@ -159,7 +159,7 @@ module EventMachine
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.to_s.capitalize }.join('-')
         result << case key
-        when 'Authorization', 'Proxy-authorization'          
+        when 'Authorization', 'Proxy-authorization'
           encode_auth(key, value)
         else
           encode_field(key, value)
@@ -190,7 +190,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :method, :options, :uri
-    attr_reader   :response, :response_header, :errors
+    attr_reader   :response, :response_header, :error
 
     def post_init
       @parser = HttpClientParser.new
@@ -199,33 +199,33 @@ module EventMachine
       @response_header = HttpResponseHeader.new
       @parser_nbytes = 0
       @response = ''
-      @errors = ''
+      @error = ''
       @content_decoder = nil
       @stream = nil
       @state = :response_header
     end
 
     # start HTTP request once we establish connection to host
-    def connection_completed              
+    def connection_completed
       # if connecting to proxy, then first negotiate the connection
-      # to intermediate server and wait for 200 response 
-      if @options[:proxy] and @state == :response_header 
+      # to intermediate server and wait for 200 response
+      if @options[:proxy] and @state == :response_header
         @state = :response_proxy
         send_request_header
-        
+
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
       else
         @state = :response_header
-                      
+
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
         send_request_body
       end
     end
-    
+
     # request is done, invoke the callback
     def on_request_complete
       begin
@@ -235,11 +235,11 @@ module EventMachine
       end
       unbind
     end
-    
+
     # request failed, invoke errback
     def on_error(msg, dns_error = false)
-      @errors = msg
-      
+      @error = msg
+
       # no connection signature on DNS failures
       # fail the connection directly
       dns_error == true ? fail(self) : unbind
@@ -273,7 +273,7 @@ module EventMachine
         end
       end
     end
-    
+
     def normalize_uri
       @normalized_uri ||= begin
         uri = @uri.dup
@@ -286,7 +286,7 @@ module EventMachine
     end
 
     def websocket?; @uri.scheme == 'ws'; end
-    
+
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
@@ -300,12 +300,12 @@ module EventMachine
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
         request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-        
+
       elsif websocket?
         head['upgrade'] = 'WebSocket'
         head['connection'] = 'Upgrade'
         head['origin'] = @options[:origin] || @uri.host
-        
+
       else
         # Set the Content-Length if body is given
         head['content-length'] =  body.bytesize if body
@@ -423,7 +423,7 @@ module EventMachine
 
       true
     end
-    
+
     # TODO: refactor with parse_response_header
     def parse_response_proxy
       return false unless parse_header(@response_header)
@@ -433,7 +433,7 @@ module EventMachine
         on_error "no HTTP response"
         return false
       end
-          
+
       # when a successfull tunnel is established, the proxy responds with a
       # 200 response code. from here, the tunnel is transparent.
       if @response_header.http_status.to_i == 200
@@ -482,7 +482,7 @@ module EventMachine
         else
           fail "websocket handshake failed"
         end
-       
+
       elsif @response_header.chunked_encoding?
         @state = :chunk_header
       elsif @response_header.content_length
@@ -500,7 +500,7 @@ module EventMachine
           on_error "Content-decoder error"
         end
       end
-      
+
       true
     end
 

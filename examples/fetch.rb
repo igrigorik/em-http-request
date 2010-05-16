@@ -21,7 +21,7 @@ EM.run do
       EM.stop if pending < 1
     }
     http.errback {
-      puts "#{url}\n" + http.errors.join("\n")
+      puts "#{url}\n" + http.error
 
       pending -= 1
       EM.stop if pending < 1
