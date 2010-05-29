@@ -127,4 +127,6 @@ server at will by calling the "send" method!
       puts "Recieved: #{msg}"
       http.send "Pong: #{msg}"
     }
+
+    http.disconnect { puts "oops, dropped connection?" }
   }
