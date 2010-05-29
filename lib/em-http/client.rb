@@ -202,6 +202,7 @@ module EventMachine
       @error = ''
       @content_decoder = nil
       @stream = nil
+      @disconnect = nil
       @state = :response_header
     end
 
@@ -248,6 +249,11 @@ module EventMachine
     # assign a stream processing block
     def stream(&blk)
       @stream = blk
+    end
+
+    # assign disconnect callback for websocket
+    def disconnect(&blk)
+      @disconnect = blk
     end
 
     # raw data push from the client (WebSocket) should
@@ -377,7 +383,9 @@ module EventMachine
     def unbind
       if @state == :finished || (@state == :body && @bytes_remaining.nil?)
         succeed(self)
+
       else
+        @disconnect.call(self) if @state == :websocket and @disconnect
         fail(self)
       end
       close_connection
