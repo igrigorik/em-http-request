@@ -488,6 +488,18 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should stream a file off disk" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :file => 'spec/fixtures/google.ca'
+
+      http.errback { failed }
+      http.callback {
+        http.response.should match('google')
+        EventMachine.stop
+      }
+    }
+  end
+
   it 'should let you pass a block to be called once the client is created' do
     client = nil
     EventMachine.run {

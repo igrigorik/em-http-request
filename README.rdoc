@@ -1,6 +1,6 @@
 = EM-HTTP-Client
 
-EventMachine based HTTP Request interface. Supports streaming response processing, uses Ragel HTTP parser. 
+EventMachine based HTTP Request interface. Supports streaming response processing, uses Ragel HTTP parser.
 - Simple interface for single & parallel requests via deferred callbacks
 - Automatic gzip & deflate decoding
 - Basic-Auth & OAuth support
@@ -8,7 +8,7 @@ EventMachine based HTTP Request interface. Supports streaming response processin
 - Proxy support (with SSL Tunneling)
 - Bi-directional communication with web-socket services
 
-Screencast / Demo of using EM-HTTP-Request: 
+Screencast / Demo of using EM-HTTP-Request:
 - http://everburning.com/news/eventmachine-screencast-em-http-request/
 
 == Getting started
@@ -26,12 +26,12 @@ Screencast / Demo of using EM-HTTP-Request:
 
   EventMachine.run {
     http = EventMachine::HttpRequest.new('http://127.0.0.1/').get :query => {'keyname' => 'value'}, :timeout => 10
- 
+
     http.callback {
       p http.response_header.status
       p http.response_header
       p http.response
-    
+
       EventMachine.stop
     }
   }
@@ -41,15 +41,15 @@ Fire and wait for multiple requess to complete via the MultiRequest interface.
 
   EventMachine.run {
     multi = EventMachine::MultiRequest.new
-      
+
     # add multiple requests to the multi-handler
     multi.add(EventMachine::HttpRequest.new('http://www.google.com/').get)
     multi.add(EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
-      
+
     multi.callback  {
       p multi.responses[:succeeded]
       p multi.responses[:failed]
-       
+
       EventMachine.stop
     }
   }
@@ -59,7 +59,7 @@ Full basic author support. For OAuth, check examples/oauth-tweet.rb file.
 
   EventMachine.run {
     http = EventMachine::HttpRequest.new('http://www.website.com/').get :head => {'authorization' => ['user', 'pass']}
- 
+
     http.errback { failed }
     http.callback {
       p http.response_header
@@ -72,7 +72,7 @@ Full basic author support. For OAuth, check examples/oauth-tweet.rb file.
   EventMachine.run {
     http1 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => {"key1" => 1, "key2" => [2,3]}
     http2 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => "some data"
-      
+
     # ...
   }
 
@@ -86,6 +86,16 @@ to the client, it is passed to the stream callback for you to operate on.
 
     # ...
   }
+
+== Streaming file from disk
+Allows you to efficiently stream a (large) file from disk via EventMachine's FileStream interface.
+
+EventMachine.run {
+  http = EventMachine::HttpRequest.new('http://www.website.com/').post :file => 'largefile.txt'
+  http.callback { |chunk| puts "Upload finished!" }
+
+  # ...
+}
 
 == Proxy example
 Full transparent proxy support with support for SSL tunneling.
@@ -106,7 +116,7 @@ server at will by calling the "send" method!
 
   EventMachine.run {
     http = EventMachine::HttpRequest.new("ws://yourservice.com/websocket").get :timeout => 0
- 
+
     http.errback { puts "oops" }
     http.callback {
       puts "WebSocket connected!"

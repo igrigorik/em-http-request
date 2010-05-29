@@ -290,8 +290,8 @@ module EventMachine
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
-      body    = normalize_body
       file    = @options[:file]
+      body    = normalize_body
       request_header = nil
 
       if @state == :response_proxy
