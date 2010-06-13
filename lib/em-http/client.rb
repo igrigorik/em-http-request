@@ -455,6 +455,7 @@ module EventMachine
       if @response_header.http_status.to_i == 200
         @response_header = HttpResponseHeader.new
         connection_completed
+
       else
         @state = :invalid
         on_error "proxy not accessible"
@@ -479,6 +480,9 @@ module EventMachine
             location = (@uri.join location).to_s
             @response_header[LOCATION] = location
           end
+
+          p [:following_location]
+          reconnect(location.host, location.path, self)
         rescue
           on_error "Location header format error"
           return false

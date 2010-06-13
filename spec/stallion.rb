@@ -85,13 +85,13 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.head?
       stable.response.status = 200
-      
+
     elsif stable.request.delete?
       stable.response.status = 200
-      
+
     elsif stable.request.put?
       stable.response.write stable.request.body.read
-      
+
     elsif stable.request.post?
       if stable.request.path_info == '/echo_content_type'
         stable.response.write stable.request.env["CONTENT_TYPE"]
@@ -109,6 +109,10 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/timeout'
       sleep(10)
       stable.response.write 'timeout'
+
+    elsif stable.request.path_info == '/redirect'
+      stable.response.status = 301
+      stable.response["Location"] = "/gzip"
 
     elsif stable.request.path_info == '/gzip'
       io = StringIO.new
@@ -129,7 +133,7 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.env["HTTP_AUTHORIZATION"]
       if stable.request.path_info == '/oauth_auth'
         stable.response.status = 200
-        stable.response.write stable.request.env["HTTP_AUTHORIZATION"]      
+        stable.response.write stable.request.env["HTTP_AUTHORIZATION"]
       else
         auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).chomp
 
@@ -153,7 +157,7 @@ end
 
 Thread.new do
   begin
-    Stallion.run :Host => '127.0.0.1', :Port => 8080  
+    Stallion.run :Host => '127.0.0.1', :Port => 8080
   rescue Exception => e
     print e
   end
@@ -205,7 +209,7 @@ Thread.new do
           break
         end
       end
-      
+
       while data = client.gets
         session.write data
       end
