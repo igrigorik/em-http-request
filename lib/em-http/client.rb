@@ -481,6 +481,11 @@ module EventMachine
             @response_header[LOCATION] = location
           end
 
+          # - extract options parser from request.rb to allow reconnects via proxy
+          # - keep track of number of redirects
+          # - allow config flag to limit # of redirects
+          # - store last_effective_url as an accessor
+
           p [:following_location]
           reconnect(location.host, location.path, self)
         rescue
