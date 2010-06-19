@@ -294,17 +294,6 @@ module EventMachine
       end
     end
 
-    def normalize_uri
-      @normalized_uri ||= begin
-        uri = @uri.dup
-        encoded_query = encode_query(@uri.path, @options[:query], @uri.query)
-        path, query = encoded_query.split("?", 2)
-        uri.query = query unless encoded_query.empty?
-        uri.path  = path
-        uri
-      end
-    end
-
     def websocket?; @uri.scheme == 'ws'; end
 
     def send_request_header
