@@ -206,7 +206,6 @@ module EventMachine
     attr_reader   :response, :response_header, :error, :redirects, :last_effective_url
 
     def post_init
-      p 'post_init'
       @parser = HttpClientParser.new
       @data = EventMachine::Buffer.new
       @chunk_header = HttpChunkHeader.new
@@ -224,7 +223,6 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
-      p 'connection_completed'
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response
       if @options[:proxy] and @state == :response_header
@@ -236,13 +234,10 @@ module EventMachine
         # exchange
       else
         @state = :response_header
-        p 'sending headers'
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
-        p 'sent header'
         send_request_body
-        p 'sent body'
       end
     end
 
@@ -363,7 +358,6 @@ module EventMachine
       request_header ||= encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
       request_header << CRLF
-      p request_header
       send_data request_header
     end
 
@@ -378,7 +372,6 @@ module EventMachine
     end
 
     def receive_data(data)
-      p ['recieved data', data]
       @data << data
       dispatch
     end
@@ -445,7 +438,6 @@ module EventMachine
     end
 
     def parse_header(header)
-      p [:parse_header, header]
       return false if @data.empty?
 
       begin
@@ -509,20 +501,19 @@ module EventMachine
           # store last url on any sign of redirect
           @last_effective_url = location.to_s
 
-          # - extract options parser from request.rb to allow reconnects via proxy
-
           if @options[:redirects] > @redirects
             @redirects += 1
             @uri = location
-            
-            s = EM::live_reconnect(location.host, location.port, self)
+
+            # swap current connection and reassign current handler
+            req = HttpOptions.new(@method, @uri, @options)
+            s = EM::live_reconnect(req.host, req.port, self)
+
             @response_header = HttpResponseHeader.new
             @state = :response_header
             @data.clear
           end
         rescue
-          p $!
-          p $!.backtrace
           on_error "Location header format error"
           return false
         end

@@ -55,42 +55,18 @@ module EventMachine
     protected
 
     def setup_request(method, options, &blk)
-      raise ArgumentError, "invalid request path" unless /^\// === @uri.path
-      @options = options
-
-      if proxy = options[:proxy]
-        @host_to_connect = proxy[:host]
-        @port_to_connect = proxy[:port]
-      else
-        @host_to_connect = @uri.host
-        @port_to_connect = @uri.port
-      end
-
-      @options[:timeout]    ||= 10  # default connect & inactivity timeouts
-      @options[:redirects]  ||= 0   # default number of redirects to follow
-
-      # Make sure the ports are set as Addressable::URI doesn't
-      # set the port if it isn't there
-      if @uri.scheme == "https"
-        @uri.port ||= 443
-        @port_to_connect ||= 443
-      else
-        @uri.port ||= 80
-        @port_to_connect ||= 80
-      end
-
-      @method = method.to_s.upcase
+      @req = HttpOptions.new(method, @uri, options)
       send_request(&blk)
     end
 
     def send_request(&blk)
       begin
-       EventMachine.connect(@host_to_connect, @port_to_connect, EventMachine::HttpClient) { |c|
-          c.uri = @uri
-          c.method = @method
-          c.options = @options
-          c.comm_inactivity_timeout = @options[:timeout]
-          c.pending_connect_timeout = @options[:timeout]
+        EventMachine.connect(@req.host, @req.port, EventMachine::HttpClient) { |c|
+          c.uri = @req.uri
+          c.method = @req.method
+          c.options = @req.options
+          c.comm_inactivity_timeout = @req.options[:timeout]
+          c.pending_connect_timeout = @req.options[:timeout]
           blk.call(c) unless blk.nil?
         }
       rescue EventMachine::ConnectionError => e
