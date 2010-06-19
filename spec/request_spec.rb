@@ -11,6 +11,7 @@ describe EventMachine::HttpRequest do
 
   it "should fail GET on DNS timeout" do
     EventMachine.run {
+      EventMachine.heartbeat_interval = 0.1
       http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
       http.callback { failed }
       http.errback {
@@ -22,6 +23,7 @@ describe EventMachine::HttpRequest do
 
   it "should fail GET on invalid host" do
     EventMachine.run {
+      EventMachine.heartbeat_interval = 0.1
       http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
       http.callback { failed }
       http.errback {
@@ -302,13 +304,14 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should timeout after 10 seconds" do
+  it "should timeout after 1 second" do
     EventMachine.run {
       t = Time.now.to_i
+      EventMachine.heartbeat_interval = 0.1
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/timeout').get :timeout => 1
 
       http.errback {
-        (Time.now.to_i - t).should >= 2
+        (Time.now.to_i - t).should <= 5
         EventMachine.stop
       }
       http.callback { failed }
