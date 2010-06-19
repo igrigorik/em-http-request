@@ -404,7 +404,7 @@ module EventMachine
     def dispatch
       while case @state
         when :response_proxy
-          parse_response_proxy
+          parse_response_header
         when :response_header
           parse_response_header
         when :chunk_header
@@ -446,29 +446,6 @@ module EventMachine
       true
     end
 
-    # TODO: refactor with parse_response_header
-    def parse_response_proxy
-      return false unless parse_header(@response_header)
-
-      unless @response_header.http_status and @response_header.http_reason
-        @state = :invalid
-        on_error "no HTTP response"
-        return false
-      end
-
-      # when a successfull tunnel is established, the proxy responds with a
-      # 200 response code. from here, the tunnel is transparent.
-      if @response_header.http_status.to_i == 200
-        @response_header = HttpResponseHeader.new
-        connection_completed
-
-      else
-        @state = :invalid
-        on_error "proxy not accessible"
-        return false
-      end
-    end
-
     def parse_response_header
       return false unless parse_header(@response_header)
 
@@ -476,6 +453,20 @@ module EventMachine
         @state = :invalid
         on_error "no HTTP response"
         return false
+      end
+
+      if @state == :response_proxy
+        # when a successfull tunnel is established, the proxy responds with a
+        # 200 response code. from here, the tunnel is transparent.
+        if @response_header.http_status.to_i == 200
+          @response_header = HttpResponseHeader.new
+          connection_completed
+          return true
+        else
+          @state = :invalid
+          on_error "proxy not accessible"
+          return false
+        end
       end
 
       # correct location header - some servers will incorrectly give a relative URI
