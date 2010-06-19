@@ -331,18 +331,32 @@ describe EventMachine::HttpRequest do
   it "should follow location redirects" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1
-      http.errback { p http; failed }
+      http.errback { failed }
       http.callback {
         http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "gzip"
         http.response.should == "compressed"
         http.last_effective_url.should == 'http://127.0.0.1:8080/gzip'
+        http.redirects.should == 1
 
         EM.stop
       }
     }
   end
 
+  it "should default to 0 redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 301
+        http.last_effective_url.should == 'http://127.0.0.1:8080/gzip'
+        http.redirects.should == 0
+
+        EM.stop
+      }
+    }
+  end
 
   it "should optionally pass the response body progressively" do
     EventMachine.run {

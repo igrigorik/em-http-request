@@ -66,8 +66,8 @@ module EventMachine
         @port_to_connect = @uri.port
       end
 
-      # default connect & inactivity timeouts
-      @options[:timeout] = 10 if not @options[:timeout]
+      @options[:timeout]    ||= 10  # default connect & inactivity timeouts
+      @options[:redirects]  ||= 0   # default number of redirects to follow
 
       # Make sure the ports are set as Addressable::URI doesn't
       # set the port if it isn't there
@@ -88,7 +88,7 @@ module EventMachine
        EventMachine.connect(@host_to_connect, @port_to_connect, EventMachine::HttpClient) { |c|
           c.uri = @uri
           c.method = @method
-          c.options = {:redirects => 0}.merge(@options)
+          c.options = @options
           c.comm_inactivity_timeout = @options[:timeout]
           c.pending_connect_timeout = @options[:timeout]
           blk.call(c) unless blk.nil?

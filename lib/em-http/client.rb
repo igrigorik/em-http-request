@@ -10,9 +10,10 @@
 def EventMachine::live_reconnect(host, port, handler)
   new_conn = connect_server host, port
 
-  # ugh, this is total hack.. let another connection handle current
-  # - is it possible to terminate current connection without firing callbacks etc?
-  @conns[handler.signature] = EventMachine::HttpClient.new(1)
+  # let an intermediate connection complete the interaction
+  # and reuse the current handler for the new connection
+  @conns[handler.signature] = EventMachine::HttpClient.new(handler.signature)
+  @conns[handler.signature].close_connection
 
   # update current handler to use new connection
   handler.signature = new_conn
@@ -312,9 +313,6 @@ module EventMachine
     def websocket?; @uri.scheme == 'ws'; end
 
     def send_request_header
-      # record last seen URL for auto-follow on 3xx
-      @last_effective_url = @uri.to_s
-      p @state
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       file    = @options[:file]
@@ -335,7 +333,6 @@ module EventMachine
         head['origin'] = @options[:origin] || @uri.host
 
       else
-        p head
         # Set the Content-Length if file is given
         head['content-length'] = File.size(file) if file
 
@@ -358,6 +355,9 @@ module EventMachine
 
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
+
+      # Record last seen URL
+      @last_effective_url = @uri.to_s
 
       # Build the request headers
       request_header ||= encode_request(@method, @uri.path, query, @uri.query)
@@ -506,18 +506,15 @@ module EventMachine
             @response_header[LOCATION] = location.to_s
           end
 
+          # store last url on any sign of redirect
+          @last_effective_url = location.to_s
+
           # - extract options parser from request.rb to allow reconnects via proxy
-          # - keep track of number of redirects
-          # - allow config flag to limit # of redirects
-          # - store last_effective_url as an accessor
 
           if @options[:redirects] > @redirects
             @redirects += 1
-            @last_effective_url = location.to_s
             @uri = location
             
-            p [:following_location, location.host, location.port]
-
             s = EM::live_reconnect(location.host, location.port, self)
             @response_header = HttpResponseHeader.new
             @state = :response_header
