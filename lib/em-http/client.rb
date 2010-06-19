@@ -7,6 +7,18 @@
 # license See file LICENSE for details
 # #--
 
+def EventMachine::live_reconnect(host, port, handler)
+  new_conn = connect_server host, port
+
+  # ugh, this is total hack.. let another connection handle current
+  # - is it possible to terminate current connection without firing callbacks etc?
+  @conns[handler.signature] = EventMachine::HttpClient.new(1)
+
+  # update current handler to use new connection
+  handler.signature = new_conn
+  @conns[new_conn] = handler
+end
+
 module EventMachine
 
   # A simple hash is returned for each request made by HttpClient with the
@@ -190,16 +202,19 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :method, :options, :uri
-    attr_reader   :response, :response_header, :error
+    attr_reader   :response, :response_header, :error, :redirects, :last_effective_url
 
     def post_init
+      p 'post_init'
       @parser = HttpClientParser.new
       @data = EventMachine::Buffer.new
       @chunk_header = HttpChunkHeader.new
       @response_header = HttpResponseHeader.new
       @parser_nbytes = 0
+      @redirects = 0
       @response = ''
       @error = ''
+      @last_effective_url = nil
       @content_decoder = nil
       @stream = nil
       @disconnect = nil
@@ -208,6 +223,7 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
+      p 'connection_completed'
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response
       if @options[:proxy] and @state == :response_header
@@ -219,11 +235,13 @@ module EventMachine
         # exchange
       else
         @state = :response_header
-
+        p 'sending headers'
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
+        p 'sent header'
         send_request_body
+        p 'sent body'
       end
     end
 
@@ -294,6 +312,9 @@ module EventMachine
     def websocket?; @uri.scheme == 'ws'; end
 
     def send_request_header
+      # record last seen URL for auto-follow on 3xx
+      @last_effective_url = @uri.to_s
+      p @state
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       file    = @options[:file]
@@ -314,6 +335,7 @@ module EventMachine
         head['origin'] = @options[:origin] || @uri.host
 
       else
+        p head
         # Set the Content-Length if file is given
         head['content-length'] = File.size(file) if file
 
@@ -341,6 +363,7 @@ module EventMachine
       request_header ||= encode_request(@method, @uri.path, query, @uri.query)
       request_header << encode_headers(head)
       request_header << CRLF
+      p request_header
       send_data request_header
     end
 
@@ -355,6 +378,7 @@ module EventMachine
     end
 
     def receive_data(data)
+      p ['recieved data', data]
       @data << data
       dispatch
     end
@@ -421,6 +445,7 @@ module EventMachine
     end
 
     def parse_header(header)
+      p [:parse_header, header]
       return false if @data.empty?
 
       begin
@@ -475,10 +500,10 @@ module EventMachine
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location
         begin
-          location = Addressable::URI.parse @response_header.location
+          location = Addressable::URI.parse(@response_header.location)
           if location.relative?
-            location = (@uri.join location).to_s
-            @response_header[LOCATION] = location
+            location = @uri.join(location)
+            @response_header[LOCATION] = location.to_s
           end
 
           # - extract options parser from request.rb to allow reconnects via proxy
@@ -486,9 +511,21 @@ module EventMachine
           # - allow config flag to limit # of redirects
           # - store last_effective_url as an accessor
 
-          p [:following_location]
-          reconnect(location.host, location.path, self)
+          if @options[:redirects] > @redirects
+            @redirects += 1
+            @last_effective_url = location.to_s
+            @uri = location
+            
+            p [:following_location, location.host, location.port]
+
+            s = EM::live_reconnect(location.host, location.port, self)
+            @response_header = HttpResponseHeader.new
+            @state = :response_header
+            @data.clear
+          end
         rescue
+          p $!
+          p $!.backtrace
           on_error "Location header format error"
           return false
         end

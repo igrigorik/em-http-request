@@ -315,19 +315,34 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should follow location redirects" do
+  it "should report last_effective_url" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :follow => true
-      http.errback { EM.stop }
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
+      http.errback { failed }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
-        http.response.should == "compressed"
+        http.last_effective_url.should == 'http://127.0.0.1:8080/'
 
         EM.stop
       }
     }
   end
+
+  it "should follow location redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1
+      http.errback { p http; failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == "compressed"
+        http.last_effective_url.should == 'http://127.0.0.1:8080/gzip'
+
+        EM.stop
+      }
+    }
+  end
+
 
   it "should optionally pass the response body progressively" do
     EventMachine.run {
@@ -478,7 +493,7 @@ describe EventMachine::HttpRequest do
     it "should not override content-type when passing in ruby hash/array for body" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => 'text'}})
+            :body => {:a => :b}, :head => {'content-type' => 'text'}})
 
         http.errback { failed }
         http.callback {
@@ -527,7 +542,6 @@ describe EventMachine::HttpRequest do
         client.should be_kind_of(EventMachine::HttpClient)
         http.response_header.status.should == 200
         http.response.should match(/callback_run=yes/)
-        client.normalize_uri.should == Addressable::URI.parse('http://127.0.0.1:8080/')
         EventMachine.stop
       }
     }
@@ -571,7 +585,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({
-        :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082}})
+            :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082}})
 
         http.errback { failed }
         http.callback {
