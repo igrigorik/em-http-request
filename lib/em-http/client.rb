@@ -7,19 +7,6 @@
 # license See file LICENSE for details
 # #--
 
-def EventMachine::live_reconnect(host, port, handler)
-  new_conn = connect_server host, port
-
-  # let an intermediate connection complete the interaction
-  # and reuse the current handler for the new connection
-  @conns[handler.signature] = EventMachine::HttpClient.new(handler.signature)
-  @conns[handler.signature].close_connection
-
-  # update current handler to use new connection
-  handler.signature = new_conn
-  @conns[new_conn] = handler
-end
-
 module EventMachine
 
   # A simple hash is returned for each request made by HttpClient with the
@@ -52,7 +39,7 @@ module EventMachine
     # Length of content as an integer, or nil if chunked/unspecified
     def content_length
       @content_length ||= ((s = self[HttpClient::CONTENT_LENGTH]) &&
-          (s =~ /^(\d+)$/)) ? $1.to_i : nil
+                           (s =~ /^(\d+)$/)) ? $1.to_i : nil
     end
 
     # Cookie header from the server
@@ -172,10 +159,10 @@ module EventMachine
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.to_s.capitalize }.join('-')
         result << case key
-        when 'Authorization', 'Proxy-authorization'
-          encode_auth(key, value)
-        else
-          encode_field(key, value)
+          when 'Authorization', 'Proxy-authorization'
+            encode_auth(key, value)
+          else
+            encode_field(key, value)
         end
       end
     end
@@ -248,7 +235,8 @@ module EventMachine
       rescue HttpDecoders::DecoderError
         on_error "Content-decoder error"
       end
-      unbind
+
+      close_connection
     end
 
     # request failed, invoke errback
@@ -341,7 +329,7 @@ module EventMachine
       head['user-agent'] ||= "EventMachine HttpClient"
 
       # Record last seen URL
-      @last_effective_url = @uri.to_s
+      @last_effective_url = @uri
 
       # Build the request headers
       request_header ||= encode_request(@method, @uri.path, query, @uri.query)
@@ -387,14 +375,28 @@ module EventMachine
     end
 
     def unbind
-      if @state == :finished || (@state == :body && @bytes_remaining.nil?)
-        succeed(self)
+      if @last_effective_url != @uri and @redirects < @options[:redirects]
+        # update uri to redirect location if we're allowed to traverse deeper
+        @uri = @last_effective_url
 
+        # keep track of the depth of requests we made in this session
+        @redirects += 1
+
+        # swap current connection and reassign current handler
+        req = HttpOptions.new(@method, @uri, @options)
+        reconnect(req.host, req.port)
+
+        @response_header = HttpResponseHeader.new
+        @state = :response_header
+        @data.clear
       else
-        @disconnect.call(self) if @state == :websocket and @disconnect
-        fail(self)
+        if @state == :finished || (@state == :body && @bytes_remaining.nil?)
+          succeed(self)
+        else
+          @disconnect.call(self) if @state == :websocket and @disconnect
+          fail(self)
+        end
       end
-      close_connection
     end
 
     #
@@ -403,25 +405,25 @@ module EventMachine
 
     def dispatch
       while case @state
-        when :response_proxy
-          parse_response_header
-        when :response_header
-          parse_response_header
-        when :chunk_header
-          parse_chunk_header
-        when :chunk_body
-          process_chunk_body
-        when :chunk_footer
-          process_chunk_footer
-        when :response_footer
-          process_response_footer
-        when :body
-          process_body
-        when :websocket
-          process_websocket
-        when :finished, :invalid
-          break
-        else raise RuntimeError, "invalid state: #{@state}"
+          when :response_proxy
+            parse_response_header
+          when :response_header
+            parse_response_header
+          when :chunk_header
+            parse_chunk_header
+          when :chunk_body
+            process_chunk_body
+          when :chunk_footer
+            process_chunk_footer
+          when :response_footer
+            process_response_footer
+          when :body
+            process_body
+          when :websocket
+            process_websocket
+          when :finished, :invalid
+            break
+          else raise RuntimeError, "invalid state: #{@state}"
         end
       end
     end
@@ -479,20 +481,8 @@ module EventMachine
           end
 
           # store last url on any sign of redirect
-          @last_effective_url = location.to_s
+          @last_effective_url = location
 
-          if @options[:redirects] > @redirects
-            @redirects += 1
-            @uri = location
-
-            # swap current connection and reassign current handler
-            req = HttpOptions.new(@method, @uri, @options)
-            s = EM::live_reconnect(req.host, req.port, self)
-
-            @response_header = HttpResponseHeader.new
-            @state = :response_header
-            @data.clear
-          end
         rescue
           on_error "Location header format error"
           return false
@@ -502,7 +492,7 @@ module EventMachine
       # shortcircuit on HEAD requests
       if @method == "HEAD"
         @state = :finished
-        on_request_complete
+        unbind
       end
 
       if websocket?
@@ -644,7 +634,7 @@ module EventMachine
       end
 
       # store remainder if message boundary has not yet
-      # been recieved
+      # been received
       @data << buffer if not buffer.empty?
 
       false

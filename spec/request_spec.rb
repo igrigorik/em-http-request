@@ -76,7 +76,7 @@ describe EventMachine::HttpRequest do
       uri = URI.parse('http://127.0.0.1:8080/')
       http = EventMachine::HttpRequest.new(uri).head
 
-      http.errback { failed }
+      http.errback { p http; failed }
       http.callback {
         http.response_header.status.should == 200
         http.response.should == ""
@@ -324,7 +324,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed }
       http.callback {
         http.response_header.status.should == 200
-        http.last_effective_url.should == 'http://127.0.0.1:8080/'
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
 
         EM.stop
       }
@@ -339,7 +339,7 @@ describe EventMachine::HttpRequest do
         http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "gzip"
         http.response.should == "compressed"
-        http.last_effective_url.should == 'http://127.0.0.1:8080/gzip'
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
         http.redirects.should == 1
 
         EM.stop
@@ -353,7 +353,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed }
       http.callback {
         http.response_header.status.should == 301
-        http.last_effective_url.should == 'http://127.0.0.1:8080/gzip'
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
         http.redirects.should == 0
 
         EM.stop
