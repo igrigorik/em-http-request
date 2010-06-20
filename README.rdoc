@@ -6,6 +6,7 @@ EventMachine based HTTP Request interface. Supports streaming response processin
 - Basic-Auth & OAuth support
 - Custom timeouts
 - Proxy support (with SSL Tunneling)
+- Auto-follow 3xx redirects with max depth
 - Bi-directional communication with web-socket services
 
 Screencast / Demo of using EM-HTTP-Request:
@@ -106,6 +107,15 @@ Full transparent proxy support with support for SSL tunneling.
       :port => 8080,
       :authorization => ['username', 'password'] # authorization is optional
   }
+
+== Auto-follow 3xx redirects
+Specify the max depth of redirects to follow, default is 0.
+
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://www.google.com/').get :redirect => 1
+    http.callback { p http.last_effective_url }
+  }
+
 
 == WebSocket example
 Bi-directional communication with WebSockets: simply pass in a ws:// resource and the client will

@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ilya Grigorik"]
-  s.date = %q{2010-06-19}
+  s.date = %q{2010-06-20}
   s.description = %q{EventMachine based, async HTTP Request interface}
   s.email = %q{ilya@igvita.com}
   s.extensions = ["ext/buffer/extconf.rb", "ext/http11_client/extconf.rb"]
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "em-http-request.gemspec",
      "examples/fetch.rb",
      "examples/fibered-http.rb",
      "examples/oauth-tweet.rb",
@@ -42,6 +43,7 @@ Gem::Specification.new do |s|
      "lib/em-http/core_ext/bytesize.rb",
      "lib/em-http/core_ext/hash.rb",
      "lib/em-http/decoders.rb",
+     "lib/em-http/http_options.rb",
      "lib/em-http/mock.rb",
      "lib/em-http/multi.rb",
      "lib/em-http/request.rb",
