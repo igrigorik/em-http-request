@@ -84,19 +84,15 @@ to the client, it is passed to the stream callback for you to operate on.
   EventMachine.run {
     http = EventMachine::HttpRequest.new('http://www.website.com/').get
     http.stream { |chunk| print chunk }
-
-    # ...
   }
 
 == Streaming file from disk
 Allows you to efficiently stream a (large) file from disk via EventMachine's FileStream interface.
 
-EventMachine.run {
-  http = EventMachine::HttpRequest.new('http://www.website.com/').post :file => 'largefile.txt'
-  http.callback { |chunk| puts "Upload finished!" }
-
-  # ...
-}
+  EventMachine.run {
+    http = EventMachine::HttpRequest.new('http://www.website.com/').post :file => 'largefile.txt'
+    http.callback { |chunk| puts "Upload finished!" }
+  }
 
 == Proxy example
 Full transparent proxy support with support for SSL tunneling.
