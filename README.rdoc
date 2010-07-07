@@ -108,7 +108,7 @@ Full transparent proxy support with support for SSL tunneling.
 Specify the max depth of redirects to follow, default is 0.
 
   EventMachine.run {
-    http = EventMachine::HttpRequest.new('http://www.google.com/').get :redirect => 1
+    http = EventMachine::HttpRequest.new('http://www.google.com/').get :redirects => 1
     http.callback { p http.last_effective_url }
   }
 
