@@ -375,7 +375,7 @@ module EventMachine
     end
 
     def unbind
-      if @last_effective_url != @uri and @redirects < @options[:redirects]
+      if (@state == :finished) && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
         # update uri to redirect location if we're allowed to traverse deeper
         @uri = @last_effective_url
 
