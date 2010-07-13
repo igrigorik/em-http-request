@@ -111,11 +111,13 @@ module EventMachine
       end
     end
 
-    def encode_request(method, path, query, uri_query)
-      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(path, query, uri_query)]
+    def encode_request(method, uri, query)
+      base = uri.path
+      uri_query = uri.query
+      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(base, query, uri_query)]
     end
 
-    def encode_query(path, query, uri_query)
+    def encode_query(base, query, uri_query)
       encoded_query = if query.kind_of?(Hash)
         query.map { |k, v| encode_param(k, v) }.join('&')
       else
@@ -124,8 +126,8 @@ module EventMachine
       if !uri_query.to_s.empty?
         encoded_query = [encoded_query, uri_query].reject {|part| part.empty?}.join("&")
       end
-      return path if encoded_query.to_s.empty?
-      "#{path}?#{encoded_query}"
+      return base if encoded_query.to_s.empty?
+      "#{base}?#{encoded_query}"
     end
 
     # URL encodes query parameters:
@@ -332,7 +334,7 @@ module EventMachine
       @last_effective_url = @uri
 
       # Build the request headers
-      request_header ||= encode_request(@method, @uri.path, query, @uri.query)
+      request_header ||= encode_request(@method, @uri, query)
       request_header << encode_headers(head)
       request_header << CRLF
       send_data request_header
