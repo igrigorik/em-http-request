@@ -112,12 +112,13 @@ module EventMachine
     end
 
     def encode_request(method, uri, query)
-      base = uri.path
-      uri_query = uri.query
-      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(base, query, uri_query)]
+      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(uri, query)]
     end
 
-    def encode_query(base, query, uri_query)
+    def encode_query(uri, query)
+      base = uri.path
+      uri_query = uri.query
+
       encoded_query = if query.kind_of?(Hash)
         query.map { |k, v| encode_param(k, v) }.join('&')
       else

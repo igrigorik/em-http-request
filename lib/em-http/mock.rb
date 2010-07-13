@@ -1,16 +1,16 @@
 module EventMachine
   OriginalHttpRequest = HttpRequest unless const_defined?(:OriginalHttpRequest)
-  
+
   class MockHttpRequest < EventMachine::HttpRequest
-    
+
     include HttpEncoding
-    
+
     class RegisteredRequest < Struct.new(:uri, :method, :headers)
       def self.build(uri, method, headers)
         new(uri, method.to_s.upcase, headers || {})
       end
     end
-    
+
     class FakeHttpClient < EventMachine::HttpClient
       def setup(response, uri)
         @uri = uri
@@ -21,14 +21,14 @@ module EventMachine
           succeed(self)
         end
       end
-      
+
       def unbind
       end
     end
-    
+
     @@registry = Hash.new
     @@registry_count = Hash.new{|h,k| h[k] = 0}
-    
+
     def self.use
       activate!
       yield
@@ -49,21 +49,21 @@ module EventMachine
     def self.reset_counts!
       @@registry_count.clear
     end
-    
+
     def self.reset_registry!
       @@registry.clear
     end
-    
+
     @@pass_through_requests = true
 
     def self.pass_through_requests=(pass_through_requests)
       @@pass_through_requests = pass_through_requests
     end
-    
+
     def self.pass_through_requests
       @@pass_through_requests
     end
-    
+
     def self.parse_register_args(args)
       headers, data = case args.size
       when 3
@@ -88,29 +88,29 @@ module EventMachine
       headers, url, method, data = parse_register_args(args)
       @@registry[RegisteredRequest.build(url, method, headers)] = File.read(data)
     end
-    
+
     def self.count(url, method, headers = {})
       @@registry_count[RegisteredRequest.build(url, method, headers)]
     end
-    
+
     def self.registered?(url, method, headers = {})
       @@registry.key?(RegisteredRequest.build(url, method, headers))
     end
-    
+
     def self.registered_content(url, method, headers = {})
       @@registry[RegisteredRequest.build(url, method, headers)]
     end
-    
+
     def self.increment_access(url, method, headers = {})
       @@registry_count[RegisteredRequest.build(url, method, headers)] += 1
     end
-    
+
     alias_method :real_send_request, :send_request
-    
+
     protected
     def send_request(&blk)
-      query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri.path, @req.options[:query], @req.uri.query)}"
-      headers = @req.options[:head]
+      query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri, @req.options[:query])}"
+      headers = @req.options[:head].to_s
       if self.class.registered?(query, @req.method, headers)
         self.class.increment_access(query, @req.method, headers)
         client = FakeHttpClient.new(nil)
