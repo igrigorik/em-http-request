@@ -214,7 +214,7 @@ module EventMachine
     def connection_completed
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response
-      if @options[:proxy] and @state == :response_header
+      if tunneling_proxy? and @state == :response_header
         @state = :response_proxy
         send_request_header
 
@@ -285,6 +285,12 @@ module EventMachine
     end
 
     def websocket?; @uri.scheme == 'ws'; end
+
+    def proxy?; !!@options[:proxy]; end
+
+    def tunneling_proxy?
+      proxy? and @options[:proxy][:tunnel] != false
+    end
 
     def send_request_header
       query   = @options[:query]
