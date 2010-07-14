@@ -80,7 +80,7 @@ module EventMachine
     
     protected
     def send_request(&blk)
-      query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri, @req.options[:query])}"
+      query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri, @req.options[:query], @req.options[:proxy])}"
       headers = @req.options[:head].to_s
       if self.class.registered?(query, @req.method, headers)
         self.class.increment_access(query, @req.method, headers)
