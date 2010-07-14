@@ -111,21 +111,29 @@ module EventMachine
       end
     end
 
-    def encode_request(method, uri, query)
-      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(uri, query)]
+    def encode_request(method, uri, query, proxy)
+      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(uri, query, proxy)]
     end
 
-    def encode_query(uri, query)
-      base = uri.path
-      uri_query = uri.query
+    def encode_query(uri, query, proxy)
+      if proxy and proxy[:tunnel] == false
+        if uri.query
+          query_length = uri.query.length + 1 # 1 for the "?"
+          base = uri.to_s[0...-query_length]
+        else
+          base = uri.to_s
+        end
+      else
+        base = uri.path
+      end
 
       encoded_query = if query.kind_of?(Hash)
         query.map { |k, v| encode_param(k, v) }.join('&')
       else
         query.to_s
       end
-      if !uri_query.to_s.empty?
-        encoded_query = [encoded_query, uri_query].reject {|part| part.empty?}.join("&")
+      if !uri.query.to_s.empty?
+        encoded_query = [encoded_query, uri.query].reject {|part| part.empty?}.join("&")
       end
       return base if encoded_query.to_s.empty?
       "#{base}?#{encoded_query}"
@@ -215,7 +223,7 @@ module EventMachine
     def connection_completed
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response
-      if tunneling_proxy? and @state == :response_header
+      if @options[:proxy] and @options[:proxy][:tunnel] != false and @state == :response_header
         @state = :response_proxy
         send_request_header
 
@@ -287,12 +295,6 @@ module EventMachine
 
     def websocket?; @uri.scheme == 'ws'; end
 
-    def proxy?; !!@options[:proxy]; end
-
-    def tunneling_proxy?
-      proxy? and @options[:proxy][:tunnel] != false
-    end
-
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
@@ -341,7 +343,7 @@ module EventMachine
       @last_effective_url = @uri
 
       # Build the request headers
-      request_header ||= encode_request(@method, @uri, query)
+      request_header ||= encode_request(@method, @uri, query, @options[:proxy])
       request_header << encode_headers(head)
       request_header << CRLF
       send_data request_header
