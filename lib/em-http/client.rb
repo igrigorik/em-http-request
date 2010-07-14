@@ -302,10 +302,10 @@ module EventMachine
       body    = normalize_body
       request_header = nil
 
-      if @options[:proxy] and not websocket?
+      if @options[:proxy] and (@options[:proxy][:tunnel] == false or @state == :response_proxy) and not websocket?
         proxy = @options[:proxy]
 
-        # initialize headers to establish the HTTP tunnel
+        # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
       end
