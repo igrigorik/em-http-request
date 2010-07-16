@@ -99,17 +99,17 @@ module EventMachine
     
     protected
     def send_request(&blk)
-      query = "#{@uri.scheme}://#{@uri.host}:#{@uri.port}#{encode_query(@uri.path, @options[:query], @uri.query)}"
-      headers = @options[:head].to_s
-      if self.class.registered?(query, @method, headers)
-        self.class.increment_access(query, @method, headers)
+      query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri.path, @req.options[:query], @req.uri.query)}"
+      headers = @req.options[:head].to_s
+      if self.class.registered?(query, @req.method, headers)
+        self.class.increment_access(query, @req.method, headers)
         client = FakeHttpClient.new(nil)
-        client.setup(self.class.registered_content(query, @method, headers), @uri)
+        client.setup(self.class.registered_content(query, @req.method, headers), @req.uri)
         client
       elsif @@pass_through_requests
         real_send_request
       else
-        raise "this request #{query} for method #{@method} with the headers #{@options[:head].inspect} isn't registered, and pass_through_requests is current set to false"
+        raise "this request #{query} for method #{@req.method} with the headers #{@req.options[:head].inspect} isn't registered, and pass_through_requests is current set to false"
       end
     end
   end
