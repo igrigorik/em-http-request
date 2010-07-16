@@ -1,4 +1,6 @@
 module EventMachine
+  OriginalHttpRequest = HttpRequest
+  
   class MockHttpRequest < EventMachine::HttpRequest
     
     include HttpEncoding
@@ -23,6 +25,23 @@ module EventMachine
     @@registry = nil
     @@registry_count = nil
     
+    def self.use
+      activate!
+      yield
+    ensure
+      deactivate!
+    end
+
+    def self.activate!
+      EventMachine.remove_const(:HttpRequest)
+      EventMachine.const_set(:HttpRequest, MockHttpRequest)
+    end
+
+    def self.deactivate!
+      EventMachine.remove_const(:HttpRequest)
+      EventMachine.const_set(:HttpRequest, OriginalHttpRequest)
+    end
+
     def self.reset_counts!
       @@registry_count = Hash.new do |registry,query| 
         registry[query] = Hash.new{|h,k| h[k] = Hash.new(0)}

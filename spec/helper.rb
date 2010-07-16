@@ -2,6 +2,7 @@ require 'rubygems'
 require 'spec'
 require 'pp'
 
-require 'lib/em-http'
-require 'lib/em-http/mock'
+$LOAD_PATH << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+require 'em-http'
 require 'em-websocket'

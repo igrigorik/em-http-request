@@ -35,7 +35,9 @@ task :ragel do
 end
 
 task :spec do
-  sh 'spec spec/*_spec.rb'
+  mock_specs, specs = Dir.glob('spec/*_spec.rb').partition{|s| s['mock']}
+  sh "spec #{specs.join(' ')}"
+  sh "spec #{mock_specs.join(' ')}"
 end
 
 def make(makedir)
