@@ -116,7 +116,7 @@ module EventMachine
     end
 
     def encode_query(uri, query, proxy)
-      if proxy and proxy[:tunnel] == false
+      if proxy and proxy[:use_connect] == false
         if uri.query
           query_length = uri.query.length + 1 # 1 for the "?"
           base = uri.to_s[0...-query_length]
@@ -223,7 +223,7 @@ module EventMachine
     def connection_completed
       # if connecting to proxy, then first negotiate the connection
       # to intermediate server and wait for 200 response
-      if @options[:proxy] and @options[:proxy][:tunnel] != false and @state == :response_header
+      if @options[:proxy] and @options[:proxy][:use_connect] != false and @state == :response_header
         @state = :response_proxy
         send_request_header
 
@@ -302,7 +302,7 @@ module EventMachine
       body    = normalize_body
       request_header = nil
 
-      if @options[:proxy] and (@options[:proxy][:tunnel] == false or @state == :response_proxy) and not websocket?
+      if @options[:proxy] and (@options[:proxy][:use_connect] == false or @state == :response_proxy) and not websocket?
         proxy = @options[:proxy]
 
         # initialize headers for the http proxy

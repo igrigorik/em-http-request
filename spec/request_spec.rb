@@ -630,7 +630,7 @@ describe EventMachine::HttpRequest do
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {
           :host => '127.0.0.1',
           :port => 8083,
-          :tunnel => false
+          :use_connect => false
         }
 
         http.errback { p http.inspect; failed }
