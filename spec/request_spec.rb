@@ -29,6 +29,7 @@ describe EventMachine::HttpRequest do
       http.errback {
         http.response_header.status.should == 0
         http.error.should match(/unable to resolve server address/)
+        http.uri.to_s.should match('http://somethinglocal:80/')
         EventMachine.stop
       }
     }

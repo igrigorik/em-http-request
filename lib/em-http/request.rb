@@ -72,6 +72,7 @@ module EventMachine
       rescue EventMachine::ConnectionError => e
         conn = EventMachine::HttpClient.new("")
         conn.on_error(e.message, true)
+        conn.uri = @req.uri
         conn
       end
     end
