@@ -624,6 +624,24 @@ describe EventMachine::HttpRequest do
         }
       }
     end
+
+    it "should avoid tunneling if asked" do
+      EventMachine.run {
+
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {
+          :host => '127.0.0.1',
+          :port => 8083,
+          :use_connect => false
+        }
+
+        http.errback { p http.inspect; failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should == 'Hello, World!'
+          EventMachine.stop
+        }
+      }
+    end
   end
 
   context "websocket connection" do

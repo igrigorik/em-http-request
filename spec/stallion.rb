@@ -164,7 +164,7 @@ Thread.new do
 end
 
 #
-# HTTP Proxy server
+# Tunneling HTTP Proxy server
 #
 Thread.new do
   server = TCPServer.new('127.0.0.1', 8082)
@@ -209,6 +209,41 @@ Thread.new do
           break
         end
       end
+
+      while data = client.gets
+        session.write data
+      end
+      session.flush
+      client.close
+    end
+    session.close
+  end
+end
+
+#
+# CONNECT-less HTTP Proxy server
+#
+Thread.new do
+  server = TCPServer.new('127.0.0.1', 8083)
+  loop do
+    session = server.accept
+    request = ""
+    while (data = session.gets) != "\r\n"
+      request << data
+    end
+    parts = request.split("\r\n")
+    method, destination, http_version = parts.first.split(' ')
+    if destination =~ /^http:/
+      uri = Addressable::URI.parse(destination)
+      absolute_path = uri.path + (uri.query ? "?#{uri.query}" : "")
+      client = TCPSocket.open(uri.host, uri.port || 80)
+      client.write "#{method} #{absolute_path} #{http_version}\r\n"
+      parts[1..-1].each do |part|
+        client.write "#{part}\r\n"
+      end
+      client.write "\r\n"
+      client.flush
+      client.close_write
 
       while data = client.gets
         session.write data
