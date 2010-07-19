@@ -34,10 +34,12 @@ task :ragel do
   end
 end
 
-task :spec do
-  mock_specs, specs = Dir.glob('spec/*_spec.rb').partition{|s| s['mock']}
-  sh "spec #{specs.join(' ')}"
-  sh "spec #{mock_specs.join(' ')}"
+require 'spec'
+require 'spec/rake/spectask'
+Spec::Rake::SpecTask.new(:spec) do |t|
+  t.spec_opts ||= []
+  t.spec_opts << "--options" << "spec/spec.opts"
+  t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
 def make(makedir)

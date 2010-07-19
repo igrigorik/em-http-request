@@ -136,3 +136,77 @@ server at will by calling the "send" method!
 
     http.disconnect { puts "oops, dropped connection?" }
   }
+
+== Mocking
+To do mock-style testing with EventMachine::HttpRequest, use MockHttpRequest to take over normal requests sent through HttpRequest. To enable mock requests, you can either use <tt>activate!/deactive!</tt> or +use+
+
+  EventMachine::MockHttpRequest.use {
+    # .. request code
+  }
+  
+Or
+
+  EventMachine::MockHttpRequest.activate!
+    # .. request code
+  EventMachine::MockHttpRequest.deactivate!
+
+To add a request to be mocked, use register or register_file
+
+  EventMachine::MockHttpRequest.use {
+    EventMachine::MockHttpRequest.register("http://something.com/test", :get, <<-CONTENT)
+  HTTP/1.0 200 OK
+  Date: Mon, 16 Nov 2009 20:39:15 GMT
+  Expires: -1
+  Cache-Control: private, max-age=0
+  Content-Type: text/html; charset=ISO-8859-1
+  Via: 1.0 .:80 (squid)
+  Connection: close
+
+  This is my awesome content
+    CONTENT
+  }
+
+Or if your content is in a file, you can use the following:
+
+  EventMachine::MockHttpRequest.use {
+    EventMachine::MockHttpRequest.register_file("http://something.com/test", :get, "path_to_mock")
+  }
+
+If you need to use headers as well, you can define them the following way:
+
+  EventMachine::MockHttpRequest.use {
+    EventMachine::MockHttpRequest.register("http://something.com/test", :get, {'Authorization' => 'Basic user:pass'}, <<-CONTENT)
+  HTTP/1.0 200 OK
+  Date: Mon, 16 Nov 2009 20:39:15 GMT
+  Expires: -1
+  Cache-Control: private, max-age=0
+  Content-Type: text/html; charset=ISO-8859-1
+  Via: 1.0 .:80 (squid)
+  Connection: close
+
+  This is my awesome content
+    CONTENT
+  }
+
+Or, with a file:
+
+  EventMachine::MockHttpRequest.use {
+    EventMachine::MockHttpRequest.register_file("http://something.com/test", :get, {'Authorization' => 'Basic user:pass'}, "path_to_mock")
+  }
+
+As well, mocking can be configured to pass through requests or not.
+
+  EventMachine::MockHttpRequest.pass_through_requests = true # or false!
+
+You can reset the registry at any point using
+
+  EventMachine::MockHttpRequest.reset_registry!
+
+To test if your mock was called, you can access the number of times each resource was called using
+
+  EventMachine::HttpRequest.count('http://www.google.ca:80/', :get)
+
+You can reset the count at any point using
+
+  EventMachine::MockHttpRequest.reset_counts!
+
