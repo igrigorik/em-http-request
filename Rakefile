@@ -34,8 +34,12 @@ task :ragel do
   end
 end
 
-task :spec do
-  sh 'spec spec/*_spec.rb'
+require 'spec'
+require 'spec/rake/spectask'
+Spec::Rake::SpecTask.new(:spec) do |t|
+  t.spec_opts ||= []
+  t.spec_opts << "--options" << "spec/spec.opts"
+  t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
 def make(makedir)
