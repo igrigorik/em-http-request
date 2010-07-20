@@ -241,9 +241,16 @@ Thread.new do
       parts[1..-1].each do |part|
         client.write "#{part}\r\n"
       end
+
       client.write "\r\n"
       client.flush
       client.close_write
+
+      # Take the initial line from the upstream response
+      session.write client.gets
+
+      # What (absolute) uri was requested?  Send it back in a header
+      session.write "X-The-Requested-URI: #{destination}\r\n"
 
       while data = client.gets
         session.write data
