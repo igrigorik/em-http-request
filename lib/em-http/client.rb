@@ -112,31 +112,28 @@ module EventMachine
     end
 
     def encode_request(method, uri, query, proxy)
-      HTTP_REQUEST_HEADER % [method.to_s.upcase, encode_query(uri, query, proxy)]
+      query = encode_query(uri, query)
+
+      # Non CONNECT proxies require that you provide the full request
+      # uri in request header, as opposed to a relative path.
+      query = uri.join(query) if proxy and not proxy[:use_connect]
+
+      HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
 
-    def encode_query(uri, query, proxy)
-      if proxy and proxy[:use_connect] == false
-        if uri.query
-          query_length = uri.query.length + 1 # 1 for the "?"
-          base = uri.to_s[0...-query_length]
-        else
-          base = uri.to_s
-        end
-      else
-        base = uri.path
-      end
-
+    def encode_query(uri, query)
       encoded_query = if query.kind_of?(Hash)
         query.map { |k, v| encode_param(k, v) }.join('&')
       else
         query.to_s
       end
+
       if !uri.query.to_s.empty?
         encoded_query = [encoded_query, uri.query].reject {|part| part.empty?}.join("&")
       end
-      return base if encoded_query.to_s.empty?
-      "#{base}?#{encoded_query}"
+
+      return uri.path if encoded_query.to_s.empty?
+      "#{uri.path}?#{encoded_query}"
     end
 
     # URL encodes query parameters:
@@ -221,10 +218,10 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
-      # if connecting to proxy, then first negotiate the connection
-      # to intermediate server and wait for 200 response
-      if @options[:proxy] and @options[:proxy][:use_connect] != false and @state == :response_header
-        @state = :response_proxy
+      # if we need to negotiate the proxy connection first, then
+      # issue a CONNECT query and wait for 200 response
+      if connect_proxy? and @state == :response_header
+        @state = :connect_proxy
         send_request_header
 
         # if connecting via proxy, then state will be :proxy_connected,
@@ -294,26 +291,32 @@ module EventMachine
     end
 
     def websocket?; @uri.scheme == 'ws'; end
+    def proxy?; !@options[:proxy].nil?; end
+    def connect_proxy?; proxy? && (@options[:proxy][:use_connect] == true); end
 
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       file    = @options[:file]
+      proxy   = @options[:proxy]
       body    = normalize_body
+
       request_header = nil
 
-      if @options[:proxy] and (@options[:proxy][:use_connect] == false or @state == :response_proxy) and not websocket?
-        proxy = @options[:proxy]
-
+      if proxy
         # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
+
+        # if we need to negotiate the tunnel connection first, then
+        # issue a CONNECT query to the proxy first. This is an optional
+        # flag, by default we will provide full URIs to the proxy
+        if @state == :connect_proxy
+          request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
+        end
       end
 
-      if @state == :response_proxy
-        request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-
-      elsif websocket?
+      if websocket?
         head['upgrade'] = 'WebSocket'
         head['connection'] = 'Upgrade'
         head['origin'] = @options[:origin] || @uri.host
@@ -346,7 +349,7 @@ module EventMachine
       @last_effective_url = @uri
 
       # Build the request headers
-      request_header ||= encode_request(@method, @uri, query, @options[:proxy])
+      request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
       send_data request_header
@@ -419,7 +422,7 @@ module EventMachine
 
     def dispatch
       while case @state
-          when :response_proxy
+          when :connect_proxy
             parse_response_header
           when :response_header
             parse_response_header
@@ -471,7 +474,7 @@ module EventMachine
         return false
       end
 
-      if @state == :response_proxy
+      if @state == :connect_proxy
         # when a successfull tunnel is established, the proxy responds with a
         # 200 response code. from here, the tunnel is transparent.
         if @response_header.http_status.to_i == 200
