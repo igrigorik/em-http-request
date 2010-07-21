@@ -110,7 +110,7 @@ module EventMachine
     protected
     def send_request(&blk)
       query = "#{@req.uri.scheme}://#{@req.uri.host}:#{@req.uri.port}#{encode_query(@req.uri, @req.options[:query])}"
-      headers = @req.options[:head].to_s
+      headers = @req.options[:head]
       if self.class.registered?(query, @req.method, headers)
         self.class.increment_access(query, @req.method, headers)
         client = FakeHttpClient.new(nil)
