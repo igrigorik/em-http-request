@@ -607,35 +607,93 @@ describe EventMachine::HttpRequest do
     EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
-  context "connections via proxy" do
+  context "connections via" do
+    context "direct proxy" do
+      it "should default to skip CONNECT" do
+        EventMachine.run {
 
-    it "should work with proxy servers" do
-      EventMachine.run {
+          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/?q=test').get :proxy => {
+            :host => '127.0.0.1', :port => 8083
+          }
 
-        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :proxy => {:host => '127.0.0.1', :port => 8082}
-
-        http.errback { p http.inspect; failed }
-        http.callback {
-          http.response_header.status.should == 200
-          http.response.should == 'Hello, World!'
-          EventMachine.stop
+          http.errback { p http.inspect; failed }
+          http.callback {
+            http.response_header.status.should == 200
+            http.response.should match('test')
+            EventMachine.stop
+          }
         }
-      }
+      end
+
+      it "should send absolute URIs to the proxy server" do
+        EventMachine.run {
+
+          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/?q=test').get :proxy => {
+            :host => '127.0.0.1', :port => 8083
+          }
+
+          http.errback { p http.inspect; failed }
+          http.callback {
+            http.response_header.status.should == 200
+            # The test proxy server gives the requested uri back in this header
+            http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8080/?q=test'
+            http.response_header['X_THE_REQUESTED_URI'].should_not == '/?q=test'
+            http.response.should match('test')
+            EventMachine.stop
+          }
+        }
+      end
+
+      it "should include query parameters specified in the options" do
+        EventMachine.run {
+
+          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get(
+            :proxy => { :host => '127.0.0.1', :port => 8083 },
+            :query => { 'q' => 'test' }
+          )
+
+          http.errback { p http.inspect; failed }
+          http.callback {
+            http.response_header.status.should == 200
+            http.response.should match('test')
+            EventMachine.stop
+          }
+        }
+      end
     end
 
-    it "should proxy POST data" do
-      EventMachine.run {
+    context "CONNECT proxy" do
+      it "should work with CONNECT proxy servers" do
+        EventMachine.run {
 
-        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({
-        :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082}})
+          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get({
+            :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
+          })
 
-        http.errback { failed }
-        http.callback {
-          http.response_header.status.should == 200
-          http.response.should match(/data/)
-          EventMachine.stop
+          http.errback { p http.inspect; failed }
+          http.callback {
+            http.response_header.status.should == 200
+            http.response.should == 'Hello, World!'
+            EventMachine.stop
+          }
         }
-      }
+      end
+
+      it "should proxy POST data" do
+        EventMachine.run {
+
+          http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({
+            :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
+          })
+
+          http.errback { failed }
+          http.callback {
+            http.response_header.status.should == 200
+            http.response.should match(/data/)
+            EventMachine.stop
+          }
+        }
+      end
     end
   end
 
