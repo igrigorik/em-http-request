@@ -12,7 +12,7 @@ Asynchronous HTTP client for Ruby, based on EventMachine runtime.
 - Proxy support (with SSL Tunneling)
 - Auto-follow 3xx redirects with custom max depth
 - Bi-directional communication with web-socket services
-- [Mocking support](http://wiki.github.com/igrigorik/em-http-request/mocking-httprequest)
+- [Native mocking support](http://wiki.github.com/igrigorik/em-http-request/mocking-httprequest) and through [Webmock](http://github.com/bblimke/webmock)
 
 Getting started
 ---------------
