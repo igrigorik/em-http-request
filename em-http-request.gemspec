@@ -9,18 +9,18 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ilya Grigorik"]
-  s.date = %q{2010-07-07}
+  s.date = %q{2010-07-21}
   s.description = %q{EventMachine based, async HTTP Request interface}
   s.email = %q{ilya@igvita.com}
   s.extensions = ["ext/buffer/extconf.rb", "ext/http11_client/extconf.rb"]
   s.extra_rdoc_files = [
     "LICENSE",
-     "README.rdoc"
+     "README.md"
   ]
   s.files = [
     ".gitignore",
      "LICENSE",
-     "README.rdoc",
+     "README.md",
      "Rakefile",
      "VERSION",
      "em-http-request.gemspec",
@@ -53,6 +53,7 @@ Gem::Specification.new do |s|
      "spec/mock_spec.rb",
      "spec/multi_spec.rb",
      "spec/request_spec.rb",
+     "spec/spec.opts",
      "spec/stallion.rb",
      "spec/stub_server.rb"
   ]
