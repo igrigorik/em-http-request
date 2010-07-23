@@ -35,11 +35,11 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should fail GET on missing path" do
+  it "should succeed GET on missing path" do
     EventMachine.run {
       lambda {
-        EventMachine::HttpRequest.new('http://www.google.com').get
-      }.should raise_error(ArgumentError)
+        EventMachine::HttpRequest.new('http://127.0.0.1:8080').get
+      }.should_not raise_error(ArgumentError)
 
       EventMachine.stop
     }
@@ -332,58 +332,72 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should report last_effective_url" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
-      http.errback { failed }
-      http.callback {
-        http.response_header.status.should == 200
-        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
+  context "redirect" do
+    it "should report last_effective_url" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
 
-        EM.stop
+          EM.stop
+        }
       }
-    }
-  end
+    end
 
-  it "should follow location redirects" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1
-      http.errback { failed }
-      http.callback {
-        http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
-        http.response.should == "compressed"
-        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
-        http.redirects.should == 1
+    it "should follow location redirects" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == "compressed"
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
+          http.redirects.should == 1
 
-        EM.stop
+          EM.stop
+        }
       }
-    }
-  end
+    end
 
-  it "should default to 0 redirects" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get
-      http.errback { failed }
-      http.callback {
-        http.response_header.status.should == 301
-        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
-        http.redirects.should == 0
+    it "should default to 0 redirects" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 301
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
+          http.redirects.should == 0
 
-        EM.stop
+          EM.stop
+        }
       }
-    }
-  end
+    end
 
-  it "should not invoke redirect logic on failed connections" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :timeout => 0.1, :redirects => 5
-      http.callback { failed }
-      http.errback {
-        http.redirects.should == 0
-        EM.stop
+    it "should not invoke redirect logic on failed connections" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :timeout => 0.1, :redirects => 5
+        http.callback { failed }
+        http.errback {
+          http.redirects.should == 0
+          EM.stop
+        }
       }
-    }
+    end
+
+    it "should normalize redirect urls" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/bad').get :redirects => 1
+        http.errback { failed }
+        http.callback {
+          http.last_effective_url.to_s.should match('http://127.0.0.1:8080/')
+          http.response.should match('Hello, World!')
+          EM.stop
+        }
+      }
+    end
   end
 
   it "should optionally pass the response body progressively" do
@@ -667,7 +681,7 @@ describe EventMachine::HttpRequest do
         EventMachine.run {
 
           http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get({
-            :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
+                                                                               :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
           })
 
           http.errback { p http.inspect; failed }
@@ -683,7 +697,7 @@ describe EventMachine::HttpRequest do
         EventMachine.run {
 
           http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post({
-            :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
+                                                                                :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
           })
 
           http.errback { failed }

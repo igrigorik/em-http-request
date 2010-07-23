@@ -2,7 +2,7 @@ class HttpOptions
   attr_reader :uri, :method, :host, :port, :options
 
   def initialize(method, uri, options)
-    raise ArgumentError, "invalid request path" unless /^\// === uri.path
+    uri.normalize!
 
     @options = options
     @method = method.to_s.upcase
