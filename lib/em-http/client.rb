@@ -492,9 +492,13 @@ module EventMachine
       if @response_header.location
         begin
           location = Addressable::URI.parse(@response_header.location)
+
           if location.relative?
             location = @uri.join(location)
             @response_header[LOCATION] = location.to_s
+          else
+            # if redirect is to an absolute url, check for correct URI structure
+            raise if location.host.nil?
           end
 
           # store last url on any sign of redirect

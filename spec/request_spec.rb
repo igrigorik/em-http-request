@@ -35,6 +35,16 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should raise error on invalid URL" do
+    EventMachine.run {
+      lambda {
+        EventMachine::HttpRequest.new('random?text').get
+      }.should raise_error
+
+      EM.stop
+    }
+  end
+
   it "should succeed GET on missing path" do
     EventMachine.run {
       lambda {
@@ -394,6 +404,29 @@ describe EventMachine::HttpRequest do
         http.callback {
           http.last_effective_url.to_s.should match('http://127.0.0.1:8080/')
           http.response.should match('Hello, World!')
+          EM.stop
+        }
+      }
+    end
+
+    it "should fail gracefully on a missing host in absolute Location header" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/nohost').get :redirects => 1
+        http.callback { failed }
+        http.errback {
+          http.error.should == 'Location header format error'
+          EM.stop
+        }
+      }
+    end
+
+    it "should fail gracefully on an invalid host in Location header" do
+      pending "validate tld's?"
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/badhost').get :redirects => 1
+        http.callback { failed }
+        http.errback {
+          http.error.should == 'Location header format error'
           EM.stop
         }
       }

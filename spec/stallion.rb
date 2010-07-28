@@ -118,6 +118,14 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 301
       stable.response["Location"] = "http://127.0.0.1:8080"
 
+    elsif stable.request.path_info == '/redirect/nohost'
+      stable.response.status = 301
+      stable.response["Location"] = "http:/"
+
+    elsif stable.request.path_info == '/redirect/badhost'
+      stable.response.status = 301
+      stable.response["Location"] = "http://$$$@$!%&^"
+
     elsif stable.request.path_info == '/gzip'
       io = StringIO.new
       gzip = Zlib::GzipWriter.new(io)
