@@ -28,8 +28,8 @@ module EventMachine
 
     attr_reader :requests, :responses
     
-    def initialize
-      @requests = []
+    def initialize(conns=[])
+      @requests = conns
       @responses = {:succeeded => [], :failed => []}
     end
     
