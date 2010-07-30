@@ -28,9 +28,10 @@ module EventMachine
 
     attr_reader :requests, :responses
     
-    def initialize(conns=[])
+    def initialize(conns=[], &block)
       @requests = conns
       @responses = {:succeeded => [], :failed => []}
+      callback(&block) if block_given?
     end
     
     def add(conn)
