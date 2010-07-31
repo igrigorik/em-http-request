@@ -23,12 +23,11 @@ module EventMachine
 
     # E-Tag
     def etag
-      self["ETag"]
+      self[HttpClient::ETAG]
     end
 
     def last_modified
-      time = self["Last-Modified"]
-      Time.parse(time) if time
+      self[HttpClient::LAST_MODIFIED]
     end
 
     # HTTP response status as an integer
@@ -183,10 +182,13 @@ module EventMachine
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_ENCODING="CONTENT_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
+    LAST_MODIFIED="LAST_MODIFIED"
     KEEP_ALIVE="CONNECTION"
     SET_COOKIE="SET_COOKIE"
     LOCATION="LOCATION"
     HOST="HOST"
+    ETAG="ETAG"
+
     CRLF="\r\n"
 
     attr_accessor :method, :options, :uri
