@@ -29,8 +29,9 @@ module EventMachine
     attr_reader :requests, :responses
     
     def initialize(conns=[], &block)
-      @requests = conns
+      @requests  = []
       @responses = {:succeeded => [], :failed => []}
+      add(*conns)
       callback(&block) if block_given?
     end
     
@@ -45,7 +46,8 @@ module EventMachine
    
     # invoke callback if all requests have completed
     def check_progress
-      succeed if (@responses[:succeeded].size + @responses[:failed].size) == @requests.size
+      succeed(self) if (@responses[:succeeded].size +
+                        @responses[:failed]   .size) == @requests.size
     end
     
   end
