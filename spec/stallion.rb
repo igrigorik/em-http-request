@@ -113,6 +113,7 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/redirect'
       stable.response.status = 301
       stable.response["Location"] = "/gzip"
+      stable.response.write 'redirect'
 
     elsif stable.request.path_info == '/redirect/bad'
       stable.response.status = 301

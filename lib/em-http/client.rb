@@ -405,6 +405,7 @@ module EventMachine
 
         @response_header = HttpResponseHeader.new
         @state = :response_header
+        @response = ''
         @data.clear
       else
         if @state == :finished || (@state == :body && @bytes_remaining.nil?)
