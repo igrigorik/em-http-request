@@ -83,7 +83,7 @@ module EventMachine
     # Escapes a URI.
     def escape(s)
       s.to_s.gsub(/([^ a-zA-Z0-9_.-]+)/n) {
-        '%'+$1.unpack('H2'*$1.bytesize).join('%').upcase
+        '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
       }.tr(' ', '+')
     end
 
@@ -92,6 +92,16 @@ module EventMachine
       s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n){
         [$1.delete('%')].pack('H*')
       }
+    end
+
+    if ''.respond_to?(:bytesize)
+      def bytesize(string)
+        string.bytesize
+      end
+    else
+      def bytesize(string)
+        string.size
+      end
     end
 
     # Map all header keys to a downcased string version
@@ -130,9 +140,7 @@ module EventMachine
       if !uri.query.to_s.empty?
         encoded_query = [encoded_query, uri.query].reject {|part| part.empty?}.join("&")
       end
-
-      return uri.path if encoded_query.to_s.empty?
-      "#{uri.path}?#{encoded_query}"
+      encoded_query.to_s.empty? ? uri.path : "#{uri.path}?#{encoded_query}"
     end
 
     # URL encodes query parameters:
