@@ -15,6 +15,43 @@ describe 'em-http mock' do
     EventMachine::MockHttpRequest.reset_counts!
   end
 
+  it "should serve a fake http request from a proc" do
+    EventMachine::HttpRequest.register('http://www.google.ca:80/', :get) { |req|
+      req.response_header.http_status = 200
+      req.response_header['SOME_WACKY_HEADER'] = 'WACKY_HEADER_VALUE'
+      req.response = "Well, now this is fun."
+    }
+    EM.run {
+      http = EventMachine::HttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header['SOME_WACKY_HEADER'].should == 'WACKY_HEADER_VALUE'
+        http.response.should == "Well, now this is fun."
+        EventMachine.stop
+      }
+    }
+  
+    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+  end
+
+  it "should serve a fake http request from a proc with raw data" do
+    EventMachine::HttpRequest.register('http://www.google.ca:80/', :get) { |req|
+      req.data << File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    }
+    EM.run {
+      http = EventMachine::HttpRequest.new('http://www.google.ca/').get
+      http.errback { fail }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        EventMachine.stop
+      }
+    }
+  
+    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+  end
+
   it "should serve a fake http request from a file" do
     EventMachine::HttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EM.run {
@@ -22,6 +59,7 @@ describe 'em-http mock' do
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
+        http.response_header.status.should == 200
         http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
         EventMachine.stop
       }
@@ -92,6 +130,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
+        http.response_header.status.should == 200
         http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
         EventMachine.stop
       }
@@ -105,6 +144,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get({:head => {:user_agent => 'BERT'}})
       http.errback { fail }
       http.callback {
+        http.response_header.status.should == 200
         http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
         EventMachine.stop
       }
