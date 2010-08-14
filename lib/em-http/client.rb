@@ -650,8 +650,8 @@ module EventMachine
       # slice the message out of the buffer and pass in
       # for processing, and buffer data otherwise
       buffer = @data.read
-      while msg = buffer.slice!(/\000([^\377]*)\377/)
-        msg.gsub!(/\A\x00|\xff\z/, '')
+      while msg = buffer.slice!(/\000([^\377]*)\377/n)
+        msg.gsub!(/\A\x00|\xff\z/n, '')
         @stream.call(msg)
       end
 
