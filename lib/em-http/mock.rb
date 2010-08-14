@@ -19,8 +19,13 @@ module EventMachine
         if response == :fail
           fail(self)
         else
-          receive_data(response)
-          succeed(self)
+          if response.respond_to?(:call)
+            response.call(self)
+            @state = :body
+          else
+            receive_data(response)
+          end
+          @state == :body ? succeed(self) : fail(self)
         end
       end
 
@@ -120,7 +125,7 @@ module EventMachine
         self.class.increment_access(query, @req.method, headers)
         client = FakeHttpClient.new(nil)
         content = self.class.registered_content(query, @req.method, headers)
-        client.setup(content.respond_to?(:call) ? content.call(client) : content, @req.uri)
+        client.setup(content, @req.uri)
         client
       elsif @@pass_through_requests
         real_send_request

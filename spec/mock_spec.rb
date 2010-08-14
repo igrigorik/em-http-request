@@ -37,19 +37,18 @@ describe 'em-http mock' do
 
   it "should serve a fake http request from a proc with raw data" do
     EventMachine::HttpRequest.register('http://www.google.ca:80/', :get) { |req|
-      req.data << File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+      req.receive_data(File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')))
     }
     EM.run {
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
     }
-  
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
   it "should serve a fake http request from a file" do
@@ -60,12 +59,11 @@ describe 'em-http mock' do
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
     }
-  
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
   it "should serve a fake http request from a string" do
@@ -99,11 +97,11 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       http.errback { fail }
       http.callback {
         http.response.should == data.split("\n\n", 2).last
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
     }
   
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
   it "should serve a fake failing http request" do
@@ -112,45 +110,44 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
 
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
+      http.callback {
+        EventMachine.stop
+        fail
+      }
       http.errback {
-        error = true
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
     }
 
-    error.should be_true
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
   it "should distinguish the cache by the given headers" do
     EventMachine::HttpRequest.register_file('http://www.google.ca:80/', :get,  {:user_agent => 'BERT'}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EventMachine::HttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EM.run {
-    
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 0
         EventMachine.stop
       }
     }
   
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 0
-  
     EM.run {
-    
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get({:head => {:user_agent => 'BERT'}})
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\n\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 1
         EventMachine.stop
       }
     }
   
-    EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 1
   end
 
   it "should raise an exception if pass-thru is disabled" do
