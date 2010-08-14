@@ -296,6 +296,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should return ETag and Last-Modified headers" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_query').get
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header.etag.should match('abcdefg')
+        http.response_header.last_modified.should match('Fri, 13 Aug 2010 17:31:21 GMT')
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should detect deflate encoding" do
     EventMachine.run {
 

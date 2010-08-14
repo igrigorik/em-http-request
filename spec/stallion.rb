@@ -78,6 +78,8 @@ Stallion.saddle :spec do |stable|
       stable.response.write 'test'
 
     elsif stable.request.path_info == '/echo_query'
+      stable.response["ETag"] = "abcdefg"
+      stable.response["Last-Modified"] = "Fri, 13 Aug 2010 17:31:21 GMT"
       stable.response.write stable.request.query_string
 
     elsif stable.request.path_info == '/echo_content_length'
