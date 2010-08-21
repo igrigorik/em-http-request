@@ -2,7 +2,7 @@
 
 ---
 
-## 0.12.11 / 2010-08-16
+## 0.2.11 / 2010-08-16
 
 - all URIs are now normalized prior to dispatch (and on redirect)
 - default to direct proxy (instead of CONNECT handshake) - better performance
