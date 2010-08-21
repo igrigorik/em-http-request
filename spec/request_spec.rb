@@ -677,8 +677,8 @@ describe EventMachine::HttpRequest do
       http = EventMachine::MockHttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
-        c1 = "PREF=ID=9454187d21c4a6a6:TM=1258403955:LM=1258403955:S=2-mf1n5oV5yAeT9-; expires=Wed, 16-Nov-2011 20:39:15 GMT; path=/; domain=.google.ca"
-        c2 = "NID=28=lvxxVdiBQkCetu_WFaUxLyB7qPlHXS5OdAGYTqge_laVlCKVN8VYYeVBh4bNZiK_Oan2gm8oP9GA-FrZfMPC3ZMHeNq37MG2JH8AIW9LYucU8brOeuggMEbLNNXuiWg4; expires=Tue, 18-May-2010 20:39:15 GMT; path=/; domain=.google.ca; HttpOnly"
+        c1 = "PREF=ID=11955ae9690fd292:TM=1281823106:LM=1281823106:S=wHdloFqGQ_OLSE92; expires=Mon, 13-Aug-2012 21:58:26 GMT; path=/; domain=.google.ca"
+        c2 = "NID=37=USTdOsxOSMbLjphkJ3S5Ueua3Yc23COXuK_pbztcHx7JoyhomwQySrvebCf3_u8eyrBiLWssVzaZcEOiKGEJbNdy8lRhnq_mfrdz693LaMjNPh__ccW4sgn1ZO6nQltE; expires=Sun, 13-Feb-2011 21:58:26 GMT; path=/; domain=.google.ca; HttpOnly"
         http.response_header.cookie.should == [c1, c2]
 
         EventMachine.stop
