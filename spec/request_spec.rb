@@ -68,17 +68,37 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should accept optional host override" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://google.com:8080/').get :host => '127.0.0.1'
+  context "host override" do
 
-      http.errback { failed }
-      http.callback {
-        http.response_header.status.should == 200
-        http.response.should match(/Hello/)
-        EventMachine.stop
+    it "should accept optional host" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://google.com:8080/').get :host => '127.0.0.1'
+
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match(/Hello/)
+          EventMachine.stop
+        }
       }
-    }
+    end
+
+    it "should reset host on redirect" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1, :host => '127.0.0.1'
+
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == "compressed"
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
+          http.redirects.should == 1
+
+          EM.stop
+        }
+      }
+    end
   end
 
   it "should perform successfull GET with a URI passed as argument" do
