@@ -266,7 +266,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
 
       # digg.com uses chunked encoding
-      http = EventMachine::HttpRequest.new('http://digg.com/').get
+      http = EventMachine::HttpRequest.new('http://digg.com/news').get
 
       http.errback { failed }
       http.callback {
@@ -851,3 +851,4 @@ describe EventMachine::HttpRequest do
     end
   end
 end
+
