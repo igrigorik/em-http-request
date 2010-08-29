@@ -403,20 +403,24 @@ module EventMachine
 
     def unbind
       if (@state == :finished) && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
-        # update uri to redirect location if we're allowed to traverse deeper
-        @uri = @last_effective_url
+        begin
+          # update uri to redirect location if we're allowed to traverse deeper
+          @uri = @last_effective_url
 
-        # keep track of the depth of requests we made in this session
-        @redirects += 1
+          # keep track of the depth of requests we made in this session
+          @redirects += 1
 
-        # swap current connection and reassign current handler
-        req = HttpOptions.new(@method, @uri, @options)
-        reconnect(req.host, req.port)
+          # swap current connection and reassign current handler
+          req = HttpOptions.new(@method, @uri, @options)
+          reconnect(req.host, req.port)
 
-        @response_header = HttpResponseHeader.new
-        @state = :response_header
-        @response = ''
-        @data.clear
+          @response_header = HttpResponseHeader.new
+          @state = :response_header
+          @response = ''
+          @data.clear
+        rescue EventMachine::ConnectionError => e
+          on_error(e.message, true)
+        end
       else
         if @state == :finished || (@state == :body && @bytes_remaining.nil?)
           succeed(self)
@@ -674,3 +678,4 @@ module EventMachine
   end
 
 end
+

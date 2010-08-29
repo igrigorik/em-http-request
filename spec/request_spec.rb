@@ -455,12 +455,11 @@ describe EventMachine::HttpRequest do
     end
 
     it "should fail gracefully on an invalid host in Location header" do
-      pending "validate tld's?"
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/badhost').get :redirects => 1
         http.callback { failed }
         http.errback {
-          http.error.should == 'Location header format error'
+          http.error.should == 'unable to resolve server address'
           EM.stop
         }
       }
