@@ -483,6 +483,49 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  context "optional header callback" do
+    it "should optionally pass the response headers" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
+
+        http.errback { failed }
+        http.headers { |hash|
+          hash.should be_an_kind_of Hash
+          hash.should include 'CONNECTION'
+          hash.should include 'CONTENT_LENGTH'
+        }
+
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match(/Hello/)
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should allow to terminate current connection from header callback" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
+
+        http.callback { failed }
+        http.headers { |hash|
+          hash.should be_an_kind_of Hash
+          hash.should include 'CONNECTION'
+          hash.should include 'CONTENT_LENGTH'
+
+          :close
+        }
+
+        http.errback { |e|
+          http.response_header.status.should == 200
+          http.error.should == 'header callback terminated connection'
+          http.response.should == ''
+          EventMachine.stop
+        }
+      }
+    end
+  end
+
   it "should optionally pass the deflate-encoded response body progressively" do
     EventMachine.run {
       body = ''
@@ -850,4 +893,3 @@ describe EventMachine::HttpRequest do
     end
   end
 end
-

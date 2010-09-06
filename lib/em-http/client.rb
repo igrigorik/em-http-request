@@ -276,6 +276,11 @@ module EventMachine
       @disconnect = blk
     end
 
+    # assign a headers parse callback
+    def headers(&blk)
+      @headers = blk
+    end
+
     # raw data push from the client (WebSocket) should
     # only be invoked after handshake, otherwise it will
     # inject data into the header exchange
@@ -482,6 +487,15 @@ module EventMachine
 
     def parse_response_header
       return false unless parse_header(@response_header)
+
+      # invoke headers callback after full parse if one
+      # is specified by the user
+      status = @headers.call(@response_header) if @headers
+      if status == :close
+        @state = :invalid
+        on_error "header callback terminated connection"
+        return false
+      end
 
       unless @response_header.http_status and @response_header.http_reason
         @state = :invalid
