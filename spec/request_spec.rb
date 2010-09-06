@@ -513,7 +513,7 @@ describe EventMachine::HttpRequest do
           hash.should include 'CONNECTION'
           hash.should include 'CONTENT_LENGTH'
 
-          :close
+          http.close('header callback terminated connection')
         }
 
         http.errback { |e|

@@ -265,6 +265,7 @@ module EventMachine
       # fail the connection directly
       dns_error == true ? fail(self) : unbind
     end
+    alias :close :on_error
 
     # assign a stream processing block
     def stream(&blk)
@@ -490,12 +491,7 @@ module EventMachine
 
       # invoke headers callback after full parse if one
       # is specified by the user
-      status = @headers.call(@response_header) if @headers
-      if status == :close
-        @state = :invalid
-        on_error "header callback terminated connection"
-        return false
-      end
+      @headers.call(@response_header) if @headers
 
       unless @response_header.http_status and @response_header.http_reason
         @state = :invalid
