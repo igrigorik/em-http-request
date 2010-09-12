@@ -1,6 +1,13 @@
 # Changelog
 
----
+## 0.2.12 / 2010-09-12
+
+- added headers callback (http.headers {|h| p h})
+- added .close method on client obj to terminate session (accepts message)
+
+- bugfix: report 0 for response status on 1.9 on timeouts
+- bugfix: handle bad Location host redirects
+- bugfix: reset host override on connect
 
 ## 0.2.11 / 2010-08-16
 
@@ -18,4 +25,3 @@
 - bugfix: invalid multibyte escape in websocket regex (1.9.2+)
 - bugfix: report etag and last_modified headers correctly
 
----
