@@ -224,7 +224,6 @@ module EventMachine
       @stream = nil
       @disconnect = nil
       @state = :response_header
-      @socks_state = :method_negotiation
     end
 
     # start HTTP request once we establish connection to host
@@ -309,7 +308,7 @@ module EventMachine
 
     def websocket?; @uri.scheme == 'ws'; end
     def proxy?; !@options[:proxy].nil?; end
-    def connect_proxy?; proxy?; end
+    def connect_proxy?; proxy? && (@options[:proxy][:use_connect] == true); end
 
     def send_request_header
       query   = @options[:query]
@@ -320,8 +319,6 @@ module EventMachine
 
       request_header = nil
 
-
-=begin
       if proxy
         # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
@@ -333,49 +330,45 @@ module EventMachine
         if @state == :connect_proxy
           request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
         end
-=end
-      if proxy and @state == :connect_proxy
-        @socks_state = :method_negotiation
-        send_data [5, 1, 0].pack('CCC')
+      end
+
+      if websocket?
+        head['upgrade'] = 'WebSocket'
+        head['connection'] = 'Upgrade'
+        head['origin'] = @options[:origin] || @uri.host
+
       else
-        if websocket?
-          head['upgrade'] = 'WebSocket'
-          head['connection'] = 'Upgrade'
-          head['origin'] = @options[:origin] || @uri.host
+        # Set the Content-Length if file is given
+        head['content-length'] = File.size(file) if file
 
-        else
-          # Set the Content-Length if file is given
-          head['content-length'] = File.size(file) if file
+        # Set the Content-Length if body is given
+        head['content-length'] =  body.bytesize if body
 
-          # Set the Content-Length if body is given
-          head['content-length'] =  body.bytesize if body
+        # Set the cookie header if provided
+        if cookie = head.delete('cookie')
+          head['cookie'] = encode_cookie(cookie)
+        end
 
-          # Set the cookie header if provided
-          if cookie = head.delete('cookie')
-            head['cookie'] = encode_cookie(cookie)
-          end
-
-          # Set content-type header if missing and body is a Ruby hash
-          if not head['content-type'] and options[:body].is_a? Hash
-            head['content-type'] = "application/x-www-form-urlencoded"
-          end
-
-          # Set the Host header if it hasn't been specified already
-          head['host'] ||= encode_host
-
-          # Set the User-Agent if it hasn't been specified
-          head['user-agent'] ||= "EventMachine HttpClient"
-
-          # Record last seen URL
-          @last_effective_url = @uri
-
-          # Build the request headers
-          request_header ||= encode_request(@method, @uri, query, proxy)
-          request_header << encode_headers(head)
-          request_header << CRLF
-          send_data request_header
+        # Set content-type header if missing and body is a Ruby hash
+        if not head['content-type'] and options[:body].is_a? Hash
+          head['content-type'] = "application/x-www-form-urlencoded"
         end
       end
+
+      # Set the Host header if it hasn't been specified already
+      head['host'] ||= encode_host
+
+      # Set the User-Agent if it hasn't been specified
+      head['user-agent'] ||= "EventMachine HttpClient"
+
+      # Record last seen URL
+      @last_effective_url = @uri
+
+      # Build the request headers
+      request_header ||= encode_request(@method, @uri, query, proxy)
+      request_header << encode_headers(head)
+      request_header << CRLF
+      send_data request_header
     end
 
     def send_request_body
@@ -451,7 +444,7 @@ module EventMachine
     def dispatch
       while case @state
           when :connect_proxy
-            parse_socks_response
+            parse_response_header
           when :response_header
             parse_response_header
           when :chunk_header
@@ -493,46 +486,6 @@ module EventMachine
       true
     end
 
-    def parse_socks_response
-      if @socks_state == :method_negotiation
-        return false unless @data.size >= 2
-
-        _, method = @data.unpack('CC')
-        @data = @data[2..-1]
-
-        if method == 0
-          @socks_state = :connecting
-          host = Socket.gethostbyname(@uri.host).last rescue host = nil
-          send_data [5, 1, 0, 1, host, @uri.port].flatten.pack('CCCCA4n')
-          return true
-        else
-          @state = :invalid
-          on_error "proxy did not accept method"
-          return false
-        end
-      elsif @socks_state == :connecting
-        return false unless @data.size >= 10
-
-        _, rep, _, atyp, _, _ = @data.unpack('CCCCNn')
-        @data = @data[10..-1]
-
-        if rep == 0
-          @socks_state = :connected
-          @state = :response_header
-
-          @response_header = HttpResponseHeader.new
-          connection_completed
-          return true
-        else
-          @state = :invalid
-          on_error "proxy could not connect to destination (#{rep})"
-          return false
-        end
-      end
-
-      false
-    end
-
     def parse_response_header
       return false unless parse_header(@response_header)
 
@@ -544,6 +497,20 @@ module EventMachine
         @state = :invalid
         on_error "no HTTP response"
         return false
+      end
+
+      if @state == :connect_proxy
+        # when a successfull tunnel is established, the proxy responds with a
+        # 200 response code. from here, the tunnel is transparent.
+        if @response_header.http_status.to_i == 200
+          @response_header = HttpResponseHeader.new
+          connection_completed
+          return true
+        else
+          @state = :invalid
+          on_error "proxy not accessible"
+          return false
+        end
       end
 
       # correct location header - some servers will incorrectly give a relative URI
