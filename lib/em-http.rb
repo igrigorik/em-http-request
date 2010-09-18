@@ -5,6 +5,7 @@
 #++
 
 require 'eventmachine'
+require 'socket'
 
 require File.dirname(__FILE__) + '/http11_client'
 require File.dirname(__FILE__) + '/em_buffer'

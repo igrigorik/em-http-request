@@ -224,19 +224,28 @@ module EventMachine
       @stream = nil
       @disconnect = nil
       @state = :response_header
+      @socks_state = nil
     end
 
     # start HTTP request once we establish connection to host
     def connection_completed
+      # if a socks proxy is specified, then a connection request
+      # has to be made to the socks server and we need to wait
+      # for a response code
+      if socks_proxy? and @state == :response_header
+        @state = :connect_socks_proxy
+        send_socks_handshake
+
       # if we need to negotiate the proxy connection first, then
       # issue a CONNECT query and wait for 200 response
-      if connect_proxy? and @state == :response_header
-        @state = :connect_proxy
+      elsif connect_proxy? and @state == :response_header
+        @state = :connect_http_proxy
         send_request_header
 
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
+        
       else
         @state = :response_header
         ssl = @options[:tls] || @options[:ssl] || {}
@@ -306,9 +315,38 @@ module EventMachine
       end
     end
 
+    # determines if there is enough data in the buffer
+    def has_bytes?(num)
+      @data.size >= num
+    end
+
     def websocket?; @uri.scheme == 'ws'; end
     def proxy?; !@options[:proxy].nil?; end
-    def connect_proxy?; proxy? && (@options[:proxy][:use_connect] == true); end
+
+    # determines if a proxy should be used that uses
+    # http-headers as proxy-mechanism
+    #
+    # this is the default proxy type if none is specified
+    def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
+
+    # determines if a http-proxy should be used with
+    # the CONNECT verb
+    def connect_proxy?; http_proxy? && (@options[:proxy][:use_connect] == true); end
+
+    # determines if a SOCKS5 proxy should be used
+    def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
+
+    def send_socks_handshake
+      # Method Negotiation as described on
+      # http://www.faqs.org/rfcs/rfc1928.html Section 3
+
+      @socks_state = :method_negotiation
+
+      # TO-DO: Implement Username/Password Authentication
+      methods = [0] # 0 => No Authentication
+      
+      send_data [5, methods.size].pack('CC') + methods.pack('C*')
+    end
 
     def send_request_header
       query   = @options[:query]
@@ -319,7 +357,7 @@ module EventMachine
 
       request_header = nil
 
-      if proxy
+      if proxy and proxy[:type] != :socks
         # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
@@ -327,7 +365,7 @@ module EventMachine
         # if we need to negotiate the tunnel connection first, then
         # issue a CONNECT query to the proxy first. This is an optional
         # flag, by default we will provide full URIs to the proxy
-        if @state == :connect_proxy
+        if @state == :connect_http_proxy
           request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
         end
       end
@@ -443,7 +481,9 @@ module EventMachine
 
     def dispatch
       while case @state
-          when :connect_proxy
+          when :connect_socks_proxy
+            parse_socks_response
+          when :connect_http_proxy
             parse_response_header
           when :response_header
             parse_response_header
@@ -564,6 +604,69 @@ module EventMachine
           @content_decoder = decoder_class.new do |s| on_decoded_body_data(s) end
         rescue HttpDecoders::DecoderError
           on_error "Content-decoder error"
+        end
+      end
+
+      true
+    end
+
+    # parses socks 5 server responses as specified
+    # on http://www.faqs.org/rfcs/rfc1928.html
+    def parse_socks_response
+      if @socks_state == :method_negotiation
+        return false unless has_bytes? 2
+
+        _, method = @data.read(2).unpack('CC')
+
+        if [0].include?(method)
+          @socks_state = :connecting
+
+          # TO-DO: Implement address types for IPv6 and Domain
+          begin
+            ip_address = Socket.gethostbyname(@uri.host).last
+            send_data [5, 1, 0, 1, ip_address, @uri.port].flatten.pack('CCCCA4n')
+
+          rescue
+            @state = :invalid
+            on_error "could not resolve host", true
+            return false
+          end
+        else
+          @state = :invalid
+          on_error "proxy did not accept method"
+          return false
+        end
+      elsif @socks_state == :connecting
+        return false unless has_bytes? 10
+
+        _, response_code, _, address_type, _, _ = @data.read(10).unpack('CCCCNn')
+
+        if response_code == 0
+          # success
+          @socks_state = :connected
+          @state = :proxy_connected
+          
+          @response_header = HttpResponseHeader.new
+
+          connection_completed
+        else
+          # error
+          @socks_state = :error
+          @state = :invalid
+
+          error_messages = {
+            1 => "general socks server failure",
+            2 => "connection not allowed by ruleset",
+            3 => "network unreachable",
+            4 => "host unreachable",
+            5 => "connection refused",
+            6 => "TTL expired",
+            7 => "command not supported",
+            8 => "address type not supported"
+          }
+          error_message = error_messages[response_code] || "unknown error (code: #{response_code})"
+          on_error "socks5 connect error: #{error_message}"
+          return false
         end
       end
 
