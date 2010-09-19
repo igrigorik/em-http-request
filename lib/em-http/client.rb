@@ -336,15 +336,21 @@ module EventMachine
     # determines if a SOCKS5 proxy should be used
     def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
+    def socks_methods
+      methods = []
+      methods << 2 if !options[:proxy][:authorization].nil? # 2 => Username/Password Authentication
+      methods << 0 # 0 => No Authentication Required
+
+      methods
+    end
+
     def send_socks_handshake
       # Method Negotiation as described on
       # http://www.faqs.org/rfcs/rfc1928.html Section 3
 
       @socks_state = :method_negotiation
 
-      # TO-DO: Implement Username/Password Authentication
-      methods = [0] # 0 => No Authentication
-      
+      methods = socks_methods
       send_data [5, methods.size].pack('CC') + methods.pack('C*')
     end
 
@@ -357,7 +363,7 @@ module EventMachine
 
       request_header = nil
 
-      if proxy and proxy[:type] != :socks
+      if http_proxy?
         # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
@@ -610,6 +616,21 @@ module EventMachine
       true
     end
 
+    def send_socks_connect_request
+      # TO-DO: Implement address types for IPv6 and Domain
+      begin
+        ip_address = Socket.gethostbyname(@uri.host).last
+        send_data [5, 1, 0, 1, ip_address, @uri.port].flatten.pack('CCCCA4n')
+
+      rescue
+        @state = :invalid
+        on_error "could not resolve host", true
+        return false
+      end
+
+      true
+    end
+
     # parses socks 5 server responses as specified
     # on http://www.faqs.org/rfcs/rfc1928.html
     def parse_socks_response
@@ -618,24 +639,51 @@ module EventMachine
 
         _, method = @data.read(2).unpack('CC')
 
-        if [0].include?(method)
-          @socks_state = :connecting
+        if socks_methods.include?(method)
+          if method == 0
+            @socks_state = :connecting
 
-          # TO-DO: Implement address types for IPv6 and Domain
-          begin
-            ip_address = Socket.gethostbyname(@uri.host).last
-            send_data [5, 1, 0, 1, ip_address, @uri.port].flatten.pack('CCCCA4n')
+            return send_socks_connect_request
 
-          rescue
-            @state = :invalid
-            on_error "could not resolve host", true
-            return false
+          elsif method == 2
+            @socks_state = :authenticating
+
+            credentials = @options[:proxy][:authorization]
+            if credentials.size < 2
+              @state = :invalid
+              on_error "username and password are not supplied"
+              return false
+            end
+
+            username, password = credentials
+
+            send_data [5, username.length, username, password.length, password].pack('CCA*CA*')
           end
+          
         else
           @state = :invalid
           on_error "proxy did not accept method"
           return false
         end
+
+      elsif @socks_state == :authenticating
+        return false unless has_bytes? 2
+
+        _, status_code = @data.read(2).unpack('CC')
+
+        if status_code == 0
+          # success
+          @socks_state = :connecting
+
+          return send_socks_connect_request
+
+        else
+          # error
+          @state = :invalid
+          on_error "access denied by proxy"
+          return false
+        end
+
       elsif @socks_state == :connecting
         return false unless has_bytes? 10
 
@@ -648,10 +696,13 @@ module EventMachine
           
           @response_header = HttpResponseHeader.new
 
+          # connection_completed will invoke actions to
+          # start sending all http data transparently
+          # over the socks connection
           connection_completed
+
         else
           # error
-          @socks_state = :error
           @state = :invalid
 
           error_messages = {
