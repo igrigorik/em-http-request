@@ -99,6 +99,31 @@ describe EventMachine::HttpRequest do
         }
       }
     end
+
+    it "should follow redirects on HEAD method" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/head').head :redirects => 1
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
+          EM.stop
+        }
+      }
+    end
+
+    it "should follow redirects on HEAD method (external)" do
+
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://www.google.com/').head :redirects => 1
+        http.errback { failed }
+        http.callback {
+          http.response_header.status.should == 200
+          EM.stop
+        }
+      }
+    end
+
   end
 
   it "should perform successfull GET with a URI passed as argument" do

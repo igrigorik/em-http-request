@@ -85,7 +85,7 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/echo_content_length'
       stable.response.write stable.request.content_length
 
-    elsif stable.request.head?
+    elsif stable.request.head? && stable.request.path_info == '/'
       stable.response.status = 200
 
     elsif stable.request.delete?
@@ -120,6 +120,10 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/redirect/bad'
       stable.response.status = 301
       stable.response["Location"] = "http://127.0.0.1:8080"
+
+    elsif stable.request.path_info == '/redirect/head'
+      stable.response.status = 301
+      stable.response["Location"] = "/"
 
     elsif stable.request.path_info == '/redirect/nohost'
       stable.response.status = 301

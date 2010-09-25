@@ -581,10 +581,13 @@ module EventMachine
         end
       end
 
-      # shortcircuit on HEAD requests
+      # Fire callbacks immediately after recieving header requests
+      # if the request method is HEAD. In case of a redirect, terminate
+      # current connection and reinitialize the process.
       if @method == "HEAD"
         @state = :finished
-        unbind
+        close_connection
+        return false
       end
 
       if websocket?
