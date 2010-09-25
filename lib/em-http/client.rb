@@ -545,7 +545,7 @@ module EventMachine
         return false
       end
 
-      if @state == :connect_proxy
+      if @state == :connect_http_proxy
         # when a successfull tunnel is established, the proxy responds with a
         # 200 response code. from here, the tunnel is transparent.
         if @response_header.http_status.to_i == 200
