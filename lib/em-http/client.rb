@@ -125,7 +125,7 @@ module EventMachine
 
       # Non CONNECT proxies require that you provide the full request
       # uri in request header, as opposed to a relative path.
-      query = uri.join(query) if proxy and not proxy[:use_connect]
+      query = uri.join(query) if proxy && proxy[:type] != :socks && !proxy[:use_connect]
 
       HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
@@ -245,7 +245,7 @@ module EventMachine
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
-        
+
       else
         @state = :response_header
         ssl = @options[:tls] || @options[:ssl] || {}
@@ -659,7 +659,7 @@ module EventMachine
 
             send_data [5, username.length, username, password.length, password].pack('CCA*CA*')
           end
-          
+
         else
           @state = :invalid
           on_error "proxy did not accept method"
@@ -693,7 +693,7 @@ module EventMachine
           # success
           @socks_state = :connected
           @state = :proxy_connected
-          
+
           @response_header = HttpResponseHeader.new
 
           # connection_completed will invoke actions to
