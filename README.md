@@ -9,7 +9,7 @@ Asynchronous HTTP client for Ruby, based on EventMachine runtime.
 - Basic-Auth & OAuth support
 - Custom timeout support
 - Stream response processing
-- Proxy support (with SSL Tunneling)
+- Proxy support (with SSL Tunneling): CONNECT, direct & SOCKS5
 - Auto-follow 3xx redirects with custom max depth
 - Bi-directional communication with web-socket services
 - [Native mocking support](http://wiki.github.com/igrigorik/em-http-request/mocking-httprequest) and through [Webmock](http://github.com/bblimke/webmock)
@@ -114,7 +114,6 @@ Allows you to efficiently stream a (large) file from disk via EventMachine's Fil
 
 Proxy example
 -------------
-
 Full transparent proxy support with support for SSL tunneling.
 
       EventMachine.run {
@@ -123,6 +122,17 @@ Full transparent proxy support with support for SSL tunneling.
           :port => 8080,
           :authorization => ['username', 'password'] # authorization is optional
       }
+
+SOCKS5 Proxy example
+-------------
+Tunnel your requests via connect via SOCKS5 proxies (ssh -D port somehost).
+
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://www.website.com/').get :proxy => {
+        :host => 'www.myproxy.com',
+        :port => 8080,
+        :type => :socks
+    }
 
 Auto-follow 3xx redirects
 -------------------------

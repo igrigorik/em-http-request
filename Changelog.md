@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.13 / 2010-09-25
+
+- added SOCKS5 proxy support
+- bugfix: follow redirects on HEAD requests
+
 ## 0.2.12 / 2010-09-12
 
 - added headers callback (http.headers {|h| p h})
