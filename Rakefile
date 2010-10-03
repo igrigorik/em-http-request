@@ -19,9 +19,9 @@ task :default => :compile
 Rake::RDocTask.new(:rdoc) do |task|
   task.rdoc_dir = 'doc'
   task.title    = 'EventMachine::HttpRequest'
-  task.options = %w(--title HttpRequest --main README --line-numbers)
+  task.options = %w(--title HttpRequest --main README.md --line-numbers)
   task.rdoc_files.include(['lib/**/*.rb'])
-  task.rdoc_files.include(['README', 'LICENSE'])
+  task.rdoc_files.include(['README.md', 'LICENSE'])
 end
 
 # Rebuild parser Ragel
