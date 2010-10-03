@@ -29,6 +29,7 @@ Libraries & Applications using em-http
 - [RDaneel](http://github.com/hasmanydevelopers/RDaneel) - Ruby crawler which respects robots.txt
 - [rsolr-async](http://github.com/mwmitchell/rsolr-async) - An asynchronus connection adapter for RSolr
 - [PubSubHubbub](http://github.com/igrigorik/PubSubHubbub) - Asynchronous PubSubHubbub ruby client
+- [Firering](http://github.com/EmmanuelOga/firering) - Eventmachine powered Campfire API
 - and many others.. drop me a link if you want yours included!
 
 Simple client example
