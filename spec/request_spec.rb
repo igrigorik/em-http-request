@@ -247,6 +247,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should escape body on POST" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => {:stuff => 'string&string'}
+
+      http.errback { failed }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == "stuff=string%26string"
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should perform successfull POST with Ruby Hash/Array as params" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => {"key1" => 1, "key2" => [2,3]}

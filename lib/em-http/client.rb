@@ -82,9 +82,9 @@ module EventMachine
 
     # Escapes a URI.
     def escape(s)
-      s.to_s.gsub(/([^ a-zA-Z0-9_.-]+)/n) {
+      s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/n) {
         '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
-      }.tr(' ', '+')
+      }
     end
 
     # Unescapes a URI escaped string.
@@ -151,6 +151,29 @@ module EventMachine
       else
         escape(k) + "=" + escape(v)
       end
+    end
+
+    def form_encode_body(obj)
+      pairs = []
+      recursive = Proc.new do |h, prefix|
+        h.each do |k,v|
+          key = prefix == '' ? escape(k) : "#{prefix}[#{escape(k)}]"
+
+          if v.is_a? Array
+            nh = Hash.new
+            v.size.times { |t| nh[t] = v[t] }
+            recursive.call(nh, key)
+
+          elsif v.is_a? Hash
+            recursive.call(v, key)
+          else
+            pairs << "#{key}=#{escape(v)}"
+          end
+        end
+      end
+
+      recursive.call(obj, '')
+      return pairs.join('&')
     end
 
     # Encode a field in an HTTP header
@@ -236,8 +259,8 @@ module EventMachine
         @state = :connect_socks_proxy
         send_socks_handshake
 
-      # if we need to negotiate the proxy connection first, then
-      # issue a CONNECT query and wait for 200 response
+        # if we need to negotiate the proxy connection first, then
+        # issue a CONNECT query and wait for 200 response
       elsif connect_proxy? and @state == :response_header
         @state = :connect_http_proxy
         send_request_header
@@ -308,7 +331,7 @@ module EventMachine
     def normalize_body
       @normalized_body ||= begin
         if @options[:body].is_a? Hash
-          @options[:body].to_params
+          form_encode_body(@options[:body])
         else
           @options[:body]
         end
@@ -845,4 +868,3 @@ module EventMachine
   end
 
 end
-
