@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.14 / 2010-10-06
+
+- bugfix: form-encode keys/values of ruby objects passed in as body
+
 ## 0.2.13 / 2010-09-25
 
 - added SOCKS5 proxy support

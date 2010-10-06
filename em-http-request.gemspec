@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{em-http-request}
-  s.version = "0.2.13"
+  s.version = "0.2.14"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ilya Grigorik"]
-  s.date = %q{2010-09-25}
+  s.date = %q{2010-10-06}
   s.description = %q{EventMachine based, async HTTP Request interface}
   s.email = %q{ilya@igvita.com}
   s.extensions = ["ext/buffer/extconf.rb", "ext/http11_client/extconf.rb"]
@@ -43,14 +43,13 @@ Gem::Specification.new do |s|
      "lib/em-http.rb",
      "lib/em-http/client.rb",
      "lib/em-http/core_ext/bytesize.rb",
-     "lib/em-http/core_ext/hash.rb",
      "lib/em-http/decoders.rb",
      "lib/em-http/http_options.rb",
      "lib/em-http/mock.rb",
      "lib/em-http/multi.rb",
      "lib/em-http/request.rb",
+     "spec/encoding_spec.rb",
      "spec/fixtures/google.ca",
-     "spec/hash_spec.rb",
      "spec/helper.rb",
      "spec/mock_spec.rb",
      "spec/multi_spec.rb",
@@ -67,7 +66,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.7}
   s.summary = %q{EventMachine based, async HTTP Request interface}
   s.test_files = [
-    "spec/hash_spec.rb",
+    "spec/encoding_spec.rb",
      "spec/helper.rb",
      "spec/mock_spec.rb",
      "spec/multi_spec.rb",
