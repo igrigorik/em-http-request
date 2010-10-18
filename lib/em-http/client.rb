@@ -67,11 +67,15 @@ module EventMachine
   class HttpChunkHeader < Hash
     # When parsing chunked encodings this is set
     attr_accessor :http_chunk_size
+    
+    def initialize
+      super
+      @http_chunk_size = '0'
+    end
 
     # Size of the chunk as an integer
     def chunk_size
-      return @chunk_size unless @chunk_size.nil?
-      @chunk_size = @http_chunk_size ? @http_chunk_size.to_i(base=16) : 0
+      @http_chunk_size.to_i(base=16)
     end
   end
 
@@ -242,6 +246,7 @@ module EventMachine
       @redirects = 0
       @response = ''
       @error = ''
+      @headers = nil
       @last_effective_url = nil
       @content_decoder = nil
       @stream = nil
