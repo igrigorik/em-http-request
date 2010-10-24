@@ -225,6 +225,7 @@ module EventMachine
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_ENCODING="CONTENT_ENCODING"
     CONTENT_LENGTH="CONTENT_LENGTH"
+    CONTENT_TYPE="CONTENT_TYPE".freeze
     LAST_MODIFIED="LAST_MODIFIED"
     KEEP_ALIVE="CONNECTION"
     SET_COOKIE="SET_COOKIE"
@@ -249,6 +250,7 @@ module EventMachine
       @headers = nil
       @last_effective_url = nil
       @content_decoder = nil
+      @content_charset = nil
       @stream = nil
       @disconnect = nil
       @state = :response_header
@@ -472,6 +474,7 @@ module EventMachine
     end
 
     def on_decoded_body_data(data)
+      data.force_encoding @content_charset  if @content_charset
       if @stream
         @stream.call(data)
       else
@@ -642,6 +645,10 @@ module EventMachine
         rescue HttpDecoders::DecoderError
           on_error "Content-decoder error"
         end
+      end
+
+      if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
+        @content_charset = Encoding.find $1
       end
 
       true

@@ -44,7 +44,8 @@ describe 'em-http mock' do
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'), :encoding => 'ISO-8859-1').split("\r\n\r\n", 2).last
+        http.response.encoding.to_s.should == 'ISO-8859-1'
         EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
@@ -59,7 +60,8 @@ describe 'em-http mock' do
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'), :encoding => 'ISO-8859-1').split("\r\n\r\n", 2).last
+        http.response.encoding.to_s.should == 'ISO-8859-1'
         EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine.stop
       }
@@ -130,7 +132,8 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'), :encoding => 'ISO-8859-1').split("\r\n\r\n", 2).last
+        http.response.encoding.to_s.should == 'ISO-8859-1'
         EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
         EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 0
         EventMachine.stop
@@ -142,7 +145,8 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
       http.errback { fail }
       http.callback {
         http.response_header.status.should == 200
-        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca')).split("\r\n\r\n", 2).last
+        http.response.should == File.read(File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'), :encoding => 'ISO-8859-1').split("\r\n\r\n", 2).last
+        http.response.encoding.to_s.should == 'ISO-8859-1'
         EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {:user_agent => 'BERT'}).should == 1
         EventMachine.stop
       }
