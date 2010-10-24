@@ -20,10 +20,12 @@ Gem::Specification.new do |s|
   s.files = [
     ".gitignore",
      "Changelog.md",
+     "Gemfile",
      "LICENSE",
      "README.md",
      "Rakefile",
      "VERSION",
+     "autotest/discover.rb",
      "em-http-request.gemspec",
      "examples/fetch.rb",
      "examples/fibered-http.rb",
@@ -54,7 +56,6 @@ Gem::Specification.new do |s|
      "spec/mock_spec.rb",
      "spec/multi_spec.rb",
      "spec/request_spec.rb",
-     "spec/spec.opts",
      "spec/stallion.rb",
      "spec/stub_server.rb"
   ]
