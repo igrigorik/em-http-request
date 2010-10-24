@@ -67,7 +67,7 @@ module EventMachine
   class HttpChunkHeader < Hash
     # When parsing chunked encodings this is set
     attr_accessor :http_chunk_size
-    
+
     def initialize
       super
       @http_chunk_size = '0'

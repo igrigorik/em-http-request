@@ -27,7 +27,7 @@ module EventMachine
     attr_reader :options, :method
 
     def initialize(host)
-      @uri = host.kind_of?(Addressable::URI) ? host : Addressable::URI::parse(host)
+      @uri = host.kind_of?(Addressable::URI) ? host : Addressable::URI::parse(host.to_s)
     end
 
     # Send an HTTP request and consume the response. Supported options:

@@ -5,7 +5,7 @@ describe 'em-http mock' do
   before(:all) do
     EventMachine::MockHttpRequest.activate!
   end
-    
+
   after(:all) do
     EventMachine::MockHttpRequest.deactivate!
   end
@@ -31,7 +31,7 @@ describe 'em-http mock' do
         EventMachine.stop
       }
     }
-  
+
     EventMachine::HttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
@@ -54,7 +54,7 @@ describe 'em-http mock' do
   it "should serve a fake http request from a file" do
     EventMachine::HttpRequest.register_file('http://www.google.ca:80/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
     EM.run {
-    
+
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
@@ -92,7 +92,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
     HEREDOC
     EventMachine::HttpRequest.register('http://www.google.ca:80/', :get, {}, data)
     EventMachine.run {
-    
+
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get
       http.errback { fail }
       http.callback {
@@ -101,7 +101,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
         EventMachine.stop
       }
     }
-  
+
   end
 
   it "should serve a fake failing http request" do
@@ -136,7 +136,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
         EventMachine.stop
       }
     }
-  
+
     EM.run {
       http = EventMachine::HttpRequest.new('http://www.google.ca/').get({:head => {:user_agent => 'BERT'}})
       http.errback { fail }
@@ -147,7 +147,7 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
         EventMachine.stop
       }
     }
-  
+
   end
 
   it "should raise an exception if pass-thru is disabled" do

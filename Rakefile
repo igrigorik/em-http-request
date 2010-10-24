@@ -1,3 +1,7 @@
+require 'bundler'
+Bundler.setup
+Bundler.require :default, :development
+
 require 'rake'
 require 'rake/clean'
 require 'rake/rdoctask'
@@ -34,13 +38,8 @@ task :ragel do
   end
 end
 
-require 'spec'
-require 'spec/rake/spectask'
-Spec::Rake::SpecTask.new(:spec) do |t|
-  t.spec_opts ||= []
-  t.spec_opts << "--options" << "spec/spec.opts"
-  t.spec_files = FileList['spec/**/*_spec.rb']
-end
+require 'rspec/core/rake_task'
+Rspec::Core::RakeTask.new(:spec)
 
 def make(makedir)
   Dir.chdir(makedir) { sh MAKE }
