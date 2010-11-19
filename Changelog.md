@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.15 / 2010-11-18
+
+- bugfix: follow redirects on missing content-length
+- bugfix: fixed undefined warnings when running in strict mode
+
 ## 0.2.14 / 2010-10-06
 
 - bugfix: form-encode keys/values of ruby objects passed in as body
