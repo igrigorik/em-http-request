@@ -100,6 +100,26 @@ describe EventMachine::HttpRequest do
       }
     end
 
+    it "should redirect with missing content-length" do
+      EventMachine.run {
+        @s = StubServer.new("HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8080/redirect\r\n\r\n")
+
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :redirects => 2
+        http.errback { failed }
+
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == "compressed"
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
+          http.redirects.should == 2
+
+          @s.stop
+          EM.stop
+        }
+      }
+    end
+
     it "should follow redirects on HEAD method" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/head').head :redirects => 1

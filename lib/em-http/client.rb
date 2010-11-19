@@ -482,8 +482,12 @@ module EventMachine
       end
     end
 
+    def finished?
+      @state == :finished || (@state == :body && @bytes_remaining.nil?)
+    end
+
     def unbind
-      if (@state == :finished) && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
+      if finished? && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
         begin
           # update uri to redirect location if we're allowed to traverse deeper
           @uri = @last_effective_url
@@ -503,7 +507,7 @@ module EventMachine
           on_error(e.message, true)
         end
       else
-        if @state == :finished || (@state == :body && @bytes_remaining.nil?)
+        if finished?
           succeed(self)
         else
           @disconnect.call(self) if @state == :websocket and @disconnect
