@@ -4,9 +4,9 @@ require 'spec/stub_server'
 
 describe EventMachine::HttpRequest do
 
-  def failed
+  def failed(http=nil)
     EventMachine.stop
-    fail
+    http ? fail(http.error) : fail
   end
 
   it "should fail GET on DNS timeout" do
@@ -59,7 +59,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/Hello/)
@@ -74,7 +74,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://google.com:8080/').get :host => '127.0.0.1'
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response.should match(/Hello/)
@@ -87,7 +87,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1, :host => '127.0.0.1'
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response_header["CONTENT_ENCODING"].should == "gzip"
@@ -123,7 +123,7 @@ describe EventMachine::HttpRequest do
     it "should follow redirects on HEAD method" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/head').head :redirects => 1
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
@@ -136,7 +136,7 @@ describe EventMachine::HttpRequest do
 
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://www.google.com/').head :redirects => 1
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           EM.stop
@@ -151,7 +151,7 @@ describe EventMachine::HttpRequest do
       uri = URI.parse('http://127.0.0.1:8080/')
       http = EventMachine::HttpRequest.new(uri).get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/Hello/)
@@ -165,7 +165,7 @@ describe EventMachine::HttpRequest do
       uri = URI.parse('http://127.0.0.1:8080/')
       http = EventMachine::HttpRequest.new(uri).head
 
-      http.errback { p http; failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should == ""
@@ -180,7 +180,7 @@ describe EventMachine::HttpRequest do
       uri = URI.parse('http://127.0.0.1:8080/')
       http = EventMachine::HttpRequest.new(uri).delete
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should == ""
@@ -193,7 +193,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/fail').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 404
         EventMachine.stop
@@ -205,7 +205,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :query => {:q => 'test'}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/test/)
@@ -218,7 +218,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :query => "q=test"
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/test/)
@@ -231,7 +231,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_query').get :query => {:hash => ['value1', 'value2']}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/hash\[\]=value1&hash\[\]=value2/)
@@ -245,7 +245,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').put :body => "data"
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/data/)
@@ -258,7 +258,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => "data"
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should match(/data/)
@@ -271,7 +271,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => {:stuff => 'string&string'}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should == "stuff=string%26string"
@@ -284,7 +284,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :body => {"key1" => 1, "key2" => [2,3]}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
 
@@ -298,7 +298,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_length').post :body => {"key1" => "data1"}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
 
@@ -312,7 +312,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :head => {'if-none-match' => 'evar!'}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 304
         EventMachine.stop
@@ -326,7 +326,7 @@ describe EventMachine::HttpRequest do
       # digg.com uses chunked encoding
       http = EventMachine::HttpRequest.new('http://digg.com/news').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         EventMachine.stop
@@ -339,7 +339,7 @@ describe EventMachine::HttpRequest do
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :head => {'authorization' => ['user', 'pass']}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         EventMachine.stop
@@ -352,7 +352,7 @@ describe EventMachine::HttpRequest do
       oauth_header = 'OAuth oauth_nonce="oqwgSYFUD87MHmJJDv7bQqOF2EPnVus7Wkqj5duNByU", b=c, d=e'
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/oauth_auth').get :head => {'authorization' => oauth_header}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response.should == oauth_header
@@ -366,7 +366,7 @@ describe EventMachine::HttpRequest do
 
       http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         EventMachine.stop
@@ -378,7 +378,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_query').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response_header.etag.should match('abcdefg')
@@ -393,7 +393,7 @@ describe EventMachine::HttpRequest do
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/deflate').get :head => {"accept-encoding" => "deflate"}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "deflate"
@@ -409,7 +409,7 @@ describe EventMachine::HttpRequest do
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/gzip').get :head => {"accept-encoding" => "gzip, compressed"}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "gzip"
@@ -430,7 +430,7 @@ describe EventMachine::HttpRequest do
         (Time.now.to_i - t).should <= 5
         EventMachine.stop
       }
-      http.callback { failed }
+      http.callback { failed(http) }
     }
   end
 
@@ -438,7 +438,7 @@ describe EventMachine::HttpRequest do
     it "should report last_effective_url" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/'
@@ -451,7 +451,7 @@ describe EventMachine::HttpRequest do
     it "should follow location redirects" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get :redirects => 1
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response_header["CONTENT_ENCODING"].should == "gzip"
@@ -467,7 +467,7 @@ describe EventMachine::HttpRequest do
     it "should default to 0 redirects" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect').get
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 301
           http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
@@ -492,7 +492,7 @@ describe EventMachine::HttpRequest do
     it "should normalize redirect urls" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/bad').get :redirects => 1
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.last_effective_url.to_s.should match('http://127.0.0.1:8080/')
           http.response.should match('Hello, World!')
@@ -529,7 +529,7 @@ describe EventMachine::HttpRequest do
       body = ''
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.stream { |chunk| body += chunk }
 
       http.callback {
@@ -546,7 +546,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.headers { |hash|
           hash.should be_an_kind_of Hash
           hash.should include 'CONNECTION'
@@ -589,7 +589,7 @@ describe EventMachine::HttpRequest do
       body = ''
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/deflate').get :head => {"accept-encoding" => "deflate, compressed"}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.stream { |chunk| body += chunk }
 
       http.callback {
@@ -606,7 +606,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail/').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 302
         EventMachine.stop
@@ -618,7 +618,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/set_cookie').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
         http.response_header.cookie.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
@@ -631,7 +631,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_cookie').get :head => {'cookie' => 'id=2;'}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response.should == "id=2;"
         EventMachine.stop
@@ -643,7 +643,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_cookie').get :head => {'cookie' => {'id' => 2}}
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response.should == "id=2;"
         EventMachine.stop
@@ -657,7 +657,7 @@ describe EventMachine::HttpRequest do
         @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response.should match(/Foo/)
           http.response_header['CONTENT_LENGTH'].should_not == 0
@@ -673,7 +673,7 @@ describe EventMachine::HttpRequest do
         @s = StubServer.new("HTTP/1.0 200 OK\nContent-Type: text/plain\nContent-Length: 3\nConnection: close\n\nFoo")
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response_header['CONTENT_TYPE'].should == 'text/plain'
@@ -691,7 +691,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post :body => "data"
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response.should be_empty
@@ -704,7 +704,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post :body => {:a => :b}
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response.should match("application/x-www-form-urlencoded")
@@ -718,7 +718,7 @@ describe EventMachine::HttpRequest do
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
         :body => {:a => :b}, :head => {'content-type' => 'text'}})
 
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response.should match("text")
@@ -732,7 +732,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/relative-location').get
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response_header['LOCATION'].should == 'http://127.0.0.1:8080/forwarded'
         EventMachine.stop
@@ -744,7 +744,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').post :file => 'spec/fixtures/google.ca'
 
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         http.response.should match('google')
         EventMachine.stop
@@ -760,7 +760,7 @@ describe EventMachine::HttpRequest do
         c.options[:body] = {:callback_run => 'yes'}
         client = c
       }
-      http.errback { failed }
+      http.errback { failed(http) }
       http.callback {
         client.should be_kind_of(EventMachine::HttpClient)
         http.response_header.status.should == 200
@@ -797,7 +797,7 @@ describe EventMachine::HttpRequest do
             :host => '127.0.0.1', :port => 8083
           }
 
-          http.errback { p http.inspect; failed }
+          http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
             http.response.should match('test')
@@ -813,7 +813,7 @@ describe EventMachine::HttpRequest do
             :host => '127.0.0.1', :port => 8083
           }
 
-          http.errback { p http.inspect; failed }
+          http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
             # The test proxy server gives the requested uri back in this header
@@ -833,7 +833,7 @@ describe EventMachine::HttpRequest do
             :query => { 'q' => 'test' }
           )
 
-          http.errback { p http.inspect; failed }
+          http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
             http.response.should match('test')
@@ -851,7 +851,7 @@ describe EventMachine::HttpRequest do
                                                                                :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
           })
 
-          http.errback { p http.inspect; failed }
+          http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
             http.response.should == 'Hello, World!'
@@ -867,7 +867,7 @@ describe EventMachine::HttpRequest do
                                                                                 :body => "data", :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}
           })
 
-          http.errback { failed }
+          http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
             http.response.should match(/data/)
@@ -907,7 +907,7 @@ describe EventMachine::HttpRequest do
         end
 
         http = EventMachine::HttpRequest.new('ws://127.0.0.1:8085/').get :timeout => 1
-        http.errback { failed }
+        http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 101
           http.response_header['CONNECTION'].should match(/Upgrade/)
@@ -938,7 +938,7 @@ describe EventMachine::HttpRequest do
 
         EventMachine.add_timer(0.1) do
           http = EventMachine::HttpRequest.new('ws://127.0.0.1:8085/').get :timeout => 0
-          http.errback { failed }
+          http.errback { failed(http) }
           http.callback { http.response_header.status.should == 101 }
           http.stream {|msg|
             msg.should == messages[recieved.size]
