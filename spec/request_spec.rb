@@ -13,7 +13,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       EventMachine.heartbeat_interval = 0.1
       http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
-      http.callback { failed }
+      http.callback { failed(http) }
       http.errback {
         http.response_header.status.should == 0
         EventMachine.stop
@@ -25,7 +25,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       EventMachine.heartbeat_interval = 0.1
       http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
-      http.callback { failed }
+      http.callback { failed(http) }
       http.errback {
         http.response_header.status.should == 0
         http.error.should match(/unable to resolve server address/)
@@ -105,7 +105,7 @@ describe EventMachine::HttpRequest do
         @s = StubServer.new("HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8080/redirect\r\n\r\n")
 
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :redirects => 2
-        http.errback { failed }
+        http.errback { failed(http) }
 
         http.callback {
           http.response_header.status.should == 200
@@ -478,10 +478,10 @@ describe EventMachine::HttpRequest do
       }
     end
 
-    it "should not invoke redirect logic on failed connections" do
+    it "should not invoke redirect logic on failed(http) connections" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :timeout => 0.1, :redirects => 5
-        http.callback { failed }
+        http.callback { failed(http) }
         http.errback {
           http.redirects.should == 0
           EM.stop
@@ -504,7 +504,7 @@ describe EventMachine::HttpRequest do
     it "should fail gracefully on a missing host in absolute Location header" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/nohost').get :redirects => 1
-        http.callback { failed }
+        http.callback { failed(http) }
         http.errback {
           http.error.should == 'Location header format error'
           EM.stop
@@ -515,7 +515,7 @@ describe EventMachine::HttpRequest do
     it "should fail gracefully on an invalid host in Location header" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/redirect/badhost').get :redirects => 1
-        http.callback { failed }
+        http.callback { failed(http) }
         http.errback {
           http.error.should == 'unable to resolve server address'
           EM.stop
@@ -565,7 +565,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get
 
-        http.callback { failed }
+        http.callback { failed(http) }
         http.headers { |hash|
           hash.should be_an_kind_of Hash
           hash.should include 'CONNECTION'
@@ -890,7 +890,7 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('ws://127.0.0.1:8080/').get :timeout => 0
 
-        http.callback { failed }
+        http.callback { failed(http) }
         http.errback {
           http.response_header.status.should == 200
           EventMachine.stop
