@@ -135,13 +135,13 @@ module EventMachine
     end
 
     def encode_query(uri, query)
-      encoded_query = if query.kind_of?(Hash)
-        query.map { |k, v| encode_param(k, v) }.join('&')
+      encoded_query = if query.kind_of?(Enumerable)
+        Rack::Utils.build_nested_query(query)
       else
         query.to_s
       end
 
-      if !uri.query.to_s.empty?
+      unless uri.query.to_s.empty?
         encoded_query = [encoded_query, uri.query].reject {|part| part.empty?}.join("&")
       end
       encoded_query.to_s.empty? ? uri.path : "#{uri.path}?#{encoded_query}"
