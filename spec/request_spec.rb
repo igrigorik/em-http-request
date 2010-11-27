@@ -361,17 +361,32 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should work with keep-alive servers" do
-    EventMachine.run {
+  context "keepalive" do
+    it "should default to non-keepalive" do
+      EventMachine.run {
+        headers = {'If-Modified-Since' => 'Mon, 15 Nov 2010 03:48:30 GMT'}
+        http = EventMachine::HttpRequest.new('http://www.google.com/images/logos/ps_logo2.png').get :head => headers
 
-      http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get
-
-      http.errback { failed(http) }
-      http.callback {
-        http.response_header.status.should == 200
-        EventMachine.stop
+        http.errback { fail }
+        start = Time.now.to_i
+        http.callback {
+          (start - Time.now.to_i).should be_close(0,1)
+          EventMachine.stop
+        }
       }
-    }
+    end
+
+    it "should work with keep-alive servers" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get :keepalive => true
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          EventMachine.stop
+        }
+      }
+    end
   end
 
   it "should return ETag and Last-Modified headers" do

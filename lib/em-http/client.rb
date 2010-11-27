@@ -425,7 +425,12 @@ module EventMachine
 
         # Set content-type header if missing and body is a Ruby hash
         if not head['content-type'] and options[:body].is_a? Hash
-          head['content-type'] = "application/x-www-form-urlencoded"
+          head['content-type'] = 'application/x-www-form-urlencoded'
+        end
+
+        # Set connection close unless keepalive
+        unless options[:keepalive]
+          head['connection'] = 'close'
         end
       end
 
@@ -852,13 +857,10 @@ module EventMachine
         on_request_complete
 
       else
-        if @data.empty?
-          @state = :finished
-          on_request_complete
-        else
-          @state = :invalid
-          on_error "garbage at end of body"
-        end
+
+        @data.clear
+        @state = :finished
+        on_request_complete
       end
 
       false

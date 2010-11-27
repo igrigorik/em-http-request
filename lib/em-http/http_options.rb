@@ -18,8 +18,9 @@ class HttpOptions
       @port = uri.port
     end
 
-    @options[:timeout]    ||= 10  # default connect & inactivity timeouts
-    @options[:redirects]  ||= 0   # default number of redirects to follow
+    @options[:timeout]    ||= 10    # default connect & inactivity timeouts
+    @options[:redirects]  ||= 0     # default number of redirects to follow
+    @options[:keepalive]  ||= false # default to single request per connection
 
     # Make sure the ports are set as Addressable::URI doesn't
     # set the port if it isn't there
