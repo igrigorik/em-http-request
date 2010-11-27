@@ -474,7 +474,7 @@ module EventMachine
     end
 
     def on_decoded_body_data(data)
-      data.force_encoding @content_charset  if @content_charset
+      data.force_encoding @content_charset if @content_charset
       if @stream
         @stream.call(data)
       else

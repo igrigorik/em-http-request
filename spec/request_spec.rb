@@ -721,11 +721,28 @@ describe EventMachine::HttpRequest do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
+          http.response_header["CONTENT_TYPE"].should == 'text'
           http.response.should match("text")
           EventMachine.stop
         }
       }
     end
+
+    it "should processed escaped content-type" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
+        :body => {:a => :b}, :head => {'content-type' => "\"ISO-8859-1\""}})
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_TYPE"].should == "ISO-8859-1"
+          http.response.should match("ISO-8859-1")
+          EventMachine.stop
+        }
+      }
+    end
+
   end
 
   it "should complete a Location: with a relative path" do

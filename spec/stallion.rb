@@ -96,6 +96,7 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.post?
       if stable.request.path_info == '/echo_content_type'
+        stable.response["Content-Type"] = stable.request.env["CONTENT_TYPE"] || 'text/html'
         stable.response.write stable.request.env["CONTENT_TYPE"]
       else
         stable.response.write stable.request.body.read
