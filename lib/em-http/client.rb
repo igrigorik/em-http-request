@@ -236,7 +236,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :method, :options, :uri
-    attr_reader   :response, :response_header, :error, :redirects, :last_effective_url
+    attr_reader   :response, :response_header, :error, :redirects, :last_effective_url, :content_charset
 
     def post_init
       @parser = HttpClientParser.new
@@ -652,9 +652,7 @@ module EventMachine
       end
 
       if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
-        encoding = $1.to_s.dup
-        encoding.gsub!(/\"/, '')
-        @content_charset = Encoding.find encoding
+        @content_charset = Encoding.find $1.gsub(/^\"|\"$/, '')
       end
 
       true

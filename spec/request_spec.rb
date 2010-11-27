@@ -715,14 +715,15 @@ describe EventMachine::HttpRequest do
 
     it "should not override content-type when passing in ruby hash/array for body" do
       EventMachine.run {
+        ct = 'text; charset=utf-8'
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => 'text'}})
+        :body => {:a => :b}, :head => {'content-type' => ct}})
 
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-          http.response_header["CONTENT_TYPE"].should == 'text'
-          http.response.should match("text")
+          http.content_charset.should == Encoding.find('utf-8')
+          http.response_header["CONTENT_TYPE"].should == ct
           EventMachine.stop
         }
       }
@@ -730,14 +731,15 @@ describe EventMachine::HttpRequest do
 
     it "should processed escaped content-type" do
       EventMachine.run {
+        ct = "text/html; charset=\"ISO-8859-4\""
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => "\"ISO-8859-1\""}})
+        :body => {:a => :b}, :head => {'content-type' => ct}})
 
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-          http.response_header["CONTENT_TYPE"].should == "ISO-8859-1"
-          http.response.should match("ISO-8859-1")
+          http.content_charset.should == Encoding.find('ISO-8859-4')
+          http.response_header["CONTENT_TYPE"].should == ct
           EventMachine.stop
         }
       }
