@@ -2,7 +2,7 @@ class HttpOptions
   attr_reader :uri, :method, :host, :port, :options
 
   def initialize(method, uri, options)
-    uri.normalize!
+    uri.path = '/' if uri.path.empty?
 
     @options = options
     @method = method.to_s.upcase
