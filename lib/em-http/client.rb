@@ -652,7 +652,9 @@ module EventMachine
       end
 
       if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
-        @content_charset = Encoding.find $1
+        encoding = $1.to_s.dup
+        encoding.gsub!(/\"/, '')
+        @content_charset = Encoding.find encoding
       end
 
       true
