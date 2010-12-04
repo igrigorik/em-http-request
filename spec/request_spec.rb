@@ -744,6 +744,23 @@ describe EventMachine::HttpRequest do
       }
     end
 
+    it "should default to external encoding on invalid encoding" do
+      EventMachine.run {
+        ct = 'text/html; charset=utf-8lias'
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/echo_content_type').post({
+        :body => {:a => :b}, :head => {'content-type' => ct}})
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.content_charset.should == Encoding.find('utf-8')
+          http.response_header["CONTENT_TYPE"].should == ct
+          EventMachine.stop
+        }
+      }
+    end
+
+
     it "should processed escaped content-type" do
       EventMachine.run {
         ct = "text/html; charset=\"ISO-8859-4\""
