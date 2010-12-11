@@ -5,6 +5,10 @@
 #++
 
 require 'eventmachine'
+require 'escape_utils'
+require 'addressable/uri'
+
+require 'base64'
 require 'socket'
 
 require File.dirname(__FILE__) + '/http11_client'

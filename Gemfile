@@ -2,9 +2,8 @@ source :gemcutter
 
 gem 'eventmachine', '~> 0.12.9'
 gem 'addressable', '~> 2.0.0'
-gem 'rack'
+gem 'escape_utils'
 
-gem 'mongrel', '~> 1.2.0.pre2', :require => ['mongrel', 'http11']
 
 group :development do
   gem 'autotest'
@@ -12,4 +11,7 @@ group :development do
   gem 'jeweler'
   gem 'rspec', '~> 2.0.0'
   gem 'em-websocket'
+
+  gem 'rack'
+  gem 'mongrel', '~> 1.2.0.pre2', :require => ['mongrel', 'http11']
 end

@@ -1,6 +1,3 @@
-require 'base64'
-require 'addressable/uri'
-
 module EventMachine
 
   # EventMachine based HTTP request class with support for streaming consumption

@@ -86,16 +86,12 @@ module EventMachine
 
     # Escapes a URI.
     def escape(s)
-      s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/n) {
-        '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
-      }
+      EscapeUtils.escape_url(s.to_s)
     end
 
     # Unescapes a URI escaped string.
     def unescape(s)
-      s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n){
-        [$1.delete('%')].pack('H*')
-      }
+      EscapeUtils.unescape_url(s.to_s)
     end
 
     if ''.respond_to?(:bytesize)
