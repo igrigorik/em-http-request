@@ -364,7 +364,7 @@ describe EventMachine::HttpRequest do
   context "keepalive" do
     it "should default to non-keepalive" do
       EventMachine.run {
-        headers = {'If-Modified-Since' => 'Mon, 15 Nov 2010 03:48:30 GMT'}
+        headers = {'If-Modified-Since' => 'Thu, 05 Aug 2010 22:54:44 GMT'}
         http = EventMachine::HttpRequest.new('http://www.google.com/images/logos/ps_logo2.png').get :head => headers
 
         http.errback { fail }
@@ -759,7 +759,6 @@ describe EventMachine::HttpRequest do
         }
       }
     end
-
 
     it "should processed escaped content-type" do
       EventMachine.run {
