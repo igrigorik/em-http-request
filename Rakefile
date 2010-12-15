@@ -6,6 +6,7 @@ require 'rake'
 require 'rake/clean'
 require 'rake/rdoctask'
 require 'rake/gempackagetask'
+require 'rspec/core/rake_task'
 require 'fileutils'
 include FileUtils
 
@@ -38,8 +39,8 @@ task :ragel do
   end
 end
 
-require 'rspec/core/rake_task'
-Rspec::Core::RakeTask.new(:spec)
+desc "Run all RSpec tests"
+RSpec::Core::RakeTask.new(:spec)
 
 def make(makedir)
   Dir.chdir(makedir) { sh MAKE }
