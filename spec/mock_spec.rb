@@ -1,4 +1,4 @@
-require 'spec/helper'
+require 'helper'
 
 describe 'em-http mock' do
 

@@ -1,4 +1,4 @@
-require 'spec/helper'
+require 'helper'
 
 describe EventMachine::HttpEncoding do
   include EventMachine::HttpEncoding
