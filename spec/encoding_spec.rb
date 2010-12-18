@@ -1,4 +1,4 @@
-require 'spec/helper'
+require 'helper'
 
 describe EventMachine::HttpEncoding do
   include EventMachine::HttpEncoding
@@ -34,7 +34,7 @@ describe EventMachine::HttpEncoding do
   it "should be fast on long string escapes" do
     s = Time.now
     5000.times { |n| form_encode_body({:a => "{a:'b', d:'f', g:['a','b']}"*50}) }
-    (Time.now - s).should be_close(1, 0.5)
+    (Time.now - s).should satisfy { |t| t < 1.5 }
   end
 
 end
