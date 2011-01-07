@@ -370,7 +370,7 @@ describe EventMachine::HttpRequest do
         http.errback { fail }
         start = Time.now.to_i
         http.callback {
-          (start - Time.now.to_i).should be_close(0,1)
+          (start - Time.now.to_i).should be_within(1).of(0)
           EventMachine.stop
         }
       }

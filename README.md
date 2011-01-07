@@ -166,3 +166,8 @@ WebSocket example
 
         http.disconnect { puts "oops, dropped connection?" }
       }
+
+License
+-------
+
+(MIT License) - Copyright (c) 2011 Ilya Grigorik
