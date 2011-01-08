@@ -173,16 +173,6 @@ module EventMachine
       methods
     end
 
-    def send_socks_handshake
-      # Method Negotiation as described on
-      # http://www.faqs.org/rfcs/rfc1928.html Section 3
-
-      @socks_state = :method_negotiation
-
-      methods = socks_methods
-      send_data [5, methods.size].pack('CC') + methods.pack('C*')
-    end
-
     def send_request_header
       query   = @options[:query]
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
@@ -331,10 +321,6 @@ module EventMachine
       end
     end
 
-    #
-    # Response processing
-    #
-
     def parse_response_header(header)
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
@@ -437,209 +423,124 @@ module EventMachine
       p [:parsed_response_header, @response_header, @state]
     end
 
-    def send_socks_connect_request
-      # TO-DO: Implement address types for IPv6 and Domain
-      begin
-        ip_address = Socket.gethostbyname(@uri.host).last
-        send_data [5, 1, 0, 1, ip_address, @uri.port].flatten.pack('CCCCA4n')
+    # def send_socks_handshake
+    #   # Method Negotiation as described on
+    #   # http://www.faqs.org/rfcs/rfc1928.html Section 3
+    #
+    #   @socks_state = :method_negotiation
+    #
+    #   methods = socks_methods
+    #   send_data [5, methods.size].pack('CC') + methods.pack('C*')
+    # end
 
-      rescue
-        @state = :invalid
-        on_error "could not resolve host", true
-        return false
-      end
+    # def send_socks_connect_request
+    #   # TO-DO: Implement address types for IPv6 and Domain
+    #   begin
+    #     ip_address = Socket.gethostbyname(@uri.host).last
+    #     send_data [5, 1, 0, 1, ip_address, @uri.port].flatten.pack('CCCCA4n')
+    #
+    #   rescue
+    #     @state = :invalid
+    #     on_error "could not resolve host", true
+    #     return false
+    #   end
+    #
+    #   true
+    # end
 
-      true
-    end
-
-    # parses socks 5 server responses as specified
-    # on http://www.faqs.org/rfcs/rfc1928.html
-    def parse_socks_response
-      if @socks_state == :method_negotiation
-        return false unless has_bytes? 2
-
-        _, method = @data.read(2).unpack('CC')
-
-        if socks_methods.include?(method)
-          if method == 0
-            @socks_state = :connecting
-
-            return send_socks_connect_request
-
-          elsif method == 2
-            @socks_state = :authenticating
-
-            credentials = @options[:proxy][:authorization]
-            if credentials.size < 2
-              @state = :invalid
-              on_error "username and password are not supplied"
-              return false
-            end
-
-            username, password = credentials
-
-            send_data [5, username.length, username, password.length, password].pack('CCA*CA*')
-          end
-
-        else
-          @state = :invalid
-          on_error "proxy did not accept method"
-          return false
-        end
-
-      elsif @socks_state == :authenticating
-        return false unless has_bytes? 2
-
-        _, status_code = @data.read(2).unpack('CC')
-
-        if status_code == 0
-          # success
-          @socks_state = :connecting
-
-          return send_socks_connect_request
-
-        else
-          # error
-          @state = :invalid
-          on_error "access denied by proxy"
-          return false
-        end
-
-      elsif @socks_state == :connecting
-        return false unless has_bytes? 10
-
-        _, response_code, _, address_type, _, _ = @data.read(10).unpack('CCCCNn')
-
-        if response_code == 0
-          # success
-          @socks_state = :connected
-          @state = :proxy_connected
-
-          @response_header = HttpResponseHeader.new
-
-          # connection_completed will invoke actions to
-          # start sending all http data transparently
-          # over the socks connection
-          connection_completed
-
-        else
-          # error
-          @state = :invalid
-
-          error_messages = {
-            1 => "general socks server failure",
-            2 => "connection not allowed by ruleset",
-            3 => "network unreachable",
-            4 => "host unreachable",
-            5 => "connection refused",
-            6 => "TTL expired",
-            7 => "command not supported",
-            8 => "address type not supported",
-          }
-
-          error_message = (error_messages[response_code] || "unknown error code: #{response_code}")
-          on_error("socks5 connect error: #{error_message}")
-          return false
-      end
-    end
-
-    true
-  end
-
-  def parse_chunk_header
-    return false unless parse_header(@chunk_header)
-
-    @bytes_remaining = @chunk_header.chunk_size
-    @chunk_header = HttpChunkHeader.new
-
-    @state = @bytes_remaining > 0 ? :chunk_body : :response_footer
-    true
-  end
-
-  def process_chunk_body
-    if @data.size < @bytes_remaining
-      @bytes_remaining -= @data.size
-      on_body_data @data.read
-      return false
-    end
-
-    on_body_data @data.read(@bytes_remaining)
-    @bytes_remaining = 0
-
-    @state = :chunk_footer
-    true
-  end
-
-  def process_chunk_footer
-    return false if @data.size < 2
-
-    if @data.read(2) == CRLF
-      @state = :chunk_header
-    else
-      @state = :invalid
-      on_error "non-CRLF chunk footer"
-    end
-
-    true
-  end
-
-  def process_response_footer
-    return false if @data.size < 2
-
-    if @data.read(2) == CRLF
-      if @data.empty?
-        @state = :finished
-        on_request_complete
-      else
-        @state = :invalid
-        on_error "garbage at end of chunked response"
-      end
-    else
-      @state = :invalid
-      on_error "non-CRLF response footer"
-    end
-
-    false
-  end
-
-  def process_body
-    if @bytes_remaining.nil?
-      on_body_data @data.read
-      return false
-    end
-
-    if @bytes_remaining.zero?
-      @state = :finished
-      on_request_complete
-      return false
-    end
-
-    if @data.size < @bytes_remaining
-      @bytes_remaining -= @data.size
-      on_body_data @data.read
-      return false
-    end
-
-    on_body_data @data.read(@bytes_remaining)
-    @bytes_remaining = 0
-
-    # If Keep-Alive is enabled, the server may be pushing more data to us
-    # after the first request is complete. Hence, finish first request, and
-    # reset state.
-    if @response_header.keep_alive?
-      @data.clear # hard reset, TODO: add support for keep-alive connections!
-      @state = :finished
-      on_request_complete
-
-    else
-
-      @data.clear
-      @state = :finished
-      on_request_complete
-    end
-
-    false
-  end
+   #  # parses socks 5 server responses as specified
+   #   # on http://www.faqs.org/rfcs/rfc1928.html
+   #   def parse_socks_response
+   #     if @socks_state == :method_negotiation
+   #       return false unless has_bytes? 2
+   #
+   #       _, method = @data.read(2).unpack('CC')
+   #
+   #       if socks_methods.include?(method)
+   #         if method == 0
+   #           @socks_state = :connecting
+   #
+   #           return send_socks_connect_request
+   #
+   #         elsif method == 2
+   #           @socks_state = :authenticating
+   #
+   #           credentials = @options[:proxy][:authorization]
+   #           if credentials.size < 2
+   #             @state = :invalid
+   #             on_error "username and password are not supplied"
+   #             return false
+   #           end
+   #
+   #           username, password = credentials
+   #
+   #           send_data [5, username.length, username, password.length, password].pack('CCA*CA*')
+   #         end
+   #
+   #       else
+   #         @state = :invalid
+   #         on_error "proxy did not accept method"
+   #         return false
+   #       end
+   #
+   #     elsif @socks_state == :authenticating
+   #       return false unless has_bytes? 2
+   #
+   #       _, status_code = @data.read(2).unpack('CC')
+   #
+   #       if status_code == 0
+   #         # success
+   #         @socks_state = :connecting
+   #
+   #         return send_socks_connect_request
+   #
+   #       else
+   #         # error
+   #         @state = :invalid
+   #         on_error "access denied by proxy"
+   #         return false
+   #       end
+   #
+   #     elsif @socks_state == :connecting
+   #       return false unless has_bytes? 10
+   #
+   #       _, response_code, _, address_type, _, _ = @data.read(10).unpack('CCCCNn')
+   #
+   #       if response_code == 0
+   #         # success
+   #         @socks_state = :connected
+   #         @state = :proxy_connected
+   #
+   #         @response_header = HttpResponseHeader.new
+   #
+   #         # connection_completed will invoke actions to
+   #         # start sending all http data transparently
+   #         # over the socks connection
+   #         connection_completed
+   #
+   #       else
+   #         # error
+   #         @state = :invalid
+   #
+   #         error_messages = {
+   #           1 => "general socks server failure",
+   #           2 => "connection not allowed by ruleset",
+   #           3 => "network unreachable",
+   #           4 => "host unreachable",
+   #           5 => "connection refused",
+   #           6 => "TTL expired",
+   #           7 => "command not supported",
+   #           8 => "address type not supported",
+   #         }
+   #
+   #         error_message = (error_messages[response_code] || "unknown error code: #{response_code}")
+   #         on_error("socks5 connect error: #{error_message}")
+   #         return false
+   #     end
+   #   end
+   #
+   #   true
+   # end
 
   def process_websocket(data)
     # return false if @data.empty?
