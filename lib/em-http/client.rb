@@ -49,7 +49,7 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
-      p [:connection_completed]
+      p [:connection_completed, @state]
 
       # if a socks proxy is specified, then a connection request
       # has to be made to the socks server and we need to wait
@@ -62,6 +62,7 @@ module EventMachine
         # issue a CONNECT query and wait for 200 response
       elsif connect_proxy? and @state == :response_header
         @state = :connect_http_proxy
+        p [:connect_http_proxy]
         send_request_header
 
         # if connecting via proxy, then state will be :proxy_connected,
@@ -70,6 +71,7 @@ module EventMachine
 
       else
         @state = :response_header
+        p [:SENDING_HEADER_BODY]
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
@@ -239,6 +241,7 @@ module EventMachine
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
+      p [:send_header, request_header]
       send_data request_header
     end
 
@@ -253,13 +256,13 @@ module EventMachine
     end
 
     def receive_data(data)
-      p [:receive, data, :keep_alive?, @parser.keep_alive?]
+      p [:receive, data, :keep_alive?, @parser.inspect]
       @parser << data
     end
 
     # Called when part of the body has been read
     def on_body_data(data)
-      p [:on_body_data, @content_decoder]
+      p [:on_body_data, @content_decoder, data]
       if @content_decoder
         begin
           @content_decoder << data
@@ -323,33 +326,6 @@ module EventMachine
     # Response processing
     #
 
-    def dispatch
-      while case @state
-          when :connect_socks_proxy
-            parse_socks_response
-          when :connect_http_proxy
-            parse_response_header
-          when :response_header
-            parse_response_header
-          when :chunk_header
-            parse_chunk_header
-          when :chunk_body
-            process_chunk_body
-          when :chunk_footer
-            process_chunk_footer
-          when :response_footer
-            process_response_footer
-          when :body
-            process_body
-          when :websocket
-            process_websocket
-          when :finished, :invalid
-            break
-          else raise RuntimeError, "invalid state: #{@state}"
-        end
-      end
-    end
-
     def parse_response_header(header)
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
@@ -370,17 +346,21 @@ module EventMachine
       end
 
       if @state == :connect_http_proxy
+        p [:in_connect_http_proxy_parse, @response_header]
         # when a successfull tunnel is established, the proxy responds with a
         # 200 response code. from here, the tunnel is transparent.
         if @response_header.http_status.to_i == 200
-          @response_header = HttpResponseHeader.new
+
+          @parser.reset!
+          @response_header.clear
+
           connection_completed
         else
           @state = :invalid
           on_error "proxy not accessible"
         end
 
-        return
+        return :stop
       end
 
       # correct location header - some servers will incorrectly give a relative URI
