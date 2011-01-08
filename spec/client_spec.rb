@@ -667,7 +667,7 @@ describe EventMachine::HttpRequest do
   end
 
   context "DNS & invalid hosts" do
-    xit "should fail GET on DNS timeout" do
+    it "should fail GET on DNS timeout" do
       EventMachine.run {
         EventMachine.heartbeat_interval = 0.1
         http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
@@ -679,7 +679,7 @@ describe EventMachine::HttpRequest do
       }
     end
 
-    xit "should fail GET on invalid host" do
+    it "should fail GET on invalid host" do
       EventMachine.run {
         EventMachine.heartbeat_interval = 0.1
         http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
