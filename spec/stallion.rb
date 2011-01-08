@@ -52,7 +52,7 @@ module Stallion
   end
 
   def self.run(options = {})
-    options = {:Host => "127.0.0.1", :Port => 8080}.merge(options)
+    options = {:Host => "127.0.0.1", :Port => 8090}.merge(options)
     Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
   end
 
@@ -120,7 +120,7 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.path_info == '/redirect/bad'
       stable.response.status = 301
-      stable.response["Location"] = "http://127.0.0.1:8080"
+      stable.response["Location"] = "http://127.0.0.1:8090"
 
     elsif stable.request.path_info == '/redirect/head'
       stable.response.status = 301

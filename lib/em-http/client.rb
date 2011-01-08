@@ -285,6 +285,7 @@ module EventMachine
     end
 
     def unbind
+      p [:state, @state, :bytes_remaining, @bytes_remaining, @redirects, :finished, finished?, (@last_effective_url != @uri)]
       if finished? && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
         begin
           # update uri to redirect location if we're allowed to traverse deeper
@@ -296,11 +297,14 @@ module EventMachine
           # swap current connection and reassign current handler
           req = HttpOptions.new(@method, @uri, @options)
           reconnect(req.host, req.port)
+          p [:reconnecting, @redirects, @uri]
 
-          @response_header = HttpResponseHeader.new
+          @parser.reset!
+          @response.clear
+          @response_header.clear
+
           @state = :response_header
-          @response = ''
-          @data.clear
+          # @data.clear
         rescue EventMachine::ConnectionError => e
           on_error(e.message, true)
         end
@@ -362,7 +366,7 @@ module EventMachine
       unless @response_header.http_status and @response_header.http_reason
         @state = :invalid
         on_error "no HTTP response"
-        return false
+        return
       end
 
       if @state == :connect_http_proxy
@@ -371,12 +375,12 @@ module EventMachine
         if @response_header.http_status.to_i == 200
           @response_header = HttpResponseHeader.new
           connection_completed
-          return true
         else
           @state = :invalid
           on_error "proxy not accessible"
-          return false
         end
+
+        return
       end
 
       # correct location header - some servers will incorrectly give a relative URI
@@ -397,7 +401,7 @@ module EventMachine
 
         rescue
           on_error "Location header format error"
-          return false
+          return
         end
       end
 
@@ -440,7 +444,7 @@ module EventMachine
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
 
-      p [:parsed_response_header, @response_header]
+      p [:parsed_response_header, @response_header, @state]
     end
 
     def send_socks_connect_request
@@ -542,127 +546,127 @@ module EventMachine
             7 => "command not supported",
             8 => "address type not supported"
           }
-          error_message = error_messages[response_code] || "unknown error (code: #{response_code})"
+          error_message = (error_messages[response_code] || "unknown error (code: #{response_code})")
           on_error "socks5 connect error: #{error_message}"
           return false
-        end
       end
-
-      true
     end
 
-    def parse_chunk_header
-      return false unless parse_header(@chunk_header)
-
-      @bytes_remaining = @chunk_header.chunk_size
-      @chunk_header = HttpChunkHeader.new
-
-      @state = @bytes_remaining > 0 ? :chunk_body : :response_footer
-      true
-    end
-
-    def process_chunk_body
-      if @data.size < @bytes_remaining
-        @bytes_remaining -= @data.size
-        on_body_data @data.read
-        return false
-      end
-
-      on_body_data @data.read(@bytes_remaining)
-      @bytes_remaining = 0
-
-      @state = :chunk_footer
-      true
-    end
-
-    def process_chunk_footer
-      return false if @data.size < 2
-
-      if @data.read(2) == CRLF
-        @state = :chunk_header
-      else
-        @state = :invalid
-        on_error "non-CRLF chunk footer"
-      end
-
-      true
-    end
-
-    def process_response_footer
-      return false if @data.size < 2
-
-      if @data.read(2) == CRLF
-        if @data.empty?
-          @state = :finished
-          on_request_complete
-        else
-          @state = :invalid
-          on_error "garbage at end of chunked response"
-        end
-      else
-        @state = :invalid
-        on_error "non-CRLF response footer"
-      end
-
-      false
-    end
-
-    def process_body
-      if @bytes_remaining.nil?
-        on_body_data @data.read
-        return false
-      end
-
-      if @bytes_remaining.zero?
-        @state = :finished
-        on_request_complete
-        return false
-      end
-
-      if @data.size < @bytes_remaining
-        @bytes_remaining -= @data.size
-        on_body_data @data.read
-        return false
-      end
-
-      on_body_data @data.read(@bytes_remaining)
-      @bytes_remaining = 0
-
-      # If Keep-Alive is enabled, the server may be pushing more data to us
-      # after the first request is complete. Hence, finish first request, and
-      # reset state.
-      if @response_header.keep_alive?
-        @data.clear # hard reset, TODO: add support for keep-alive connections!
-        @state = :finished
-        on_request_complete
-
-      else
-
-        @data.clear
-        @state = :finished
-        on_request_complete
-      end
-
-      false
-    end
-
-    def process_websocket
-      return false if @data.empty?
-
-      # slice the message out of the buffer and pass in
-      # for processing, and buffer data otherwise
-      buffer = @data.read
-      while msg = buffer.slice!(/\000([^\377]*)\377/n)
-        msg.gsub!(/\A\x00|\xff\z/n, '')
-        @stream.call(msg)
-      end
-
-      # store remainder if message boundary has not yet
-      # been received
-      @data << buffer if not buffer.empty?
-
-      false
-    end
+    true
   end
+
+  def parse_chunk_header
+    return false unless parse_header(@chunk_header)
+
+    @bytes_remaining = @chunk_header.chunk_size
+    @chunk_header = HttpChunkHeader.new
+
+    @state = @bytes_remaining > 0 ? :chunk_body : :response_footer
+    true
+  end
+
+  def process_chunk_body
+    if @data.size < @bytes_remaining
+      @bytes_remaining -= @data.size
+      on_body_data @data.read
+      return false
+    end
+
+    on_body_data @data.read(@bytes_remaining)
+    @bytes_remaining = 0
+
+    @state = :chunk_footer
+    true
+  end
+
+  def process_chunk_footer
+    return false if @data.size < 2
+
+    if @data.read(2) == CRLF
+      @state = :chunk_header
+    else
+      @state = :invalid
+      on_error "non-CRLF chunk footer"
+    end
+
+    true
+  end
+
+  def process_response_footer
+    return false if @data.size < 2
+
+    if @data.read(2) == CRLF
+      if @data.empty?
+        @state = :finished
+        on_request_complete
+      else
+        @state = :invalid
+        on_error "garbage at end of chunked response"
+      end
+    else
+      @state = :invalid
+      on_error "non-CRLF response footer"
+    end
+
+    false
+  end
+
+  def process_body
+    if @bytes_remaining.nil?
+      on_body_data @data.read
+      return false
+    end
+
+    if @bytes_remaining.zero?
+      @state = :finished
+      on_request_complete
+      return false
+    end
+
+    if @data.size < @bytes_remaining
+      @bytes_remaining -= @data.size
+      on_body_data @data.read
+      return false
+    end
+
+    on_body_data @data.read(@bytes_remaining)
+    @bytes_remaining = 0
+
+    # If Keep-Alive is enabled, the server may be pushing more data to us
+    # after the first request is complete. Hence, finish first request, and
+    # reset state.
+    if @response_header.keep_alive?
+      @data.clear # hard reset, TODO: add support for keep-alive connections!
+      @state = :finished
+      on_request_complete
+
+    else
+
+      @data.clear
+      @state = :finished
+      on_request_complete
+    end
+
+    false
+  end
+
+  def process_websocket
+    return false if @data.empty?
+
+    # slice the message out of the buffer and pass in
+    # for processing, and buffer data otherwise
+    buffer = @data.read
+    while msg = buffer.slice!(/\000([^\377]*)\377/n)
+      msg.gsub!(/\A\x00|\xff\z/n, '')
+      @stream.call(msg)
+    end
+
+    # store remainder if message boundary has not yet
+    # been received
+    @data << buffer if not buffer.empty?
+
+    false
+  end
+end
 
 end
