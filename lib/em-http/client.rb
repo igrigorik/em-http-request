@@ -1,14 +1,4 @@
-# #--
-# Copyright (C)2008 Ilya Grigorik
-#
-# Includes portion originally Copyright (C)2007 Tony Arcieri
-# Includes portion originally Copyright (C)2005 Zed Shaw
-# You can redistribute this under the terms of the Ruby
-# license See file LICENSE for details
-# #--
-
 module EventMachine
-
   class HttpClient < Connection
     include EventMachine::Deferrable
     include EventMachine::HttpEncoding
@@ -30,11 +20,17 @@ module EventMachine
     attr_reader   :response, :response_header, :error, :redirects, :last_effective_url, :content_charset
 
     def post_init
-      @parser = HttpClientParser.new
-      @data = EventMachine::Buffer.new
+      @parser = Http::Parser.new
+
+      @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
+      @parser.on_body = proc {|data| on_body_data(data) }
+      @parser.on_message_complete = proc do
+        @state = :finished
+      end
+
       @chunk_header = HttpChunkHeader.new
       @response_header = HttpResponseHeader.new
-      @parser_nbytes = 0
+
       @redirects = 0
       @response = ''
       @error = ''
@@ -42,14 +38,18 @@ module EventMachine
       @last_effective_url = nil
       @content_decoder = nil
       @content_charset = nil
+
       @stream = nil
       @disconnect = nil
+
       @state = :response_header
       @socks_state = nil
     end
 
     # start HTTP request once we establish connection to host
     def connection_completed
+      p [:connection_completed]
+
       # if a socks proxy is specified, then a connection request
       # has to be made to the socks server and we need to wait
       # for a response code
@@ -252,8 +252,7 @@ module EventMachine
     end
 
     def receive_data(data)
-      @data << data
-      dispatch
+      @parser << data
     end
 
     # Called when part of the body has been read
@@ -303,6 +302,7 @@ module EventMachine
           on_error(e.message, true)
         end
       else
+        p [:unbind, :state, @state]
         if finished?
           succeed(self)
         else
@@ -343,31 +343,17 @@ module EventMachine
       end
     end
 
-    def parse_header(header)
-      return false if @data.empty?
-
-      begin
-        @parser_nbytes = @parser.execute(header, @data.to_str, @parser_nbytes)
-      rescue EventMachine::HttpClientParserError
-        @state = :invalid
-        on_error "invalid HTTP format, parsing fails"
+    def parse_response_header(header)
+      header.each do |key, val|
+        @response_header[key.upcase.gsub('-','_')] = val
       end
 
-      return false unless @parser.finished?
+      @response_header.http_version = @parser.http_version.join('.')
+      @response_header.http_status  = @parser.status_code.to_i
+      @response_header.http_reason  = 'unknown'
 
-      # Clear parsed data from the buffer
-      @data.read(@parser_nbytes)
-      @parser.reset
-      @parser_nbytes = 0
-
-      true
-    end
-
-    def parse_response_header
-      return false unless parse_header(@response_header)
-
-      # invoke headers callback after full parse if one
-      # is specified by the user
+      # invoke headers callback after full parse
+      # if one is specified by the user
       @headers.call(@response_header) if @headers
 
       unless @response_header.http_status and @response_header.http_reason
@@ -451,7 +437,7 @@ module EventMachine
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
 
-      true
+      p [:parsed_response_header, @response_header]
     end
 
     def send_socks_connect_request

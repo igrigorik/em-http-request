@@ -1,6 +1,7 @@
 require 'eventmachine'
 require 'escape_utils'
 require 'addressable/uri'
+require 'http/parser'
 
 require 'base64'
 require 'socket'
