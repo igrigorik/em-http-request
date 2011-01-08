@@ -182,4 +182,26 @@ function a(){google.timers.load.t.ol=(new Date).getTime();google.report&&google.
     EventMachine::MockHttpRequest.count('http://www.google.ca:80/', :get, {}).should == 1
   end
 
+  xit "should handle multiple mock requests" do
+    EventMachine::MockHttpRequest.register_file('http://127.0.0.1:8080/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+    EventMachine::MockHttpRequest.register_file('http://0.0.0.0:8083/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
+
+    EventMachine.run {
+
+      # create an instance of multi-request handler, and the requests themselves
+      multi = EventMachine::MultiRequest.new
+
+      # add multiple requests to the multi-handler
+      multi.add(EventMachine::MockHttpRequest.new('http://127.0.0.1:8080/').get)
+      multi.add(EventMachine::MockHttpRequest.new('http://0.0.0.0:8083/').get)
+
+      multi.callback  {
+        # verify successful request
+        multi.responses[:succeeded].size.should == 2
+
+        EventMachine.stop
+      }
+    }
+  end
+
 end

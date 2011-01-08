@@ -15,6 +15,7 @@ module EventMachine
       attr_writer :response
       attr_reader :data
       def setup(response, uri)
+
         @uri = uri
         if response == :fail
           fail(self)

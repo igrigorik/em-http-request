@@ -10,7 +10,7 @@ describe EventMachine::MultiRequest do
       multi = EventMachine::MultiRequest.new
 
       # add multiple requests to the multi-handler
-      multi.add(EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get(:query => {:q => 'test'}))
+      multi.add(EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get(:query => {:q => 'test'}))
       multi.add(EventMachine::HttpRequest.new('http://0.0.0.0:8083/').get(:timeout => 1))
 
       multi.callback  {
@@ -29,7 +29,7 @@ describe EventMachine::MultiRequest do
 
   it "should accept multiple open connections and return once all of them are complete" do
     EventMachine.run {
-      http1 = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get(:query => {:q => 'test'})
+      http1 = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get(:query => {:q => 'test'})
       http2 = EventMachine::HttpRequest.new('http://0.0.0.0:8083/').get(:timeout => 1)
 
       multi = EventMachine::MultiRequest.new([http1, http2]) do
@@ -44,25 +44,4 @@ describe EventMachine::MultiRequest do
     }
   end
 
-  it "should handle multiple mock requests" do
-    EventMachine::MockHttpRequest.register_file('http://127.0.0.1:8080/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
-    EventMachine::MockHttpRequest.register_file('http://0.0.0.0:8083/', :get, {}, File.join(File.dirname(__FILE__), 'fixtures', 'google.ca'))
-
-    EventMachine.run {
-
-      # create an instance of multi-request handler, and the requests themselves
-      multi = EventMachine::MultiRequest.new
-
-      # add multiple requests to the multi-handler
-      multi.add(EventMachine::MockHttpRequest.new('http://127.0.0.1:8080/').get)
-      multi.add(EventMachine::MockHttpRequest.new('http://0.0.0.0:8083/').get)
-
-      multi.callback  {
-        # verify successful request
-        multi.responses[:succeeded].size.should == 2
-
-        EventMachine.stop
-      }
-    }
-  end
 end
