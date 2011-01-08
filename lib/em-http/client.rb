@@ -26,6 +26,7 @@ module EventMachine
       @parser.on_body = proc {|data| on_body_data(data) }
       @parser.on_message_complete = proc do
         @state = :finished
+        on_request_complete
       end
 
       @chunk_header = HttpChunkHeader.new
@@ -257,6 +258,7 @@ module EventMachine
 
     # Called when part of the body has been read
     def on_body_data(data)
+      p [:on_body_data, @content_decoder]
       if @content_decoder
         begin
           @content_decoder << data
