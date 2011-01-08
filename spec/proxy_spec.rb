@@ -1,6 +1,7 @@
 require 'helper'
 
 describe EventMachine::HttpRequest do
+  pending "socks 5 specs"
 
   context "connections via" do
     context "direct proxy" do

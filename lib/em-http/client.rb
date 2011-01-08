@@ -25,8 +25,12 @@ module EventMachine
       @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
       @parser.on_body = proc {|data| on_body_data(data) }
       @parser.on_message_complete = proc do
-        @state = :finished
-        on_request_complete
+        if @state == :websocket
+          @state = :stream
+        else
+          @state = :finished
+          on_request_complete
+        end
       end
 
       @chunk_header = HttpChunkHeader.new
@@ -125,6 +129,7 @@ module EventMachine
     # a leading length indicator
     def send(data)
       if @state == :websocket
+        p [:sending_websocket_data, data]
         send_data("\x00#{data}\xff")
       end
     end
@@ -257,7 +262,11 @@ module EventMachine
 
     def receive_data(data)
       p [:receive, data, :keep_alive?, @parser.inspect]
-      @parser << data
+      if @state == :stream
+        process_websocket(data)
+      else
+        @parser << data
+      end
     end
 
     # Called when part of the body has been read
@@ -395,6 +404,7 @@ module EventMachine
       end
 
       if websocket?
+        p [:parse_response_header, :WEBSOCKET]
         if @response_header.status == 101
           @state = :websocket
           succeed
@@ -524,10 +534,11 @@ module EventMachine
             5 => "connection refused",
             6 => "TTL expired",
             7 => "command not supported",
-            8 => "address type not supported"
+            8 => "address type not supported",
           }
-          error_message = (error_messages[response_code] || "unknown error (code: #{response_code})")
-          on_error "socks5 connect error: #{error_message}"
+
+          error_message = (error_messages[response_code] || "unknown error code: #{response_code}")
+          on_error("socks5 connect error: #{error_message}")
           return false
       end
     end
@@ -630,22 +641,19 @@ module EventMachine
     false
   end
 
-  def process_websocket
-    return false if @data.empty?
+  def process_websocket(data)
+    # return false if @data.empty?
 
     # slice the message out of the buffer and pass in
     # for processing, and buffer data otherwise
-    buffer = @data.read
-    while msg = buffer.slice!(/\000([^\377]*)\377/n)
+    @data ||= ''
+    @data << data
+
+    while msg = @data.slice!(/\000([^\377]*)\377/n)
       msg.gsub!(/\A\x00|\xff\z/n, '')
       @stream.call(msg)
     end
 
-    # store remainder if message boundary has not yet
-    # been received
-    @data << buffer if not buffer.empty?
-
-    false
   end
 end
 
