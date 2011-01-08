@@ -253,6 +253,7 @@ module EventMachine
     end
 
     def receive_data(data)
+      p [:receive, data, :keep_alive?, @parser.keep_alive?]
       @parser << data
     end
 

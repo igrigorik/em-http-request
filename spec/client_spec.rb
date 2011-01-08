@@ -620,6 +620,34 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  context "DNS & invalid hosts" do
+    xit "should fail GET on DNS timeout" do
+      EventMachine.run {
+        EventMachine.heartbeat_interval = 0.1
+        http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
+        http.callback { failed(http) }
+        http.errback {
+          http.response_header.status.should == 0
+          EventMachine.stop
+        }
+      }
+    end
+
+    xit "should fail GET on invalid host" do
+      EventMachine.run {
+        EventMachine.heartbeat_interval = 0.1
+        http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
+        http.callback { failed(http) }
+        http.errback {
+          http.response_header.status.should == 0
+          http.error.should match(/unable to resolve server address/)
+          http.uri.to_s.should match('http://somethinglocal:80/')
+          EventMachine.stop
+        }
+      }
+    end
+  end
+
   context "keepalive" do
     it "should default to non-keepalive" do
       EventMachine.run {
@@ -635,6 +663,7 @@ describe EventMachine::HttpRequest do
       }
     end
 
+    # https://github.com/tmm1/http_parser.rb/blob/master/ext/ruby_http_parser/ruby_http_parser.c#L304
     xit "should work with keep-alive servers" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get :keepalive => true
@@ -642,52 +671,6 @@ describe EventMachine::HttpRequest do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-          EventMachine.stop
-        }
-      }
-    end
-  end
-
-
-  xit "should reset host on redirect" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect').get :redirects => 1, :host => '127.0.0.1'
-
-      http.errback { failed(http) }
-      http.callback {
-        http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
-        http.response.should == "compressed"
-        http.last_effective_url.to_s.should == 'http://127.0.0.1:8080/gzip'
-        http.redirects.should == 1
-
-        EM.stop
-      }
-    }
-  end
-
-  context "DNS & invalid hosts" do
-    it "should fail GET on DNS timeout" do
-      EventMachine.run {
-        EventMachine.heartbeat_interval = 0.1
-        http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
-        http.callback { failed(http) }
-        http.errback {
-          http.response_header.status.should == 0
-          EventMachine.stop
-        }
-      }
-    end
-
-    it "should fail GET on invalid host" do
-      EventMachine.run {
-        EventMachine.heartbeat_interval = 0.1
-        http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
-        http.callback { failed(http) }
-        http.errback {
-          http.response_header.status.should == 0
-          http.error.should match(/unable to resolve server address/)
-          http.uri.to_s.should match('http://somethinglocal:80/')
           EventMachine.stop
         }
       }
