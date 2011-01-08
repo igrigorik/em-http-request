@@ -1,6 +1,4 @@
 require 'helper'
-require 'stallion'
-require 'stub_server'
 
 describe EventMachine::HttpRequest do
 

@@ -35,12 +35,12 @@ module EventMachine
       @redirects = 0
       @response = ''
       @error = ''
-      @headers = nil
       @last_effective_url = nil
       @content_decoder = nil
       @content_charset = nil
 
       @stream = nil
+      @headers = nil
       @disconnect = nil
 
       @state = :response_header
