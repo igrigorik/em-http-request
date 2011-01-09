@@ -59,33 +59,4 @@ describe EventMachine::HttpRequest do
     end
   end
 
-  context "CONNECT proxy" do
-    it "should work with CONNECT proxy servers" do
-      EventMachine.run {
-        opts = {:proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}}
-        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get(opts)
-
-        http.errback { failed(http) }
-        http.callback {
-          http.response_header.status.should == 200
-          http.response.should == 'Hello, World!'
-          EventMachine.stop
-        }
-      }
-    end
-  end
-
-  it "should proxy POST data" do
-    EventMachine.run {
-      opts = {:body => "data", :proxy => {:host => '127.0.0.1', :port => 8082, :use_connect => true}}
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').post(opts)
-
-      http.errback { failed(http) }
-      http.callback {
-        http.response_header.status.should == 200
-        http.response.should match(/data/)
-        EventMachine.stop
-      }
-    }
-  end
 end

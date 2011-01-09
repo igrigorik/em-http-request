@@ -184,64 +184,7 @@ Thread.new do
 end
 
 #
-# Tunneling HTTP Proxy server
-#
-Thread.new do
-  server = TCPServer.new('127.0.0.1', 8082)
-  loop do
-    session = server.accept
-    request = ""
-    while (data = session.gets) != "\r\n"
-      request << data
-    end
-    parts = request.split("\r\n")
-    method, destination, http_version = parts.first.split(' ')
-    if method == 'CONNECT'
-      target_host, target_port = destination.split(':')
-      client = TCPSocket.open(target_host, target_port)
-      session.write "HTTP/1.1 200 Connection established\r\nProxy-agent: Whatever\r\n\r\n"
-      session.flush
-
-      content_length = -1
-      verb = ""
-      req = ""
-
-      while data = session.gets
-        if request = data.match(/(\w+).*HTTP\/1\.1/)
-          verb = request[1]
-        end
-
-        if post = data.match(/Content-Length: (\d+)/)
-          content_length = post[1].to_i
-        end
-
-        req += data
-
-        # read POST data
-        if data == "\r\n" and verb == "POST"
-          req += session.read(content_length)
-        end
-
-        if data == "\r\n"
-          client.write req
-          client.flush
-          client.close_write
-          break
-        end
-      end
-
-      while data = client.gets
-        session.write data
-      end
-      session.flush
-      client.close
-    end
-    session.close
-  end
-end
-
-#
-# CONNECT-less HTTP Proxy server
+# Simple HTTP Proxy server
 #
 Thread.new do
   server = TCPServer.new('127.0.0.1', 8083)

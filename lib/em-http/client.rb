@@ -57,13 +57,6 @@ module EventMachine
         @state = :connect_socks_proxy
         send_socks_handshake
 
-        # if we need to negotiate the proxy connection first, then
-        # issue a CONNECT query and wait for 200 response
-      elsif connect_proxy? and @state == :response_header
-        @state = :connect_http_proxy
-        p [:connect_http_proxy]
-        send_request_header
-
         # if connecting via proxy, then state will be :proxy_connected,
         # indicating successful tunnel. from here, initiate normal http
         # exchange
@@ -127,10 +120,6 @@ module EventMachine
     # this is the default proxy type if none is specified
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
 
-    # determines if a http-proxy should be used with
-    # the CONNECT verb
-    def connect_proxy?; http_proxy? && (@options[:proxy][:use_connect] == true); end
-
     # determines if a SOCKS5 proxy should be used
     def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
@@ -155,13 +144,6 @@ module EventMachine
         # initialize headers for the http proxy
         head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
-
-        # if we need to negotiate the tunnel connection first, then
-        # issue a CONNECT query to the proxy first. This is an optional
-        # flag, by default we will provide full URIs to the proxy
-        if @state == :connect_http_proxy
-          request_header = HTTP_REQUEST_HEADER % ['CONNECT', "#{@uri.host}:#{@uri.port}"]
-        end
       end
 
       # Set the Content-Length if file is given
@@ -198,13 +180,14 @@ module EventMachine
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
-      p [:send_header, request_header]
+      p [:send_header, request_header.inspect]
       send_data request_header
     end
 
     def send_request_body
       if @options[:body]
         body = normalize_body
+        p [:send_body, body]
         send_data body
         return
       elsif @options[:file]
@@ -295,24 +278,6 @@ module EventMachine
         @state = :invalid
         on_error "no HTTP response"
         return
-      end
-
-      if @state == :connect_http_proxy
-        p [:in_connect_http_proxy_parse, @response_header]
-        # when a successfull tunnel is established, the proxy responds with a
-        # 200 response code. from here, the tunnel is transparent.
-        if @response_header.http_status.to_i == 200
-
-          @parser.reset!
-          @response_header.clear
-
-          connection_completed
-        else
-          @state = :invalid
-          on_error "proxy not accessible"
-        end
-
-        return :stop
       end
 
       # correct location header - some servers will incorrectly give a relative URI
