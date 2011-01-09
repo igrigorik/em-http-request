@@ -48,7 +48,6 @@ module EventMachine
 
     # start HTTP request once we establish connection to host
     def connection_completed
-      p [:connection_completed, @state]
 
       # if a socks proxy is specified, then a connection request
       # has to be made to the socks server and we need to wait
@@ -63,7 +62,6 @@ module EventMachine
 
       else
         @state = :response_header
-        p [:SENDING_HEADER_BODY]
         ssl = @options[:tls] || @options[:ssl] || {}
         start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
         send_request_header
@@ -180,14 +178,12 @@ module EventMachine
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
-      p [:send_header, request_header.inspect]
       send_data request_header
     end
 
     def send_request_body
       if @options[:body]
         body = normalize_body
-        p [:send_body, body]
         send_data body
         return
       elsif @options[:file]
@@ -196,13 +192,11 @@ module EventMachine
     end
 
     def receive_data(data)
-      p [:receive, data, :keep_alive?, @parser.inspect]
       @parser << data
     end
 
     # Called when part of the body has been read
     def on_body_data(data)
-      p [:on_body_data, @content_decoder, data]
       if @content_decoder
         begin
           @content_decoder << data
@@ -228,7 +222,6 @@ module EventMachine
     end
 
     def unbind
-      p [:state, @state, :redirects, @redirects, :finished, finished?, (@last_effective_url != @uri)]
       if finished? && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
         begin
           # update uri to redirect location if we're allowed to traverse deeper
@@ -240,7 +233,6 @@ module EventMachine
           # swap current connection and reassign current handler
           req = HttpOptions.new(@method, @uri, @options)
           reconnect(req.host, req.port)
-          p [:reconnecting, @redirects, @uri]
 
           @parser.reset!
           @response.clear
@@ -252,7 +244,6 @@ module EventMachine
           on_error(e.message, true)
         end
       else
-        p [:unbind, :state, @state]
         if finished?
           succeed(self)
         else
@@ -330,8 +321,6 @@ module EventMachine
       if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
-
-      p [:parsed_response_header, @response_header, @state]
     end
 
     # def send_socks_handshake
