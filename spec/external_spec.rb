@@ -39,34 +39,6 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  context "DNS & invalid hosts" do
-    xit "should fail GET on DNS timeout" do
-      EventMachine.run {
-        EventMachine.heartbeat_interval = 0.1
-        http = EventMachine::HttpRequest.new('http://127.1.1.1/').get :timeout => 1
-        http.callback { failed(http) }
-        http.errback {
-          http.response_header.status.should == 0
-          EventMachine.stop
-        }
-      }
-    end
-
-    xit "should fail GET on invalid host" do
-      EventMachine.run {
-        EventMachine.heartbeat_interval = 0.1
-        http = EventMachine::HttpRequest.new('http://somethinglocal/').get :timeout => 1
-        http.callback { failed(http) }
-        http.errback {
-          http.response_header.status.should == 0
-          http.error.should match(/unable to resolve server address/)
-          http.uri.to_s.should match('http://somethinglocal:80/')
-          EventMachine.stop
-        }
-      }
-    end
-  end
-
   context "keepalive" do
     it "should default to non-keepalive" do
       EventMachine.run {

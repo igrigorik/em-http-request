@@ -1,0 +1,16 @@
+HTTP/1.1 301 Moved Permanently
+Location: http://www.google.ca/
+Content-Type: text/html; charset=UTF-8
+Date: Sun, 09 Jan 2011 02:51:43 GMT
+Expires: Tue, 08 Feb 2011 02:51:43 GMT
+Cache-Control: public, max-age=2592000
+Server: gws
+Content-Length: 218
+X-XSS-Protection: 1; mode=block
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.ca/">here</A>.
+</BODY></HTML>

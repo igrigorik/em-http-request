@@ -111,17 +111,6 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  xit "should fail gracefully on an invalid host in Location header" do
-    EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/badhost').get :redirects => 1
-      http.callback { failed(http) }
-      http.errback {
-        http.error.should == 'unable to resolve server address'
-        EM.stop
-      }
-    }
-  end
-
   it "should reset host on redirect" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect').get :redirects => 1, :host => '127.0.0.1'
