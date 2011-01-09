@@ -25,15 +25,10 @@ module EventMachine
       @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
       @parser.on_body = proc {|data| on_body_data(data) }
       @parser.on_message_complete = proc do
-        if @state == :websocket
-          @state = :stream
-        else
-          @state = :finished
-          on_request_complete
-        end
+        @state = :finished
+        on_request_complete
       end
 
-      @chunk_header = HttpChunkHeader.new
       @response_header = HttpResponseHeader.new
 
       @redirects = 0
@@ -109,29 +104,9 @@ module EventMachine
       @stream = blk
     end
 
-    # assign disconnect callback for websocket
-    def disconnect(&blk)
-      @disconnect = blk
-    end
-
     # assign a headers parse callback
     def headers(&blk)
       @headers = blk
-    end
-
-    # raw data push from the client (WebSocket) should
-    # only be invoked after handshake, otherwise it will
-    # inject data into the header exchange
-    #
-    # frames need to start with 0x00-0x7f byte and end with
-    # an 0xFF byte. Per spec, we can also set the first
-    # byte to a value betweent 0x80 and 0xFF, followed by
-    # a leading length indicator
-    def send(data)
-      if @state == :websocket
-        p [:sending_websocket_data, data]
-        send_data("\x00#{data}\xff")
-      end
     end
 
     def normalize_body
@@ -144,12 +119,6 @@ module EventMachine
       end
     end
 
-    # determines if there is enough data in the buffer
-    def has_bytes?(num)
-      @data.size >= num
-    end
-
-    def websocket?; @uri.scheme == 'ws'; end
     def proxy?; !@options[:proxy].nil?; end
 
     # determines if a proxy should be used that uses
@@ -195,32 +164,25 @@ module EventMachine
         end
       end
 
-      if websocket?
-        head['upgrade'] = 'WebSocket'
-        head['connection'] = 'Upgrade'
-        head['origin'] = @options[:origin] || @uri.host
+      # Set the Content-Length if file is given
+      head['content-length'] = File.size(file) if file
 
-      else
-        # Set the Content-Length if file is given
-        head['content-length'] = File.size(file) if file
+      # Set the Content-Length if body is given
+      head['content-length'] =  body.bytesize if body
 
-        # Set the Content-Length if body is given
-        head['content-length'] =  body.bytesize if body
+      # Set the cookie header if provided
+      if cookie = head.delete('cookie')
+        head['cookie'] = encode_cookie(cookie)
+      end
 
-        # Set the cookie header if provided
-        if cookie = head.delete('cookie')
-          head['cookie'] = encode_cookie(cookie)
-        end
+      # Set content-type header if missing and body is a Ruby hash
+      if not head['content-type'] and options[:body].is_a? Hash
+        head['content-type'] = 'application/x-www-form-urlencoded'
+      end
 
-        # Set content-type header if missing and body is a Ruby hash
-        if not head['content-type'] and options[:body].is_a? Hash
-          head['content-type'] = 'application/x-www-form-urlencoded'
-        end
-
-        # Set connection close unless keepalive
-        unless options[:keepalive]
-          head['connection'] = 'close'
-        end
+      # Set connection close unless keepalive
+      unless options[:keepalive]
+        head['connection'] = 'close'
       end
 
       # Set the Host header if it hasn't been specified already
@@ -252,11 +214,7 @@ module EventMachine
 
     def receive_data(data)
       p [:receive, data, :keep_alive?, @parser.inspect]
-      if @state == :stream
-        process_websocket(data)
-      else
-        @parser << data
-      end
+      @parser << data
     end
 
     # Called when part of the body has been read
@@ -315,7 +273,6 @@ module EventMachine
         if finished?
           succeed(self)
         else
-          @disconnect.call(self) if @state == :websocket and @disconnect
           fail(self)
         end
       end
@@ -389,16 +346,7 @@ module EventMachine
         return false
       end
 
-      if websocket?
-        p [:parse_response_header, :WEBSOCKET]
-        if @response_header.status == 101
-          @state = :websocket
-          succeed
-        else
-          fail "websocket handshake failed"
-        end
-
-      elsif @response_header.chunked_encoding?
+      if @response_header.chunked_encoding?
         @state = :chunk_header
       elsif @response_header.content_length
         @state = :body
@@ -534,28 +482,14 @@ module EventMachine
    #         }
    #
    #         error_message = (error_messages[response_code] || "unknown error code: #{response_code}")
-   #         on_error("socks5 connect error: #{error_message}")
-   #         return false
-   #     end
-   #   end
-   #
-   #   true
-   # end
+          #         on_error("socks5 connect error: #{error_message}")
+          #         return false
+          #     end
+          #   end
+          #
+          #   true
+          # end
 
-  def process_websocket(data)
-    # return false if @data.empty?
+          end
 
-    # slice the message out of the buffer and pass in
-    # for processing, and buffer data otherwise
-    @data ||= ''
-    @data << data
-
-    while msg = @data.slice!(/\000([^\377]*)\377/n)
-      msg.gsub!(/\A\x00|\xff\z/n, '')
-      @stream.call(msg)
     end
-
-  end
-end
-
-end
