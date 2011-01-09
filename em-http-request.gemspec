@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description = s.summary
   s.rubyforge_project = "em-http-request"
 
-  s.add_dependency "eventmachine", ">= 0.12.9"
+  s.add_dependency "eventmachine", "1.0.0.beta.2"
   s.add_dependency "addressable", ">= 2.0.0"
   s.add_dependency "http_parser.rb"
 

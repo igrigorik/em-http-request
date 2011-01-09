@@ -51,27 +51,31 @@ module EventMachine
 
     protected
 
-    def setup_request(method, options, &blk)
-      @req = HttpOptions.new(method, @uri, options)
-      send_request(&blk)
-    end
-
-    def send_request(&blk)
-      begin
-        EventMachine.connect(@req.host, @req.port, EventMachine::HttpClient) { |c|
-          c.uri = @req.uri
-          c.method = @req.method
-          c.options = @req.options
-          c.comm_inactivity_timeout = @req.options[:timeout]
-          c.pending_connect_timeout = @req.options[:timeout]
-          blk.call(c) unless blk.nil?
-        }
-      rescue EventMachine::ConnectionError => e
-        conn = EventMachine::HttpClient.new("")
-        conn.on_error(e.message, true)
-        conn.uri = @req.uri
-        conn
+      def setup_request(method, options, &blk)
+        @req = HttpOptions.new(method, @uri, options)
+        send_request(&blk)
       end
-    end
+
+      def send_request(&blk)
+        begin
+          EventMachine.connect(@req.host, @req.port, EventMachine::HttpClient) { |c|
+            c.uri = @req.uri
+            c.method = @req.method
+            c.options = @req.options
+
+            if Config::CONFIG['ruby_install_name'] != 'jruby'
+              c.comm_inactivity_timeout = @req.options[:timeout]
+              c.pending_connect_timeout = @req.options[:timeout]
+            end
+
+            blk.call(c) unless blk.nil?
+          }
+        rescue EventMachine::ConnectionError => e
+          conn = EventMachine::HttpClient.new("")
+          conn.on_error(e.message, true)
+          conn.uri = @req.uri
+          conn
+        end
+      end
   end
 end
