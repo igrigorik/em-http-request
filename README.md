@@ -1,9 +1,21 @@
 EM-HTTP-Request
 ===============
 
+Experimental branch / re-write of em-http which replaces the Ragel parser with ry's http parser (FFI'ed). Goals:
+
+- No native dependencies = em-http can run on JRuby / java reactor: https://gist.github.com/771389
+- Simpler codebase / remove old cruft
+
+## TODO:
+
+- Re-implement socks 5 + specs
+- Pipelining support
+
+***
+
 Asynchronous HTTP client for Ruby, based on EventMachine runtime.
 
-- Ragel HTTP parser for speed & performance
+-
 - Simple interface for single & parallel requests via deferred callbacks
 - Automatic gzip & deflate decoding
 - Basic-Auth & OAuth support
