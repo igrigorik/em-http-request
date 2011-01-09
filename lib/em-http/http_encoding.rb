@@ -3,14 +3,24 @@ module EventMachine
     HTTP_REQUEST_HEADER="%s %s HTTP/1.1\r\n"
     FIELD_ENCODING = "%s: %s\r\n"
 
-    # Escapes a URI.
     def escape(s)
-      EscapeUtils.escape_url(s.to_s)
+      if defined?(EscapeUtils)
+        EscapeUtils.escape_url(s.to_s)
+      else
+        s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/n) {
+          '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
+        }
+      end
     end
 
-    # Unescapes a URI escaped string.
     def unescape(s)
-      EscapeUtils.unescape_url(s.to_s)
+      if defined?(EscapeUtils)
+        EscapeUtils.unescape_url(s.to_s)
+      else
+        s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n) {
+          [$1.delete('%')].pack('H*')
+        }
+      end
     end
 
     if ''.respond_to?(:bytesize)

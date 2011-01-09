@@ -1,5 +1,4 @@
 require 'eventmachine'
-require 'escape_utils'
 require 'addressable/uri'
 require 'http/parser'
 

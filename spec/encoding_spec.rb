@@ -31,7 +31,7 @@ describe EventMachine::HttpEncoding do
     params.should == "bad%26str[key%26key][0]=bad%2B%26stuff&bad%26str[key%26key][1]=%5Btest%5D"
   end
 
-  it "should be fast on long string escapes" do
+  xit "should be fast on long string escapes" do
     s = Time.now
     5000.times { |n| form_encode_body({:a => "{a:'b', d:'f', g:['a','b']}"*50}) }
     (Time.now - s).should satisfy { |t| t < 1.5 }

@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
 
   s.add_dependency "eventmachine", ">= 0.12.9"
   s.add_dependency "addressable", ">= 2.0.0"
-  s.add_dependency "escape_utils"
   s.add_dependency "http_parser.rb"
 
   s.add_development_dependency "rspec"
