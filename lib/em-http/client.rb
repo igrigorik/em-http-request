@@ -224,11 +224,11 @@ module EventMachine
     end
 
     def finished?
-      @state == :finished || (@state == :body && @bytes_remaining.nil?)
+      @state == :finished || (@state == :body && @response_header.content_length.nil?)
     end
 
     def unbind
-      p [:state, @state, :bytes_remaining, @bytes_remaining, @redirects, :finished, finished?, (@last_effective_url != @uri)]
+      p [:state, @state, :redirects, @redirects, :finished, finished?, (@last_effective_url != @uri)]
       if finished? && (@last_effective_url != @uri) && (@redirects < @options[:redirects])
         begin
           # update uri to redirect location if we're allowed to traverse deeper
@@ -315,10 +315,8 @@ module EventMachine
         @state = :chunk_header
       elsif @response_header.content_length
         @state = :body
-        @bytes_remaining = @response_header.content_length
       else
         @state = :body
-        @bytes_remaining = nil
       end
 
       if decoder_class = HttpDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
