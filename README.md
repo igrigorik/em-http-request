@@ -86,6 +86,8 @@ Full basic author support. For OAuth, check examples/oauth-tweet.rb file.
 POSTing data example
 --------------------
 
+For multi-part uploads, please see [this gist](https://gist.github.com/778639).
+
       EventMachine.run {
         http1 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => {"key1" => 1, "key2" => [2,3]}
         http2 = EventMachine::HttpRequest.new('http://www.website.com/').post :body => "some data"
