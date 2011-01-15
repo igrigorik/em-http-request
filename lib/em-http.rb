@@ -13,3 +13,9 @@ require 'em-http/client'
 require 'em-http/multi'
 require 'em-http/request'
 require 'em-http/decoders'
+
+module Eventmachine
+  class HttpRequest < EM::Connection
+    VERSION = "0.3.0"
+  end
+end

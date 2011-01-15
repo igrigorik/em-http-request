@@ -1,5 +1,5 @@
 module EventMachine
-  class HttpClient < Connection
+  class HttpClient
     include EventMachine::Deferrable
     include EventMachine::HttpEncoding
 
@@ -16,18 +16,16 @@ module EventMachine
 
     CRLF="\r\n"
 
-    attr_accessor :method, :options, :uri
+    attr_accessor :state
     attr_reader   :response, :response_header, :error, :redirects, :last_effective_url, :content_charset
 
-    def post_init
-      @parser = Http::Parser.new
+    def initialize(conn, req, options)
+      @conn = conn
+      @req = req
+      @uri = req.uri
+      @method = req.method
 
-      @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
-      @parser.on_body = proc {|data| on_body_data(data) }
-      @parser.on_message_complete = proc do
-        @state = :finished
-        on_request_complete
-      end
+      @options = options
 
       @response_header = HttpResponseHeader.new
 
@@ -45,6 +43,17 @@ module EventMachine
       @state = :response_header
       @socks_state = nil
     end
+
+    # def post_init
+    #   @parser = Http::Parser.new
+    #
+    #   @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
+    #   @parser.on_body = proc {|data| on_body_data(data) }
+    #   @parser.on_message_complete = proc do
+    #     @state = :finished
+    #     on_request_complete
+    #   end
+    # end
 
     # start HTTP request once we establish connection to host
     def connection_completed
@@ -77,7 +86,8 @@ module EventMachine
         on_error "Content-decoder error"
       end
 
-      close_connection
+      # @conn.close_connection
+      succeed
     end
 
     # request failed, invoke errback
@@ -156,12 +166,12 @@ module EventMachine
       end
 
       # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and options[:body].is_a? Hash
+      if not head['content-type'] and @options[:body].is_a? Hash
         head['content-type'] = 'application/x-www-form-urlencoded'
       end
 
       # Set connection close unless keepalive
-      unless options[:keepalive]
+      unless @options[:keepalive]
         head['connection'] = 'close'
       end
 
@@ -178,13 +188,14 @@ module EventMachine
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
-      send_data request_header
+      p [:request_header, request_header]
+      @conn.send_data request_header
     end
 
     def send_request_body
       if @options[:body]
         body = normalize_body
-        send_data body
+        @conn.send_data body
         return
       elsif @options[:file]
         stream_file_data @options[:file], :http_chunks => false
@@ -252,13 +263,13 @@ module EventMachine
       end
     end
 
-    def parse_response_header(header)
+    def parse_response_header(header, version, status)
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
       end
 
-      @response_header.http_version = @parser.http_version.join('.')
-      @response_header.http_status  = @parser.status_code.to_i
+      @response_header.http_version = version.join('.')
+      @response_header.http_status  = status.to_i
       @response_header.http_reason  = 'unknown'
 
       # invoke headers callback after full parse
@@ -298,7 +309,7 @@ module EventMachine
       # current connection and reinitialize the process.
       if @method == "HEAD"
         @state = :finished
-        close_connection
+        @conn.close_connection
         return false
       end
 
@@ -321,6 +332,7 @@ module EventMachine
       if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
+      p [:parsed_header, @response_header]
     end
 
     # def send_socks_handshake

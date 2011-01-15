@@ -4,7 +4,9 @@ require "em-http/version"
 
 Gem::Specification.new do |s|
   s.name        = "em-http-request"
-  s.version     = EventMachine::HttpRequest::VERSION
+  # s.version     = EventMachine::HttpRequest::VERSION
+  s.version     = '0.3.0'
+
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ilya Grigorik"]
   s.email       = ["ilya@igvita.com"]
