@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 / 2011-01-15
+
+- IMPORTANT: default to non-persistent connections (timeout => 0 now requires :keepalive => true)
+- see: https://github.com/igrigorik/em-http-request/commit/1ca5b608e876c18fa6cfa318d0685dcf5b974e09
+
+- added escape_utils dependency to fix slow encode on long string escapes
+
+- bugfix: proxy authorization headers
+- bugfix: default to Encoding.default_external on invalid encoding in response
+- bugfix: do not normalize URI's internally
+- bugfix: more robust Encoding detection
+
+
 ## 0.2.15 / 2010-11-18
 
 - bugfix: follow redirects on missing content-length
