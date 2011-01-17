@@ -44,7 +44,6 @@ module EventMachine
     end
 
     def connection_completed
-      puts "Connection completed"
       succeed
     end
 

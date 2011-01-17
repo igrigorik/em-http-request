@@ -188,7 +188,6 @@ module EventMachine
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
-      p [:request_header, request_header]
       @conn.send_data request_header
     end
 
@@ -332,7 +331,6 @@ module EventMachine
       if ''.respond_to?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
-      p [:parsed_header, @response_header]
     end
 
     # def send_socks_handshake
