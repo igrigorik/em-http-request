@@ -21,10 +21,10 @@ module EventMachine
 
     def initialize(conn, req, options)
       @conn = conn
+
       @req = req
       @uri = req.uri
       @method = req.method
-
       @options = options
 
       @response_header = HttpResponseHeader.new
@@ -43,17 +43,6 @@ module EventMachine
       @state = :response_header
       @socks_state = nil
     end
-
-    # def post_init
-    #   @parser = Http::Parser.new
-    #
-    #   @parser.on_headers_complete = proc { |headers| parse_response_header(headers) }
-    #   @parser.on_body = proc {|data| on_body_data(data) }
-    #   @parser.on_message_complete = proc do
-    #     @state = :finished
-    #     on_request_complete
-    #   end
-    # end
 
     # start HTTP request once we establish connection to host
     def connection_completed

@@ -1,7 +1,8 @@
 class HttpOptions
   attr_reader :uri, :method, :host, :port, :options
 
-  def initialize(method, uri, options)
+  def initialize(uri, options, method = :none)
+    uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     uri.path = '/' if uri.path.empty?
 
     @options = options

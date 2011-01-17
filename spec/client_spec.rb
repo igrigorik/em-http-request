@@ -394,20 +394,20 @@ describe EventMachine::HttpRequest do
     end
   end
 
-  # context "host override" do
-  #   it "should accept optional host" do
-  #     EventMachine.run {
-  #       http = EventMachine::HttpRequest.connect('http://google.com:8090/').get :host => '127.0.0.1'
-  #
-  #       http.errback { failed(http) }
-  #       http.callback {
-  #         http.response_header.status.should == 200
-  #         http.response.should match(/Hello/)
-  #         EventMachine.stop
-  #       }
-  #     }
-  #   end
-  # end
+  context "host override" do
+    it "should accept optional host" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.connect('http://google.com:8090/', :host => '127.0.0.1').get
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match(/Hello/)
+          EventMachine.stop
+        }
+      }
+    end
+  end
 
   # context "optional header callback" do
   #   it "should optionally pass the response headers" do
@@ -451,7 +451,7 @@ describe EventMachine::HttpRequest do
   #     }
   #   end
   # end
-  #
+
   it "should optionally pass the response body progressively" do
     EventMachine.run {
       body = ''

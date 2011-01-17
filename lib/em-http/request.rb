@@ -3,7 +3,7 @@ module EventMachine
   class HttpRequest < Connection
     include Deferrable
 
-    attr_accessor :uri
+    attr_accessor :req
 
     def get    options = {}, &blk;  setup_request(:get,   options, &blk);   end
     def head   options = {}, &blk;  setup_request(:head,  options, &blk);   end
@@ -11,10 +11,8 @@ module EventMachine
     def put    options = {}, &blk;  setup_request(:put,   options, &blk);   end
     def post   options = {}, &blk;  setup_request(:post,  options, &blk);   end
 
-    def setup_request(method, options, &blk)
-      @req = HttpOptions.new(method, @uri, options)
-
-      c = HttpClient.new(self, @req, options)
+    def setup_request(method, options = {})
+      c = HttpClient.new(self, HttpOptions.new(@req.uri, options, method), options)
       callback { c.connection_completed }
       @clients.push c
       c
@@ -48,33 +46,25 @@ module EventMachine
     end
 
     def unbind
-
       @clients.map {|c| c.fail }
     end
 
-    def self.connect(uri, options={}, &blk)
+    def self.connect(uri, options={})
       begin
-        @uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
-        @uri.port ||= 80
+        req = HttpOptions.new(uri, options)
 
-        s = EventMachine.connect(@uri.host, @uri.port, self) do |c|
-          c.uri = @uri
-          c.comm_inactivity_timeout = (options[:timeout] || 10)
-          c.pending_connect_timeout = (options[:timeout] || 10)
+        s = EventMachine.connect(req.host, req.port, self) do |c|
+          c.req = req
+
+          c.comm_inactivity_timeout = req.options[:timeout]
+          c.pending_connect_timeout = req.options[:timeout]
         end
 
-        # { |c|
-        #   c.uri = @req.uri
-        #   c.method = @req.method
-        #   c.options = @req.options
-        #
-        #   blk.call(c) unless blk.nil?
-        # }
       rescue EventMachine::ConnectionError => e
-        conn = EventMachine::HttpClient.new("")
-        conn.on_error(e.message, true)
-        conn.uri = @req.uri
-        conn
+        # conn = EventMachine::HttpClient.new("")
+        # conn.on_error(e.message, true)
+        # conn.uri = @req.uri
+        # conn
       end
     end
   end
