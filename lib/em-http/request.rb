@@ -46,6 +46,7 @@ module EventMachine
     end
 
     def unbind
+      # AHA.. crap. failing the conn before callbacks fire?
       @clients.map {|c| c.fail }
     end
 

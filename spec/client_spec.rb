@@ -203,17 +203,18 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  # it "should perform successful GET with custom header" do
-  #   EventMachine.run {
-  #     http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get :head => {'if-none-match' => 'evar!'}
-  #
-  #     http.errback { failed(http) }
-  #     http.callback {
-  #       http.response_header.status.should == 304
-  #       EventMachine.stop
-  #     }
-  #   }
-  # end
+  it "should perform successful GET with custom header" do
+    EventMachine.run {
+      pending "unbinds before it calls complete_request -- need extra checks"
+      http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get :head => {'if-none-match' => 'evar!'}
+
+      http.errback { p http; failed(http) }
+      http.callback {
+        http.response_header.status.should == 304
+        EventMachine.stop
+      }
+    }
+  end
 
   it "should perform basic auth" do
     EventMachine.run {
@@ -409,48 +410,48 @@ describe EventMachine::HttpRequest do
     end
   end
 
-  # context "optional header callback" do
-  #   it "should optionally pass the response headers" do
-  #     EventMachine.run {
-  #       http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get
-  #
-  #       http.errback { failed(http) }
-  #       http.headers { |hash|
-  #         hash.should be_an_kind_of Hash
-  #         hash.should include 'CONNECTION'
-  #         hash.should include 'CONTENT_LENGTH'
-  #       }
-  #
-  #       http.callback {
-  #         http.response_header.status.should == 200
-  #         http.response.should match(/Hello/)
-  #         EventMachine.stop
-  #       }
-  #     }
-  #   end
-  #
-  #   it "should allow to terminate current connection from header callback" do
-  #     EventMachine.run {
-  #       http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get
-  #
-  #       http.callback { failed(http) }
-  #       http.headers { |hash|
-  #         hash.should be_an_kind_of Hash
-  #         hash.should include 'CONNECTION'
-  #         hash.should include 'CONTENT_LENGTH'
-  #
-  #         http.close('header callback terminated connection')
-  #       }
-  #
-  #       http.errback { |e|
-  #         http.response_header.status.should == 200
-  #         http.error.should == 'header callback terminated connection'
-  #         http.response.should == ''
-  #         EventMachine.stop
-  #       }
-  #     }
-  #   end
-  # end
+  context "optional header callback" do
+    it "should optionally pass the response headers" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get
+
+        http.errback { failed(http) }
+        http.headers { |hash|
+          hash.should be_an_kind_of Hash
+          hash.should include 'CONNECTION'
+          hash.should include 'CONTENT_LENGTH'
+        }
+
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match(/Hello/)
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should allow to terminate current connection from header callback" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').get
+
+        http.callback { failed(http) }
+        http.headers { |hash|
+          hash.should be_an_kind_of Hash
+          hash.should include 'CONNECTION'
+          hash.should include 'CONTENT_LENGTH'
+
+          http.close('header callback terminated connection')
+        }
+
+        http.errback { |e|
+          http.response_header.status.should == 200
+          http.error.should == 'header callback terminated connection'
+          http.response.should == ''
+          EventMachine.stop
+        }
+      }
+    end
+  end
 
   it "should optionally pass the response body progressively" do
     EventMachine.run {
@@ -527,65 +528,49 @@ describe EventMachine::HttpRequest do
   end
 
   context "when talking to a stub HTTP/1.0 server" do
-    # it "should get the body without Content-Length" do
-    #   EventMachine.run {
-    #     @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
-    #
-    #     http = EventMachine::HttpRequest.connect('http://127.0.0.1:8081/').get
-    #     http.errback { failed(http) }
-    #     http.callback {
-    #       http.response.should match(/Foo/)
-    #       http.response_header['CONTENT_LENGTH'].should_not == 0
-    #
-    #       @s.stop
-    #       EventMachine.stop
-    #     }
-    #   }
-    # end
-    #
-    #    it "should work with \\n instead of \\r\\n" do
-    #      EventMachine.run {
-    #        @s = StubServer.new("HTTP/1.0 200 OK\nContent-Type: text/plain\nContent-Length: 3\nConnection: close\n\nFoo")
-    #
-    #        http = EventMachine::HttpRequest.connect('http://127.0.0.1:8081/').get
-    #        http.errback { failed(http) }
-    #        http.callback {
-    #          http.response_header.status.should == 200
-    #          http.response_header['CONTENT_TYPE'].should == 'text/plain'
-    #          http.response.should match(/Foo/)
-    #
-    #          @s.stop
-    #          EventMachine.stop
-    #        }
-    #      }
-    #    end
+    it "should get the body without Content-Length" do
+      pending "need to fix parser"
+
+      EventMachine.run {
+        @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
+
+        http = EventMachine::HttpRequest.connect('http://127.0.0.1:8081/').get
+        http.errback { failed(http) }
+        http.callback {
+          http.response.should match(/Foo/)
+          http.response_header['CONTENT_LENGTH'].should_not == 0
+
+          @s.stop
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should work with \\n instead of \\r\\n" do
+      EventMachine.run {
+        @s = StubServer.new("HTTP/1.0 200 OK\nContent-Type: text/plain\nContent-Length: 3\nConnection: close\n\nFoo")
+
+        http = EventMachine::HttpRequest.connect('http://127.0.0.1:8081/').get
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header['CONTENT_TYPE'].should == 'text/plain'
+          http.response.should match(/Foo/)
+
+          @s.stop
+          EventMachine.stop
+        }
+      }
+    end
   end
 
-  xit "should stream a file off disk" do
+  it "should stream a file off disk" do
     EventMachine.run {
       http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/').post :file => 'spec/fixtures/google.ca'
 
       http.errback { failed(http) }
       http.callback {
         http.response.should match('google')
-        EventMachine.stop
-      }
-    }
-  end
-
-  xit 'should let you pass a block to be called once the client is created' do
-    client = nil
-    EventMachine.run {
-      request = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/')
-      http = request.post { |c|
-        c.options[:body] = {:callback_run => 'yes'}
-        client = c
-      }
-      http.errback { failed(http) }
-      http.callback {
-        client.should be_kind_of(EventMachine::HttpClient)
-        http.response_header.status.should == 200
-        http.response.should match(/callback_run=yes/)
         EventMachine.stop
       }
     }

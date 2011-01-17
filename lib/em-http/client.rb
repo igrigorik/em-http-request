@@ -80,12 +80,9 @@ module EventMachine
     end
 
     # request failed, invoke errback
-    def on_error(msg, dns_error = false)
+    def on_error(msg)
       @error = msg
-
-      # no connection signature on DNS failures
-      # fail the connection directly
-      dns_error == true ? fail(self) : unbind
+      fail(self)
     end
     alias :close :on_error
 
@@ -186,15 +183,10 @@ module EventMachine
         @conn.send_data body
         return
       elsif @options[:file]
-        stream_file_data @options[:file], :http_chunks => false
+        @conn.stream_file_data @options[:file], :http_chunks => false
       end
     end
 
-    def receive_data(data)
-      @parser << data
-    end
-
-    # Called when part of the body has been read
     def on_body_data(data)
       if @content_decoder
         begin
@@ -257,7 +249,7 @@ module EventMachine
       end
 
       @response_header.http_version = version.join('.')
-      @response_header.http_status  = status.to_i
+      @response_header.http_status  = status
       @response_header.http_reason  = 'unknown'
 
       # invoke headers callback after full parse
