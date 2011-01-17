@@ -1,6 +1,6 @@
 module EventMachine
 
-  class HttpRequest < Connection
+  class HttpConnection < Connection
     include Deferrable
 
     attr_accessor :req
@@ -49,12 +49,14 @@ module EventMachine
       # AHA.. crap. failing the conn before callbacks fire?
       @clients.map {|c| c.fail }
     end
+  end
 
-    def self.connect(uri, options={})
+  class HttpRequest
+    def self.new(uri, options={})
       begin
         req = HttpOptions.new(uri, options)
 
-        s = EventMachine.connect(req.host, req.port, self) do |c|
+        s = EventMachine.connect(req.host, req.port, HttpConnection) do |c|
           c.req = req
 
           c.comm_inactivity_timeout = req.options[:timeout]
