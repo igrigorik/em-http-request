@@ -292,19 +292,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  # it "should timeout after 1 second" do
-  #   EventMachine.run {
-  #     t = Time.now.to_i
-  #     EventMachine.heartbeat_interval = 0.1
-  #     http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/timeout').get :timeout => 1
-  #
-  #     http.errback {
-  #       (Time.now.to_i - t).should <= 5
-  #       EventMachine.stop
-  #     }
-  #     http.callback { failed(http) }
-  #   }
-  # end
+  it "should timeout after 1 second" do
+    EventMachine.run {
+      t = Time.now.to_i
+      EventMachine.heartbeat_interval = 0.1
+      http = EventMachine::HttpRequest.connect('http://127.0.0.1:8090/timeout', :timeout => 0.1).get
+
+      http.errback {
+        (Time.now.to_i - t).should <= 5
+        EventMachine.stop
+      }
+      http.callback { failed(http) }
+    }
+  end
 
   it "should complete a Location: with a relative path" do
     EventMachine.run {

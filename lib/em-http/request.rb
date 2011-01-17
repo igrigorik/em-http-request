@@ -48,15 +48,9 @@ module EventMachine
     end
 
     def unbind
-      # @clients.map {|c| c.fail }
+
+      @clients.map {|c| c.fail }
     end
-
-    # def new(host, &blk)
-    # @uri = host.kind_of?(Addressable::URI) ? host : Addressable::URI::parse(host.to_s)
-    # @req = HttpOptions.new(:setup, @uri, {})
-    # send_request(&blk)
-    # end
-
 
     def self.connect(uri, options={}, &blk)
       begin
@@ -65,6 +59,8 @@ module EventMachine
 
         s = EventMachine.connect(@uri.host, @uri.port, self) do |c|
           c.uri = @uri
+          c.comm_inactivity_timeout = (options[:timeout] || 10)
+          c.pending_connect_timeout = (options[:timeout] || 10)
         end
 
         # { |c|
