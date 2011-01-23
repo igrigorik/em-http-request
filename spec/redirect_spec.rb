@@ -38,44 +38,44 @@ describe EventMachine::HttpRequest do
   #   }
   # end
   #
-  # it "should follow redirects on HEAD method" do
-  #   EventMachine.run {
-  #     http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/head').head :redirects => 1
-  #     http.errback { failed(http) }
-  #     http.callback {
-  #       http.response_header.status.should == 200
-  #       http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/'
-  #       EM.stop
-  #     }
-  #   }
-  # end
-  #
-  # it "should report last_effective_url" do
-  #   EventMachine.run {
-  #     http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get
-  #     http.errback { failed(http) }
-  #     http.callback {
-  #       http.response_header.status.should == 200
-  #       http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/'
-  #
-  #       EM.stop
-  #     }
-  #   }
-  # end
-  #
-  # it "should default to 0 redirects" do
-  #   EventMachine.run {
-  #     http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect').get
-  #     http.errback { failed(http) }
-  #     http.callback {
-  #       http.response_header.status.should == 301
-  #       http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
-  #       http.redirects.should == 0
-  #
-  #       EM.stop
-  #     }
-  #   }
-  # end
+  it "should follow redirects on HEAD method" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/head').head :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/'
+        EM.stop
+      }
+    }
+  end
+
+  it "should report last_effective_url" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/'
+
+        EM.stop
+      }
+    }
+  end
+
+  it "should default to 0 redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect').get
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 301
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+        http.redirects.should == 0
+
+        EM.stop
+      }
+    }
+  end
   #
   # it "should not invoke redirect logic on failed(http) connections" do
   #   EventMachine.run {

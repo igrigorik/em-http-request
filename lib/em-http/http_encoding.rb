@@ -38,9 +38,6 @@ module EventMachine
       head.inject({}) { |h, (k, v)| h[k.to_s.downcase] = v; h }
     end
 
-    # HTTP is kind of retarded that you have to specify a Host header, but if
-    # you include port 80 then further redirects will tack on the :80 which is
-    # annoying.
     def encode_host
       if @req.uri.port == 80 || @req.uri.port == 443
         return @req.uri.host
