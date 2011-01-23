@@ -2,7 +2,6 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'em-http'
-require 'em-websocket'
 
 require 'stallion'
 require 'stub_server'

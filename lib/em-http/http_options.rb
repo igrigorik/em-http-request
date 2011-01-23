@@ -3,7 +3,11 @@ class HttpOptions
 
   def initialize(uri, options, method = :none)
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
+
     uri.path = '/' if uri.path.empty?
+    if path = options.delete(:path)
+      uri.path = path
+    end
 
     @options = options
     @method = method.to_s.upcase
