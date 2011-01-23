@@ -205,7 +205,6 @@ describe EventMachine::HttpRequest do
 
   it "should perform successful GET with custom header" do
     EventMachine.run {
-      pending "unbinds before it calls complete_request -- need extra checks"
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get :head => {'if-none-match' => 'evar!'}
 
       http.errback { p http; failed(http) }

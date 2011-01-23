@@ -46,8 +46,7 @@ module EventMachine
     end
 
     def unbind
-      # AHA.. crap. failing the conn before callbacks fire?
-      @clients.map {|c| c.fail }
+      @clients.map {|c| c.unbind }
     end
   end
 
@@ -64,6 +63,8 @@ module EventMachine
         end
 
       rescue EventMachine::ConnectionError => e
+        # XXX: handle bad DNS case
+
         # conn = EventMachine::HttpClient.new("")
         # conn.on_error(e.message, true)
         # conn.uri = @req.uri
