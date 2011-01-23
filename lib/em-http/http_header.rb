@@ -41,7 +41,7 @@ module EventMachine
       /chunked/i === self[HttpClient::TRANSFER_ENCODING]
     end
 
-    def keep_alive?
+    def keepalive?
       /keep-alive/i === self[HttpClient::KEEP_ALIVE]
     end
 
