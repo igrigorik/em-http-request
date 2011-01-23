@@ -15,8 +15,8 @@ describe EventMachine::MultiRequest do
 
       multi.callback  {
         multi.responses[:succeeded].size.should == 2
-        multi.responses[:succeeded][0].response.should match(/test/)
-        multi.responses[:succeeded][1].response.should match(/Hello/)
+        multi.responses[:succeeded][0].response.should match(/test|Hello/)
+        multi.responses[:succeeded][1].response.should match(/test|Hello/)
 
         EventMachine.stop
       }
@@ -30,8 +30,8 @@ describe EventMachine::MultiRequest do
 
       multi = EventMachine::MultiRequest.new([http1, http2]) do
         multi.responses[:succeeded].size.should == 2
-        multi.responses[:succeeded][0].response.should match(/test/)
-        multi.responses[:succeeded][1].response.should match(/Hello/)
+        multi.responses[:succeeded][0].response.should match(/test|Hello/)
+        multi.responses[:succeeded][1].response.should match(/test|Hello/)
 
         EventMachine.stop
       end
