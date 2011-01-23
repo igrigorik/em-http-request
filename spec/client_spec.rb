@@ -513,7 +513,6 @@ describe EventMachine::HttpRequest do
 
   context "when talking to a stub HTTP/1.0 server" do
     it "should get the body without Content-Length" do
-      pending "need to fix parser"
 
       EventMachine.run {
         @s = StubServer.new("HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
