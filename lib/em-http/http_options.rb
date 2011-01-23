@@ -13,9 +13,7 @@ class HttpOptions
       @host = proxy[:host]
       @port = proxy[:port]
     else
-      # optional host for cases where you may have
-      # pre-resolved the host, or you need an override
-      @host = options.delete(:host) || uri.host
+      @host = uri.host
       @port = uri.port
     end
 
