@@ -17,7 +17,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state
-    attr_reader   :response, :response_header, :error, :redirects, :last_effective_url, :content_charset
+    attr_reader   :response, :response_header, :error, :redirects, :content_charset
 
     def initialize(conn, req, options)
       @conn = conn
@@ -29,16 +29,13 @@ module EventMachine
 
       @response_header = HttpResponseHeader.new
 
-      @redirects = 0
       @response = ''
       @error = ''
-      @last_effective_url = nil
       @content_decoder = nil
       @content_charset = nil
 
       @stream = nil
       @headers = nil
-      @disconnect = nil
 
       @state = :response_header
     end
@@ -133,9 +130,6 @@ module EventMachine
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
-      # Record last seen URL
-      # @last_effective_url = @uri
-
       # Build the request headers
       request_header ||= encode_request(@method, @uri, query, proxy)
       request_header << encode_headers(head)
@@ -214,9 +208,6 @@ module EventMachine
             # if redirect is to an absolute url, check for correct URI structure
             raise if location.host.nil?
           end
-
-          # store last url on any sign of redirect
-          # @last_effective_url = location
 
         rescue
           on_error "Location header format error"
