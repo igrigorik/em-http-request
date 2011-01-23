@@ -51,6 +51,8 @@ module EventMachine
     def redirect(client, location)
       client.req.set_uri(location)
       @pending.push client
+    rescue Exception => e
+      client.on_error(e.message)
     end
 
     def unbind

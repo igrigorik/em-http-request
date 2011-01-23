@@ -7,19 +7,12 @@ class HttpOptions
 
     set_uri(uri)
 
-    if proxy = options[:proxy]
-      @host = proxy[:host]
-      @port = proxy[:port]
-    else
-      @host = @uri.host
-      @port = @uri.port
-    end
-
     @options[:keepalive]  ||= false # default to single request per connection
     @options[:timeout]    ||= 10    # default connect & inactivity timeouts
     @options[:redirects]  ||= 0     # default number of redirects to follow
     @options[:followed]   ||= 0     # keep track of number of followed requests
   end
+
 
   def follow_redirect?
     @options[:followed] < @options[:redirects]
@@ -41,6 +34,14 @@ class HttpOptions
       @uri.port ||= 443
     else
       @uri.port ||= 80
+    end
+
+    if proxy = @options[:proxy]
+      @host = proxy[:host]
+      @port = proxy[:port]
+    else
+      @host = @uri.host
+      @port = @uri.port
     end
 
   end
