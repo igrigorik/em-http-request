@@ -1,3 +1,13 @@
+# TODO
+ - Finish redirect support
+ - CONNECT Proxy support
+ - SOCKS 5 support
+ - Fix parser - 0 content length
+ - Async DNS
+
+ - Maybe: plugin / middleware
+
+
 EM-HTTP-Request
 ===============
 
@@ -5,8 +15,6 @@ Experimental branch / re-write of em-http which replaces the Ragel parser with r
 
 - No native dependencies = em-http can run on JRuby / java reactor: https://gist.github.com/771389
 - Simpler codebase / remove old cruft
-
-## TODO:
 
 - Re-implement socks 5 + specs
 - Pipelining support
