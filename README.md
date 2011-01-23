@@ -1,5 +1,4 @@
 # TODO
- - CONNECT Proxy support
  - SOCKS 5 support
  - Fix parser - 0 content length
  - Async DNS

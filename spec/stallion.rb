@@ -200,6 +200,7 @@ Thread.new do
       uri = Addressable::URI.parse(destination)
       absolute_path = uri.path + (uri.query ? "?#{uri.query}" : "")
       client = TCPSocket.open(uri.host, uri.port || 80)
+
       client.write "#{method} #{absolute_path} #{http_version}\r\n"
       parts[1..-1].each do |part|
         client.write "#{part}\r\n"

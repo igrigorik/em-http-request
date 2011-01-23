@@ -2,7 +2,7 @@ module EventMachine
   class HttpConnection < Connection
     include Deferrable
 
-    attr_accessor :req
+    attr_accessor :opts
 
     def get    options = {}, &blk;  setup_request(:get,   options, &blk);   end
     def head   options = {}, &blk;  setup_request(:head,  options, &blk);   end
@@ -11,7 +11,7 @@ module EventMachine
     def post   options = {}, &blk;  setup_request(:post,  options, &blk);   end
 
     def setup_request(method, options = {})
-      c = HttpClient.new(self, HttpOptions.new(@req.uri, options, method), options)
+      c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
       callback { c.connection_completed }
       @clients.push c
       c
@@ -42,8 +42,8 @@ module EventMachine
     end
 
     def connection_completed
-      ssl = @req.options[:tls] || @req.options[:ssl] || {}
-      start_tls(ssl) if @req.uri.scheme == "https" or @req.uri.port == 443
+      ssl = @opts.options[:tls] || @opts.options[:ssl] || {}
+      start_tls(ssl) if @opts.uri.scheme == "https" or @opts.uri.port == 443
 
       succeed
     end

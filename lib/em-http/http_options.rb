@@ -13,6 +13,9 @@ class HttpOptions
     @options[:followed]   ||= 0     # keep track of number of followed requests
   end
 
+  def proxy
+    @options[:proxy]
+  end
 
   def follow_redirect?
     @options[:followed] < @options[:redirects]

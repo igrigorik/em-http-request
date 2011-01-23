@@ -103,14 +103,7 @@ module EventMachine
     end
 
     def proxy?; !@options[:proxy].nil?; end
-
-    # determines if a proxy should be used that uses
-    # http-headers as proxy-mechanism
-    #
-    # this is the default proxy type if none is specified
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
-
-    # determines if a SOCKS5 proxy should be used
     def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
     def send_request_header
@@ -156,7 +149,7 @@ module EventMachine
       head['user-agent'] ||= "EventMachine HttpClient"
 
       # Build the request headers
-      request_header ||= encode_request(@method, @req.uri, query, proxy)
+      request_header ||= encode_request(@method, @req.uri, query, @conn.opts.proxy)
       request_header << encode_headers(head)
       request_header << CRLF
       @conn.send_data request_header

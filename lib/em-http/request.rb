@@ -5,7 +5,7 @@ module EventMachine
         req = HttpOptions.new(uri, options)
 
         s = EventMachine.connect(req.host, req.port, HttpConnection) do |c|
-          c.req = req
+          c.opts = req
 
           c.comm_inactivity_timeout = req.options[:timeout]
           c.pending_connect_timeout = req.options[:timeout]
