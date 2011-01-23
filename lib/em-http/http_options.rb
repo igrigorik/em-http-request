@@ -2,37 +2,46 @@ class HttpOptions
   attr_reader :uri, :method, :host, :port, :options
 
   def initialize(uri, options, method = :none)
-    uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
-
-    uri.path = '/' if uri.path.empty?
-    if path = options.delete(:path)
-      uri.path = path
-    end
-
     @options = options
     @method = method.to_s.upcase
-    @uri = uri
+
+    set_uri(uri)
 
     if proxy = options[:proxy]
       @host = proxy[:host]
       @port = proxy[:port]
     else
-      @host = uri.host
-      @port = uri.port
+      @host = @uri.host
+      @port = @uri.port
     end
 
+    @options[:keepalive]  ||= false # default to single request per connection
     @options[:timeout]    ||= 10    # default connect & inactivity timeouts
     @options[:redirects]  ||= 0     # default number of redirects to follow
-    @options[:keepalive]  ||= false # default to single request per connection
+    @options[:followed]   ||= 0     # keep track of number of followed requests
+  end
+
+  def follow_redirect?
+    @options[:followed] < @options[:redirects]
+  end
+
+  def set_uri(uri)
+    uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
+
+    uri.path = '/' if uri.path.empty?
+    if path = @options.delete(:path)
+      uri.path = path
+    end
+
+    @uri = uri
 
     # Make sure the ports are set as Addressable::URI doesn't
     # set the port if it isn't there
-    if uri.scheme == "https"
+    if @uri.scheme == "https"
       @uri.port ||= 443
-      @port     ||= 443
     else
       @uri.port ||= 80
-      @port     ||= 80
     end
+
   end
 end

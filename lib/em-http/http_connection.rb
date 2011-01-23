@@ -19,6 +19,7 @@ module EventMachine
 
     def post_init
       @clients = []
+      @pending = []
 
       @p = Http::Parser.new
       @p.on_headers_complete = proc do |h|
@@ -47,8 +48,25 @@ module EventMachine
       succeed
     end
 
+    def redirect(client, location)
+      client.req.set_uri(location)
+      @pending.push client
+    end
+
     def unbind
       @clients.map {|c| c.unbind }
+
+      if r = @pending.shift
+        @clients.push r
+
+        r.reset!
+        @p.reset!
+
+        set_deferred_status :unknown
+        reconnect(r.req.host, r.req.port)
+        callback { r.connection_completed }
+      end
+
     end
   end
 end

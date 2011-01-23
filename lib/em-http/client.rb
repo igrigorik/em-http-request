@@ -17,28 +17,33 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state
-    attr_reader   :response, :response_header, :error, :redirects, :content_charset
+    attr_reader   :response, :response_header, :error, :content_charset, :req
 
     def initialize(conn, req, options)
       @conn = conn
 
       @req = req
-      @uri = req.uri
       @method = req.method
       @options = options
 
+      @stream = nil
+      @headers = nil
+
+      reset!
+    end
+
+    def reset!
       @response_header = HttpResponseHeader.new
+      @state = :response_header
 
       @response = ''
       @error = ''
       @content_decoder = nil
       @content_charset = nil
-
-      @stream = nil
-      @headers = nil
-
-      @state = :response_header
     end
+
+    def last_effective_url; @req.uri; end
+    def redirects; @req.options[:followed]; end
 
     def connection_completed
       @state = :response_header
@@ -53,7 +58,29 @@ module EventMachine
         on_error "Content-decoder error"
       end
 
-      succeed
+      unbind
+    end
+
+    def finished?
+      @state == :finished || (@state == :body && @response_header.content_length.nil?)
+    end
+
+    def redirect?
+      @response_header.location && @req.follow_redirect?
+    end
+
+    def unbind
+      if finished?
+        if redirect?
+          @req.options[:followed] += 1
+          @conn.redirect(self, @response_header.location)
+        else
+          succeed(self)
+        end
+
+      else
+        fail(self)
+      end
     end
 
     def on_error(msg)
@@ -129,7 +156,7 @@ module EventMachine
       head['user-agent'] ||= "EventMachine HttpClient"
 
       # Build the request headers
-      request_header ||= encode_request(@method, @uri, query, proxy)
+      request_header ||= encode_request(@method, @req.uri, query, proxy)
       request_header << encode_headers(head)
       request_header << CRLF
       @conn.send_data request_header
@@ -166,15 +193,6 @@ module EventMachine
       end
     end
 
-    def finished?
-      @state == :finished || (@state == :body && @response_header.content_length.nil?)
-    end
-
-    def unbind
-      succeed if finished?
-      fail
-    end
-
     def parse_response_header(header, version, status)
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
@@ -200,7 +218,7 @@ module EventMachine
           location = Addressable::URI.parse(@response_header.location)
 
           if location.relative?
-            location = @uri.join(location)
+            location = @req.uri.join(location)
             @response_header[LOCATION] = location.to_s
           else
             # if redirect is to an absolute url, check for correct URI structure
