@@ -42,6 +42,9 @@ module EventMachine
     end
 
     def connection_completed
+      ssl = @req.options[:tls] || @req.options[:ssl] || {}
+      start_tls(ssl) if @req.uri.scheme == "https" or @req.uri.port == 443
+
       succeed
     end
 

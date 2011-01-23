@@ -42,8 +42,6 @@ module EventMachine
 
     def connection_completed
       @state = :response_header
-      # ssl = @options[:tls] || @options[:ssl] || {}
-      # start_tls(ssl) if @uri.scheme == "https" or @uri.port == 443
       send_request_header
       send_request_body
     end
