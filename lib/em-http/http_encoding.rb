@@ -123,7 +123,7 @@ module EventMachine
         # Munge keys from foo-bar-baz to Foo-Bar-Baz
         key = key.split('-').map { |k| k.to_s.capitalize }.join('-')
         result << case key
-          when 'Authorization', 'Proxy-authorization'
+          when 'Authorization', 'Proxy-Authorization'
             encode_auth(key, value)
           else
             encode_field(key, value)
