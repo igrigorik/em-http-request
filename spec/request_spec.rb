@@ -347,6 +347,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should remove all newlines from long basic auth header" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/oauth_auth').get :head => {'authorization' => ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz']}
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == "Basic YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhOnp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eg=="
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should send proper OAuth auth header" do
     EventMachine.run {
       oauth_header = 'OAuth oauth_nonce="oqwgSYFUD87MHmJJDv7bQqOF2EPnVus7Wkqj5duNByU", b=c, d=e'
