@@ -42,6 +42,17 @@ module EventMachine
     end
 
     def connection_completed
+      if @opts.proxy && @opts.proxy[:type] == :socks5
+
+        class << self; include EventMachine::Socksify; end
+        send_socks_handshake
+
+      else
+        start
+      end
+    end
+
+    def start
       ssl = @opts.options[:tls] || @opts.options[:ssl] || {}
       start_tls(ssl) if @opts.uri.scheme == "https" or @opts.uri.port == 443
 
