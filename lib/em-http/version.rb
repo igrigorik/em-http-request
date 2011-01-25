@@ -1,5 +1,5 @@
-# module EventMachine
-#   class HttpRequest < Connection
-#     VERSION = "0.3.0"
-#   end
-# end
+module EventMachine
+  class HttpRequest
+    VERSION = "0.9.0"
+  end
+end

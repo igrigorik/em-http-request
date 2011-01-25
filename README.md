@@ -1,5 +1,5 @@
 # TODO
- - SOCKS 5 support
+ - Refactor to use EM::Socksify
  - Fix parser - 0 content length
  - Async DNS
 
