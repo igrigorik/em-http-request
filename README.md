@@ -1,8 +1,5 @@
 # TODO
- - Refactor to use EM::Socksify
- - Fix parser - 0 content length
  - Async DNS
-
  - Maybe: plugin / middleware
 
 
