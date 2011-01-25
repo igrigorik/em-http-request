@@ -1,6 +1,7 @@
 module EventMachine
   class HttpConnection < Connection
     include Deferrable
+    include Socksify
 
     attr_accessor :opts
 
@@ -43,10 +44,7 @@ module EventMachine
 
     def connection_completed
       if @opts.proxy && @opts.proxy[:type] == :socks5
-
-        class << self; include EventMachine::Socksify; end
-        send_socks_handshake
-
+        socksify(@opts.uri.host, @opts.uri.port, *@opts.proxy[:authorization]) { start }
       else
         start
       end

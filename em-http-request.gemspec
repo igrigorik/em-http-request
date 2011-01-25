@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_dependency "eventmachine", "1.0.0.beta.2"
   s.add_dependency "addressable", ">= 2.0.0"
   s.add_dependency "http_parser.rb"
+  s.add_dependency "em-socksify"
 
   s.add_development_dependency "rspec"
   s.add_development_dependency "rake"

@@ -1,4 +1,5 @@
 require 'eventmachine'
+require 'em-socksify'
 require 'addressable/uri'
 require 'http/parser'
 
@@ -10,14 +11,7 @@ require 'em-http/http_connection'
 require 'em-http/http_header'
 require 'em-http/http_encoding'
 require 'em-http/http_options'
-require 'em-http/socksify'
 require 'em-http/client'
 require 'em-http/multi'
 require 'em-http/request'
 require 'em-http/decoders'
-
-module Eventmachine
-  class HttpRequest < EM::Connection
-    VERSION = "0.3.0"
-  end
-end
