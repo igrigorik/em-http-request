@@ -151,11 +151,11 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 304
 
     elsif stable.request.env["HTTP_AUTHORIZATION"]
-      if stable.request.path_info == '/oauth_auth'
+      if stable.request.path_info == '/auth'
         stable.response.status = 200
         stable.response.write stable.request.env["HTTP_AUTHORIZATION"]
       else
-        auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).chomp
+        auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).split.join
 
         if auth == stable.request.env["HTTP_AUTHORIZATION"]
           stable.response.status = 200

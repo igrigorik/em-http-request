@@ -37,12 +37,12 @@ describe EventMachine::HttpRequest do
   it "should succeed GET on missing path" do
     EventMachine.run {
       lambda {
-        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090').get
-        http.callback {
-          http.response.should match(/Hello/)
-          EventMachine.stop
-        }
-      }.should_not raise_error(ArgumentError)
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090').get
+      http.callback {
+        http.response.should match(/Hello/)
+        EventMachine.stop
+      }
+    }.should_not raise_error(ArgumentError)
 
     }
   end
@@ -50,10 +50,10 @@ describe EventMachine::HttpRequest do
   it "should raise error on invalid URL" do
     EventMachine.run {
       lambda {
-        EventMachine::HttpRequest.new('random?text').get
-      }.should raise_error
+      EventMachine::HttpRequest.new('random?text').get
+    }.should raise_error
 
-      EM.stop
+    EM.stop
     }
   end
 
@@ -228,10 +228,23 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should remove all newlines from long basic auth header" do
+    EventMachine.run {
+      auth = {'authorization' => ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz']}
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/auth').get :head => auth
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == "Basic YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhOnp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eg=="
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should send proper OAuth auth header" do
     EventMachine.run {
       oauth_header = 'OAuth oauth_nonce="oqwgSYFUD87MHmJJDv7bQqOF2EPnVus7Wkqj5duNByU", b=c, d=e'
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/oauth_auth').get :head => {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/auth').get :head => {
         'authorization' => oauth_header
       }
 
@@ -278,17 +291,17 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {
-        "accept-encoding" => "gzip, compressed"
-      }
+      "accept-encoding" => "gzip, compressed"
+    }
 
-      http.errback { failed(http) }
-      http.callback {
-        http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
-        http.response.should == "compressed"
+    http.errback { failed(http) }
+    http.callback {
+      http.response_header.status.should == 200
+      http.response_header["CONTENT_ENCODING"].should == "gzip"
+      http.response.should == "compressed"
 
-        EventMachine.stop
-      }
+      EventMachine.stop
+    }
     }
   end
 
@@ -349,15 +362,15 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         ct = 'text; charset=utf-8'
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => ct}})
+          :body => {:a => :b}, :head => {'content-type' => ct}})
 
-        http.errback { failed(http) }
-        http.callback {
-          http.response_header.status.should == 200
-          http.content_charset.should == Encoding.find('utf-8')
-          http.response_header["CONTENT_TYPE"].should == ct
-          EventMachine.stop
-        }
+          http.errback { failed(http) }
+          http.callback {
+            http.response_header.status.should == 200
+            http.content_charset.should == Encoding.find('utf-8')
+            http.response_header["CONTENT_TYPE"].should == ct
+            EventMachine.stop
+          }
       }
     end
 
@@ -365,15 +378,15 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         ct = 'text/html; charset=utf-8lias'
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => ct}})
+          :body => {:a => :b}, :head => {'content-type' => ct}})
 
-        http.errback { failed(http) }
-        http.callback {
-          http.response_header.status.should == 200
-          http.content_charset.should == Encoding.find('utf-8')
-          http.response_header["CONTENT_TYPE"].should == ct
-          EventMachine.stop
-        }
+          http.errback { failed(http) }
+          http.callback {
+            http.response_header.status.should == 200
+            http.content_charset.should == Encoding.find('utf-8')
+            http.response_header["CONTENT_TYPE"].should == ct
+            EventMachine.stop
+          }
       }
     end
 
@@ -381,15 +394,15 @@ describe EventMachine::HttpRequest do
       EventMachine.run {
         ct = "text/html; charset=\"ISO-8859-4\""
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_content_type').post({
-        :body => {:a => :b}, :head => {'content-type' => ct}})
+          :body => {:a => :b}, :head => {'content-type' => ct}})
 
-        http.errback { failed(http) }
-        http.callback {
-          http.response_header.status.should == 200
-          http.content_charset.should == Encoding.find('ISO-8859-4')
-          http.response_header["CONTENT_TYPE"].should == ct
-          EventMachine.stop
-        }
+          http.errback { failed(http) }
+          http.callback {
+            http.response_header.status.should == 200
+            http.content_charset.should == Encoding.find('ISO-8859-4')
+            http.response_header["CONTENT_TYPE"].should == ct
+            EventMachine.stop
+          }
       }
     end
   end
