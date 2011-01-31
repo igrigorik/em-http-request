@@ -1,6 +1,6 @@
 # EM-HTTP-Request
 
-Async (EventMachine) HTTP client. High-level features:
+Async (EventMachine) HTTP client, with support for:
 
 - Asynchronous HTTP API for single & parallel request execution
 - Keep-Alive and HTTP pipelining support
@@ -10,21 +10,22 @@ Async (EventMachine) HTTP client. High-level features:
 - Streaming file uploads
 - HTTP proxy and SOCKS5 support
 - Basic Auth & OAuth
-- No native dependencies - works wherever EventMachine runs
-- Ryan Dahl's HTTP parser (node.js) via FFI - [http_parser.rb](https://github.com/tmm1/http_parser.rb)
+- Ryan Dahl's HTTP parser via [http_parser.rb](https://github.com/tmm1/http_parser.rb)
+- Works wherever EventMachine runs
 
 ## Getting started
 
     gem install em-http-request
 
 - Introductory [screencast](http://everburning.com/news/eventmachine-screencast-em-http-request/)
-- [Issuing GET/POST/etc requests]()
-- [Issuing parallel requests with Multi interface]()
-- [Handling Redirects & Timeouts]()
-- [Keep-Alive and HTTP Pipelining]()
-- [Stream processing responses & uploads]()
-- [Issuing requests through HTTP & SOCKS5 proxies]()
-- [Basic Auth & OAuth]()
+- [Issuing GET/POST/etc requests](https://github.com/igrigorik/em-http-request/wiki/Issuing-Requests)
+- [Issuing parallel requests with Multi interface](https://github.com/igrigorik/em-http-request/wiki/Parallel-Requests)
+- [Handling Redirects & Timeouts](https://github.com/igrigorik/em-http-request/wiki/Redirects-and-Timeouts)
+- [Keep-Alive and HTTP Pipelining](https://github.com/igrigorik/em-http-request/wiki/Keep-Alive-and-HTTP-Pipelining)
+- [Stream processing responses & uploads](https://github.com/igrigorik/em-http-request/wiki/Streaming)
+- [Issuing requests through HTTP & SOCKS5 proxies](https://github.com/igrigorik/em-http-request/wiki/Proxy)
+- [Basic Auth & OAuth](https://github.com/igrigorik/em-http-request/wiki/Basic-Auth-and-OAuth)
+- [GZIP & Deflate decoding](https://github.com/igrigorik/em-http-request/wiki/Compression)
 
 ## Extensions
 
