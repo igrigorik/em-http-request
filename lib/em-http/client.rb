@@ -83,7 +83,7 @@ module EventMachine
       end
     end
 
-    def on_error(msg)
+    def on_error(msg = '')
       @error = msg
       fail(self)
     end
