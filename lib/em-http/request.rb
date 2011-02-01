@@ -16,6 +16,8 @@ module EventMachine
   end
 
   class HttpRequest
+    @middleware = []
+
     def self.new(uri, options={})
       begin
         req = HttpOptions.new(uri, options)
@@ -36,6 +38,14 @@ module EventMachine
         conn.fail
         conn
       end
+    end
+
+    def self.use(klass)
+      @middleware << klass
+    end
+
+    def self.middleware
+      @middleware
     end
   end
 end

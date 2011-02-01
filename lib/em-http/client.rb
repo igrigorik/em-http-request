@@ -16,8 +16,8 @@ module EventMachine
 
     CRLF="\r\n"
 
-    attr_accessor :state
-    attr_reader   :response, :response_header, :error, :content_charset, :req
+    attr_accessor :state, :response
+    attr_reader   :response_header, :error, :content_charset, :req
 
     def initialize(conn, req, options)
       @conn = conn
@@ -47,8 +47,13 @@ module EventMachine
 
     def connection_completed
       @state = :response_header
-      send_request_header
-      send_request_body
+
+      head, body = build_request, @options[:body]
+      @conn.middleware.each do |m|
+        head, body = m.request(head, body) if m.respond_to?(:request)
+      end
+
+      send_request(head, body)
     end
 
     def on_request_complete
@@ -92,28 +97,17 @@ module EventMachine
     def stream(&blk); @stream = blk; end
     def headers(&blk); @headers = blk; end
 
-    def normalize_body
-      @normalized_body ||= begin
-        if @options[:body].is_a? Hash
-          form_encode_body(@options[:body])
-        else
-          @options[:body]
-        end
-      end
+    def normalize_body(body)
+      body.is_a?(Hash) ? form_encode_body(body) : body
     end
 
     def proxy?; !@options[:proxy].nil?; end
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
     def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
-    def send_request_header
-      query   = @options[:query]
+    def build_request
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
-      file    = @options[:file]
       proxy   = @options[:proxy]
-      body    = normalize_body
-
-      request_header = nil
 
       if http_proxy?
         # initialize headers for the http proxy
@@ -121,20 +115,9 @@ module EventMachine
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
       end
 
-      # Set the Content-Length if file is given
-      head['content-length'] = File.size(file) if file
-
-      # Set the Content-Length if body is given
-      head['content-length'] =  body.bytesize if body
-
       # Set the cookie header if provided
       if cookie = head.delete('cookie')
         head['cookie'] = encode_cookie(cookie)
-      end
-
-      # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and @options[:body].is_a? Hash
-        head['content-type'] = 'application/x-www-form-urlencoded'
       end
 
       # Set connection close unless keepalive
@@ -148,18 +131,32 @@ module EventMachine
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
-      # Build the request headers
+      head
+   end
+
+    def send_request(head, body)
+      body    = normalize_body(body)
+      file    = @options[:file]
+      query   = @options[:query]
+
+      # Set the Content-Length if file is given
+      head['content-length'] = File.size(file) if file
+
+      # Set the Content-Length if body is given
+      head['content-length'] =  body.bytesize if body
+
+      # Set content-type header if missing and body is a Ruby hash
+      if not head['content-type'] and @options[:body].is_a? Hash
+        head['content-type'] = 'application/x-www-form-urlencoded'
+      end
+
       request_header ||= encode_request(@method, @req.uri, query, @conn.opts.proxy)
       request_header << encode_headers(head)
       request_header << CRLF
       @conn.send_data request_header
-    end
 
-    def send_request_body
-      if @options[:body]
-        body = normalize_body
+      if body
         @conn.send_data body
-        return
       elsif @options[:file]
         @conn.stream_file_data @options[:file], :http_chunks => false
       end
