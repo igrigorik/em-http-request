@@ -7,8 +7,8 @@ module EventMachine
         s = EventMachine.connect(req.host, req.port, HttpConnection) do |c|
           c.opts = req
 
-          c.comm_inactivity_timeout = req.options[:timeout]
-          c.pending_connect_timeout = req.options[:timeout]
+          c.pending_connect_timeout = req.options[:connect_timeout]
+          c.comm_inactivity_timeout = req.options[:inactivity_timeout]
         end
 
       rescue EventMachine::ConnectionError => e

@@ -8,9 +8,11 @@ class HttpOptions
     set_uri(uri)
 
     @options[:keepalive]  ||= false # default to single request per connection
-    @options[:timeout]    ||= 10    # default connect & inactivity timeouts
     @options[:redirects]  ||= 0     # default number of redirects to follow
     @options[:followed]   ||= 0     # keep track of number of followed requests
+
+    @options[:connect_timeout] ||= 5        # default connection setup timeout
+    @options[:inactivity_timeout] ||= 10    # default connection inactivity (post-setup) timeout
   end
 
   def proxy

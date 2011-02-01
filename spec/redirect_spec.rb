@@ -79,7 +79,7 @@ describe EventMachine::HttpRequest do
 
   it "should not invoke redirect logic on failed(http) connections" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :timeout => 0.1, :redirects => 5
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/', :connect_timeout => 0.1).get :redirects => 5
       http.callback { failed(http) }
       http.errback {
         http.redirects.should == 0
