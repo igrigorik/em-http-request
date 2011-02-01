@@ -1,4 +1,20 @@
 module EventMachine
+
+  class FailedConnection
+    include Deferrable
+    attr_accessor :error
+
+    def get    options = {}, &blk;  self;  end
+    def head   options = {}, &blk;  setup_request(:head,  options, &blk);   end
+    def delete options = {}, &blk;  setup_request(:delete,options, &blk);   end
+    def put    options = {}, &blk;  setup_request(:put,   options, &blk);   end
+    def post   options = {}, &blk;  setup_request(:post,  options, &blk);   end
+
+    def method_missing(method, *args, &blk)
+      nil
+    end
+  end
+
   class HttpRequest
     def self.new(uri, options={})
       begin
@@ -12,12 +28,13 @@ module EventMachine
         end
 
       rescue EventMachine::ConnectionError => e
-        # XXX: handle bad DNS case
+        # TODO: need a blank Connection object such that we can create a 
+        # regular HTTPConnection class, instead of this silly trickery 
 
-        # conn = EventMachine::HttpClient.new("")
-        # conn.on_error(e.message, true)
-        # conn.uri = @req.uri
-        # conn
+        conn = EventMachine::FailedConnection.new
+        conn.error = e.message
+        conn.fail
+        conn
       end
     end
   end
