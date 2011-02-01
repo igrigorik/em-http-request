@@ -12,5 +12,5 @@ def failed(http = nil)
 end
 
 def requires_connection(&blk)
-  blk.call if system('ping google.com &>2 /dev/null')
+  blk.call if system('ping google.com &> /dev/null')
 end
