@@ -73,9 +73,13 @@ module EventMachine
         r.reset!
         @p.reset!
 
-        set_deferred_status :unknown
-        reconnect(r.req.host, r.req.port)
-        callback { r.connection_completed }
+        begin
+          set_deferred_status :unknown
+          reconnect(r.req.host, r.req.port)
+          callback { r.connection_completed }
+        rescue EventMachine::ConnectionError => e
+          @clients.pop.close(e.message)
+        end
       end
 
     end
