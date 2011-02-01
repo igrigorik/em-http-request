@@ -4,7 +4,7 @@ requires_connection do
 
   describe EventMachine::HttpRequest do
 
-    it "should follow redirects on HEAD method (external)", :online do
+    it "should follow redirects on HEAD method (external)" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://www.google.com/').head :redirects => 1
         http.errback { failed(http) }
@@ -29,7 +29,7 @@ requires_connection do
       }
     end
 
-    context "keepalive", :online => true do
+    context "keepalive" do
       it "should default to non-keepalive" do
         EventMachine.run {
           headers = {'If-Modified-Since' => 'Thu, 05 Aug 2010 22:54:44 GMT'}

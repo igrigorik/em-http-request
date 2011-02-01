@@ -2,6 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'em-http'
+require 'yajl'
 
 require 'stallion'
 require 'stub_server'
@@ -12,5 +13,5 @@ def failed(http = nil)
 end
 
 def requires_connection(&blk)
-  blk.call if system('ping google.com &> /dev/null')
+  blk.call if system('ping -c1 google.com &> /dev/null')
 end

@@ -87,14 +87,12 @@ describe EventMachine::HttpRequest do
 
   context "jsonify" do
     class JSONify
-      require 'json'
-
       def self.request(head, body)
-        [head, JSON.generate(body)]
+        [head, Yajl::Encoder.encode(body)]
       end
 
       def self.response(resp)
-        resp.response = JSON.parse(resp.response)
+        resp.response = Yajl::Parser.parse(resp.response)
       end
     end
 
