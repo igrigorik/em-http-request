@@ -14,6 +14,8 @@ module EventMachine
     def setup_request(method, options = {})
       c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
       callback { c.connection_completed }
+
+      @middleware.each {|m| c.callback &m.method(:response) if m.respond_to?(:response) }
       @clients.push c
       c
     end
@@ -21,6 +23,8 @@ module EventMachine
     def post_init
       @clients = []
       @pending = []
+
+      @middleware = []
 
       @p = Http::Parser.new
       @p.on_headers_complete = proc do |h|
@@ -36,6 +40,10 @@ module EventMachine
         c.state = :finished
         c.on_request_complete
       end
+    end
+
+    def use(klass)
+      @middleware << klass
     end
 
     def receive_data(data)
