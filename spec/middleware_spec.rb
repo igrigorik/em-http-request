@@ -14,6 +14,12 @@ describe EventMachine::HttpRequest do
 
   module EmptyMiddleware; end
 
+  class GlobalMiddleware
+    def self.response(resp)
+      resp.response_header['X-Global'] = 'middleware'
+    end
+  end
+
   it "should accept middleware" do
     EventMachine.run {
       lambda {
@@ -35,6 +41,20 @@ describe EventMachine::HttpRequest do
       req.callback {
         req.response_header['X-Header'].should match('middleware')
         req.response.should match('Hello, Middleware!')
+        EM.stop
+      }
+    }
+  end
+
+  it "should execute global response middleware before user callbacks" do
+   EventMachine.run {
+      EM::HttpRequest.use GlobalMiddleware
+
+      conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+
+      req = conn.get
+      req.callback {
+        req.response_header['X-Global'].should match('middleware')
         EM.stop
       }
     }

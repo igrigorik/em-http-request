@@ -15,9 +15,16 @@ module EventMachine
       c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
       callback { c.connection_completed }
 
-      @middleware.each {|m| c.callback &m.method(:response) if m.respond_to?(:response) }
+      middleware.each do |m|
+        c.callback &m.method(:response) if m.respond_to?(:response)
+      end
+
       @clients.push c
       c
+    end
+
+    def middleware
+      [HttpRequest.middleware, @middleware].flatten
     end
 
     def post_init
