@@ -32,6 +32,7 @@ describe EventMachine::HttpRequest do
       http.callback { failed(http) }
       http.errback {
         http.error.should match(/unable to resolve server address/)
+        http.response_header.status.should == 0
         EventMachine.stop
       }
     }

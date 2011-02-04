@@ -1,7 +1,7 @@
 module EventMachine
   class HttpClient
-    include EventMachine::Deferrable
-    include EventMachine::HttpEncoding
+    include Deferrable
+    include HttpEncoding
 
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_ENCODING="CONTENT_ENCODING"

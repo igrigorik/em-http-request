@@ -22,7 +22,7 @@ module EventMachine
       begin
         req = HttpOptions.new(uri, options)
 
-        s = EventMachine.connect(req.host, req.port, HttpConnection) do |c|
+        EventMachine.connect(req.host, req.port, HttpConnection) do |c|
           c.opts = req
 
           c.pending_connect_timeout = req.options[:connect_timeout]
@@ -30,8 +30,8 @@ module EventMachine
         end
 
       rescue EventMachine::ConnectionError => e
-        # TODO: need a blank Connection object such that we can create a 
-        # regular HTTPConnection class, instead of this silly trickery 
+        # TODO: need a blank Connection object such that we can create a
+        # regular HTTPConnection class, instead of this silly trickery
 
         conn = EventMachine::FailedConnection.new
         conn.error = e.message
