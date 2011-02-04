@@ -1,35 +1,53 @@
 class HttpOptions
   attr_reader :uri, :method, :host, :port, :options
 
-  def initialize(method, uri, options)
-    uri.path = '/' if uri.path.empty?
-
+  def initialize(uri, options, method = :none)
     @options = options
     @method = method.to_s.upcase
-    @uri = uri
 
-    if proxy = options[:proxy]
-      @host = proxy[:host]
-      @port = proxy[:port]
-    else
-      # optional host for cases where you may have
-      # pre-resolved the host, or you need an override
-      @host = options.delete(:host) || uri.host
-      @port = uri.port
+    set_uri(uri)
+
+    @options[:keepalive]  ||= false # default to single request per connection
+    @options[:redirects]  ||= 0     # default number of redirects to follow
+    @options[:followed]   ||= 0     # keep track of number of followed requests
+
+    @options[:connect_timeout] ||= 5        # default connection setup timeout
+    @options[:inactivity_timeout] ||= 10    # default connection inactivity (post-setup) timeout
+  end
+
+  def proxy
+    @options[:proxy]
+  end
+
+  def follow_redirect?
+    @options[:followed] < @options[:redirects]
+  end
+
+  def set_uri(uri)
+    uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
+
+    uri.path = '/' if uri.path.empty?
+    if path = @options.delete(:path)
+      uri.path = path
     end
 
-    @options[:timeout]    ||= 10    # default connect & inactivity timeouts
-    @options[:redirects]  ||= 0     # default number of redirects to follow
-    @options[:keepalive]  ||= false # default to single request per connection
+    @uri = uri
 
     # Make sure the ports are set as Addressable::URI doesn't
     # set the port if it isn't there
-    if uri.scheme == "https"
+    if @uri.scheme == "https"
       @uri.port ||= 443
-      @port     ||= 443
     else
       @uri.port ||= 80
-      @port     ||= 80
     end
+
+    if proxy = @options[:proxy]
+      @host = proxy[:host]
+      @port = proxy[:port]
+    else
+      @host = @uri.host
+      @port = @uri.port
+    end
+
   end
 end

@@ -41,7 +41,7 @@ module EventMachine
       /chunked/i === self[HttpClient::TRANSFER_ENCODING]
     end
 
-    def keep_alive?
+    def keepalive?
       /keep-alive/i === self[HttpClient::KEEP_ALIVE]
     end
 
@@ -51,21 +51,6 @@ module EventMachine
 
     def location
       self[HttpClient::LOCATION]
-    end
-  end
-
-  class HttpChunkHeader < Hash
-    # When parsing chunked encodings this is set
-    attr_accessor :http_chunk_size
-
-    def initialize
-      super
-      @http_chunk_size = '0'
-    end
-
-    # Size of the chunk as an integer
-    def chunk_size
-      @http_chunk_size.to_i(base=16)
     end
   end
 end

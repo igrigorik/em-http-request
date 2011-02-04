@@ -1,8 +1,17 @@
 require 'rubygems'
-require 'rspec'
-require 'pp'
-
-$LOAD_PATH << File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+require 'bundler/setup'
 
 require 'em-http'
-require 'em-websocket'
+require 'yajl'
+
+require 'stallion'
+require 'stub_server'
+
+def failed(http = nil)
+  EventMachine.stop
+  http ? fail(http.error) : fail
+end
+
+def requires_connection(&blk)
+  blk.call if system('ping -c1 google.com &> /dev/null')
+end

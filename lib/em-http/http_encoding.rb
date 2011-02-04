@@ -3,14 +3,24 @@ module EventMachine
     HTTP_REQUEST_HEADER="%s %s HTTP/1.1\r\n"
     FIELD_ENCODING = "%s: %s\r\n"
 
-    # Escapes a URI.
     def escape(s)
-      EscapeUtils.escape_url(s.to_s)
+      if defined?(EscapeUtils)
+        EscapeUtils.escape_url(s.to_s)
+      else
+        s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/n) {
+          '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
+        }
+      end
     end
 
-    # Unescapes a URI escaped string.
     def unescape(s)
-      EscapeUtils.unescape_url(s.to_s)
+      if defined?(EscapeUtils)
+        EscapeUtils.unescape_url(s.to_s)
+      else
+        s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n) {
+          [$1.delete('%')].pack('H*')
+        }
+      end
     end
 
     if ''.respond_to?(:bytesize)
@@ -28,14 +38,11 @@ module EventMachine
       head.inject({}) { |h, (k, v)| h[k.to_s.downcase] = v; h }
     end
 
-    # HTTP is kind of retarded that you have to specify a Host header, but if
-    # you include port 80 then further redirects will tack on the :80 which is
-    # annoying.
     def encode_host
-      if @uri.port == 80 || @uri.port == 443
-        return @uri.host
+      if @req.uri.port == 80 || @req.uri.port == 443
+        return @req.uri.host
       else
-        @uri.host + ":#{@uri.port}"
+        @req.uri.host + ":#{@req.uri.port}"
       end
     end
 
@@ -44,7 +51,7 @@ module EventMachine
 
       # Non CONNECT proxies require that you provide the full request
       # uri in request header, as opposed to a relative path.
-      query = uri.join(query) if proxy && proxy[:type] != :socks && !proxy[:use_connect]
+      query = uri.join(query) if proxy && proxy[:type] != :socks
 
       HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
