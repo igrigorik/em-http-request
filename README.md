@@ -10,6 +10,7 @@ Async (EventMachine) HTTP client, with support for:
 - Streaming file uploads
 - HTTP proxy and SOCKS5 support
 - Basic Auth & OAuth
+- Connection-level & Global middleware support
 - Ryan Dahl's HTTP parser via [http_parser.rb](https://github.com/tmm1/http_parser.rb)
 - Works wherever EventMachine runs
 
@@ -26,6 +27,7 @@ Async (EventMachine) HTTP client, with support for:
 - [Issuing requests through HTTP & SOCKS5 proxies](https://github.com/igrigorik/em-http-request/wiki/Proxy)
 - [Basic Auth & OAuth](https://github.com/igrigorik/em-http-request/wiki/Basic-Auth-and-OAuth)
 - [GZIP & Deflate decoding](https://github.com/igrigorik/em-http-request/wiki/Compression)
+- [EM-HTTP Middleware](https://github.com/igrigorik/em-http-request/wiki/Middleware)
 
 ## Extensions
 
