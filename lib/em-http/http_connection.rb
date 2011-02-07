@@ -1,15 +1,36 @@
 module EventMachine
+
+  module HTTPMethods
+    def get    options = {}, &blk;  setup_request(:get,   options, &blk); end
+    def head   options = {}, &blk;  setup_request(:head,  options, &blk); end
+    def delete options = {}, &blk;  setup_request(:delete,options, &blk); end
+    def put    options = {}, &blk;  setup_request(:put,   options, &blk); end
+    def post   options = {}, &blk;  setup_request(:post,  options, &blk); end
+  end
+
+  class FailedConnection
+    include HTTPMethods
+    include Deferrable
+
+    attr_accessor :error, :opts
+
+    def initialize(req)
+      @opts = req
+    end
+
+    def setup_request(method, options)
+      c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
+      c.close(@error)
+      c
+    end
+  end
+
   class HttpConnection < Connection
+    include HTTPMethods
     include Deferrable
     include Socksify
 
-    attr_accessor :opts
-
-    def get    options = {}, &blk;  setup_request(:get,   options, &blk);   end
-    def head   options = {}, &blk;  setup_request(:head,  options, &blk);   end
-    def delete options = {}, &blk;  setup_request(:delete,options, &blk);   end
-    def put    options = {}, &blk;  setup_request(:put,   options, &blk);   end
-    def post   options = {}, &blk;  setup_request(:post,  options, &blk);   end
+    attr_accessor :error, :opts
 
     def setup_request(method, options = {})
       c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)

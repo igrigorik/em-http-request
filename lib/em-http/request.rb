@@ -1,20 +1,4 @@
 module EventMachine
-
-  class FailedConnection
-    include Deferrable
-    attr_accessor :error
-
-    def get    options = {}, &blk;  self;  end
-    def head   options = {}, &blk;  setup_request(:head,  options, &blk);   end
-    def delete options = {}, &blk;  setup_request(:delete,options, &blk);   end
-    def put    options = {}, &blk;  setup_request(:put,   options, &blk);   end
-    def post   options = {}, &blk;  setup_request(:post,  options, &blk);   end
-
-    def method_missing(method, *args, &blk)
-      nil
-    end
-  end
-
   class HttpRequest
     @middleware = []
 
@@ -30,10 +14,19 @@ module EventMachine
         end
 
       rescue EventMachine::ConnectionError => e
-        # TODO: need a blank Connection object such that we can create a
-        # regular HTTPConnection class, instead of this silly trickery
-
-        conn = EventMachine::FailedConnection.new
+        #
+        # Currently, this can only fire on initial connection setup
+        # since #connect is a synchronous method. Hence, rescue the
+        # exception, and return a failed deferred which will immediately
+        # fail any client request.
+        #
+        # Once there is async-DNS, then we'll iterate over the outstanding
+        # client requests and fail them in order.
+        #
+        # Net outcome: failed connection will invoke the same ConnectionError
+        # message on the connection deferred, and on the client deferred.
+        #
+        conn = EventMachine::FailedConnection.new(req)
         conn.error = e.message
         conn.fail
         conn
