@@ -29,6 +29,19 @@ requires_connection do
       }
     end
 
+    it "should handle a 100 continue" do
+      EventMachine.run {
+        url = 'http://ws.serviceobjects.com/lv/LeadValidation.asmx/ValidateLead_V2'
+        http = EventMachine::HttpRequest.new(url).post :body => {:name => :test}
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 100
+          EventMachine.stop
+        }
+      }
+    end
+
     context "keepalive" do
       it "should default to non-keepalive" do
         EventMachine.run {
