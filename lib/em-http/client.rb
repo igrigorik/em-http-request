@@ -105,6 +105,10 @@ module EventMachine
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
     def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
+    def continue?
+      @response_header.status == 100 && (@method == 'POST' || @method == 'PUT')
+    end
+
     def build_request
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       proxy   = @options[:proxy]
@@ -132,7 +136,7 @@ module EventMachine
       head['user-agent'] ||= "EventMachine HttpClient"
 
       head
-   end
+    end
 
     def send_request(head, body)
       body    = normalize_body(body)

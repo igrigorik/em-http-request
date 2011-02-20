@@ -31,12 +31,37 @@ requires_connection do
 
     it "should handle a 100 continue" do
       EventMachine.run {
+        # 8.2.3 Use of the 100 (Continue) Status - http://www.ietf.org/rfc/rfc2616.txt
+        #
+        # An origin server SHOULD NOT send a 100 (Continue) response if
+        # the request message does not include an Expect request-header
+        # field with the "100-continue" expectation, and MUST NOT send a
+        # 100 (Continue) response if such a request comes from an HTTP/1.0
+        # (or earlier) client. There is an exception to this rule: for
+        # compatibility with RFC 2068, a server MAY send a 100 (Continue)
+        # status in response to an HTTP/1.1 PUT or POST request that does
+        # not include an Expect request-header field with the "100-
+        # continue" expectation. This exception, the purpose of which is
+        # to minimize any client processing delays associated with an
+        # undeclared wait for 100 (Continue) status, applies only to
+        # HTTP/1.1 requests, and not to requests with any other HTTP-
+        # version value.
+        #
+        # 10.1.1: 100 Continue - http://www.ietf.org/rfc/rfc2068.txt
+        # The client may continue with its request. This interim response is
+        # used to inform the client that the initial part of the request has
+        # been received and has not yet been rejected by the server. The client
+        # SHOULD continue by sending the remainder of the request or, if the
+        # request has already been completed, ignore this response. The server
+        # MUST send a final response after the request has been completed.
+
         url = 'http://ws.serviceobjects.com/lv/LeadValidation.asmx/ValidateLead_V2'
         http = EventMachine::HttpRequest.new(url).post :body => {:name => :test}
 
         http.errback { failed(http) }
         http.callback {
-          http.response_header.status.should == 100
+          http.response_header.status.should == 500
+          http.response.should match('Missing')
           EventMachine.stop
         }
       }

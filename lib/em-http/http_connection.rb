@@ -64,9 +64,11 @@ module EventMachine
       end
 
       @p.on_message_complete = proc do
-        c = @clients.shift
-        c.state = :finished
-        c.on_request_complete
+        if not @clients.first.continue?
+          c = @clients.shift
+          c.state = :finished
+          c.on_request_complete
+        end
       end
     end
 
