@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0.beta.1 / 2011-02-20 - The big rewrite
+
+- Switched parser from Ragel to http_parser.rb
+- Removed em_buffer C extension
+- Added support for HTTP keepalive
+- Added support for HTTP pipelining
+- ~60% performance improvement across the board: less GC time!
+- Refactored & split all tests
+- Basic 100-Continue handling on POST/PUT
+
 ## 0.3.0 / 2011-01-15
 
 - IMPORTANT: default to non-persistent connections (timeout => 0 now requires :keepalive => true)
