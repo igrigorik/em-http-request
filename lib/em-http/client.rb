@@ -103,7 +103,6 @@ module EventMachine
 
     def proxy?; !@options[:proxy].nil?; end
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
-    def socks_proxy?; proxy? && (@options[:proxy][:type] == :socks); end
 
     def continue?
       @response_header.status == 100 && (@method == 'POST' || @method == 'PUT')
