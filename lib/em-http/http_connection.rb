@@ -77,7 +77,12 @@ module EventMachine
     end
 
     def receive_data(data)
-      @p << data
+      begin
+        @p << data
+      rescue HTTP::Parser::Error => e
+        c = @clients.shift
+        c.on_error(e.message)
+      end
     end
 
     def connection_completed

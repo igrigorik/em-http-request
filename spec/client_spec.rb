@@ -558,6 +558,19 @@ describe EventMachine::HttpRequest do
         }
       }
     end
+
+    it "should handle invalid HTTP response" do
+      EventMachine.run {
+        @s = StubServer.new("<html></html>")
+
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+        http.callback { failed(http) }
+        http.errback {
+          http.error.should_not be_nil
+          EM.stop
+        }
+      }
+    end
   end
 
   it "should stream a file off disk" do
