@@ -87,7 +87,8 @@ module EventMachine
 
     def connection_completed
       if @opts.proxy && @opts.proxy[:type] == :socks5
-        socksify(@opts.uri.host, @opts.uri.port, *@opts.proxy[:authorization]) { start }
+        socksify(client.req.uri.host, client.req.uri.port, *@opts.proxy[:authorization]) { start }
+
       else
         start
       end
@@ -95,7 +96,7 @@ module EventMachine
 
     def start
       ssl = @opts.options[:tls] || @opts.options[:ssl] || {}
-      start_tls(ssl) if @opts.uri.scheme == "https" or @opts.uri.port == 443
+      start_tls(ssl) if client && client.ssl?
 
       succeed
     end
@@ -124,7 +125,12 @@ module EventMachine
           @clients.pop.close(e.message)
         end
       end
-
     end
+
+    private
+
+      def client
+        @clients.first
+      end
   end
 end

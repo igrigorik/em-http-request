@@ -104,6 +104,8 @@ module EventMachine
     def proxy?; !@options[:proxy].nil?; end
     def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
 
+    def ssl?; @req.uri.scheme == "https" || @req.uri.port == 443; end
+
     def continue?
       @response_header.status == 100 && (@method == 'POST' || @method == 'PUT')
     end

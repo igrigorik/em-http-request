@@ -15,6 +15,18 @@ requires_connection do
       }
     end
 
+    it "should follow redirect to https and initiate the handshake" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://analytics.postrank.com/').get :redirects => 5
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          EventMachine.stop
+        }
+      }
+    end
+
     it "should perform a streaming GET" do
       EventMachine.run {
 
