@@ -2,10 +2,10 @@ require 'helper'
 
 describe EventMachine::HttpRequest do
 
-  module EmptyMiddleware; end
+  class EmptyMiddleware; end
 
   class GlobalMiddleware
-    def self.response(resp)
+    def response(resp)
       resp.response_header['X-Global'] = 'middleware'
     end
   end
@@ -22,14 +22,43 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  context "configuration" do
+    class ConfigurableMiddleware
+      def initialize(conf, &block)
+        @conf = conf
+        @block = block
+      end
+
+      def response(resp)
+        resp.response_header['X-Conf'] = @conf
+        resp.response_header['X-Block'] = @block.call
+      end
+    end
+
+    it "should accept middleware initialization parameters" do
+      EventMachine.run {
+        conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+        conn.use ConfigurableMiddleware, 'conf-value' do
+          'block-value'
+        end
+
+        req = conn.get
+        req.callback {
+          req.response_header['X-Conf'].should match('conf-value')
+          req.response_header['X-Block'].should match('block-value')
+          EM.stop
+        }
+      }
+    end
+  end
+
   context "request" do
     class ResponseMiddleware
-      def self.response(resp)
+      def response(resp)
         resp.response_header['X-Header'] = 'middleware'
         resp.response = 'Hello, Middleware!'
       end
     end
-
 
     it "should execute response middleware before user callbacks" do
       EventMachine.run {
@@ -62,7 +91,7 @@ describe EventMachine::HttpRequest do
 
   context "request" do
     class RequestMiddleware
-      def self.request(head, body)
+      def request(head, body)
         head['X-Middleware'] = 'middleware'   # insert new header
         body += ' modified'                   # modify post body
 
@@ -87,11 +116,11 @@ describe EventMachine::HttpRequest do
 
   context "jsonify" do
     class JSONify
-      def self.request(head, body)
+      def request(head, body)
         [head, Yajl::Encoder.encode(body)]
       end
 
-      def self.response(resp)
+      def response(resp)
         resp.response = Yajl::Parser.parse(resp.response)
       end
     end

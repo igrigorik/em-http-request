@@ -33,8 +33,8 @@ module EventMachine
       end
     end
 
-    def self.use(klass)
-      @middleware << klass
+    def self.use(klass, *args, &block)
+      @middleware << klass.new(*args, &block)
     end
 
     def self.middleware

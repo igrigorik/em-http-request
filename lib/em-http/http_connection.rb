@@ -72,8 +72,8 @@ module EventMachine
       end
     end
 
-    def use(klass)
-      @middleware << klass
+    def use(klass, *args, &block)
+      @middleware << klass.new(*args, &block)
     end
 
     def receive_data(data)
