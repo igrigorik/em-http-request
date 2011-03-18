@@ -50,7 +50,7 @@ module EventMachine
 
       head, body = build_request, @options[:body]
       @conn.middleware.each do |m|
-        head, body = m.request(head, body) if m.respond_to?(:request)
+        head, body = m.request(self, head, body) if m.respond_to?(:request)
       end
 
       send_request(head, body)

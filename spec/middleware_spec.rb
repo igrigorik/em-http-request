@@ -91,7 +91,7 @@ describe EventMachine::HttpRequest do
 
   context "request" do
     class RequestMiddleware
-      def request(head, body)
+      def request(client, head, body)
         head['X-Middleware'] = 'middleware'   # insert new header
         body += ' modified'                   # modify post body
 
@@ -116,7 +116,7 @@ describe EventMachine::HttpRequest do
 
   context "jsonify" do
     class JSONify
-      def request(head, body)
+      def request(client, head, body)
         [head, Yajl::Encoder.encode(body)]
       end
 
