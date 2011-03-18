@@ -63,7 +63,7 @@ module EventMachine
         query.to_s
       end
 
-      if !uri.query.to_s.empty?
+      if uri && !uri.query.to_s.empty?
         encoded_query = [encoded_query, uri.query].reject {|part| part.empty?}.join("&")
       end
       encoded_query.to_s.empty? ? uri.path : "#{uri.path}?#{encoded_query}"
