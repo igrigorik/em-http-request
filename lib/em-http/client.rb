@@ -17,7 +17,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :response_header, :error, :content_charset, :req
+    attr_reader   :response_header, :error, :content_charset, :req, :options
 
     def initialize(conn, req, options)
       @conn = conn
