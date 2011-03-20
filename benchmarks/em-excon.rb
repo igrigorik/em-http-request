@@ -1,71 +1,87 @@
 $: << './benchmarks'
 require 'server'
 
-url = 'http://127.0.0.1:9292/data/1000'
+url = 'http://127.0.0.1/10k.html'
 
 with_server do
-  Tach.meter(1000) do
+  Tach.meter(100) do
 
-    # excon = Excon.new(url)
-    # tach('Excon (persistent)') do
-    #   excon.request(:method => 'get').body
-    # end
-    #
-    # tach('Excon') do
-    #   Excon.get(url).body
-    # end
+    excon = Excon.new(url)
+    tach('Excon (persistent)') do
+      excon.request(:method => 'get').body
+    end
+
+    tach('Excon') do
+      Excon.get(url).body
+    end
 
     tach('em-http-request') do |n|
       EventMachine.run {
         count = 0
+        error = 0
         n.times do
-          http = EventMachine::HttpRequest.new(url).get
+          EM.next_tick do
+            http = EventMachine::HttpRequest.new(url, :connect_timeout => 1).get
 
-          http.callback {
-            count += 1
-            EM.stop if count == n
-          }
+            http.callback {
+              count += 1
+              if count == n
+                p [count, error]
+                EM.stop
+              end
+            }
 
-          http.errback {
-            count += 1
-            EM.stop if count == n
-          }
+            http.errback {
+              count += 1
+              error += 1
+              if count == n
+                p [count, error]
+                EM.stop
+              end
+            }
+          end
         end
       }
     end
 
-    # tach('em-http-request (persistent)') do |n|
-    #   EventMachine.run {
-    #     count = 0
-    #     conn = EventMachine::HttpRequest.new(url)
-    #
-    #     n.times do
-    #       http = conn.get :keepalive => true
-    #       http.callback {
-    #         count += 1
-    #         EM.stop if count == n
-    #       }
-    #
-    #       http.errback {
-    #         count += 1
-    #         EM.stop if count == n
-    #       }
-    #     end
-    #   }
-    # end
+    tach('em-http-request (persistent)') do |n|
+      EventMachine.run {
+        count = 0
+        error = 0
+        conn = EventMachine::HttpRequest.new(url)
+
+        n.times do
+          http = conn.get :keepalive => true
+          http.callback {
+            count += 1
+            if count == n
+              p [count, error]
+              EM.stop
+            end
+          }
+
+          http.errback {
+            count += 1
+            error += 1
+            if count == n
+              p [count, error]
+              EM.stop
+            end
+          }
+        end
+      }
+    end
   end
 end
 
-# [Excon (persistent), Excon, em-http-request, em-http-request (persistent)]
-#
 # +------------------------------+----------+
 # | tach                         | total    |
 # +------------------------------+----------+
-# | em-http-request (persistent) | 1.691872 |
+# | em-http-request (persistent) | 0.018133 |
 # +------------------------------+----------+
-# | Excon (persistent)           | 1.754767 |
+# | Excon (persistent)           | 0.023975 |
 # +------------------------------+----------+
-# | Excon                        | 2.271368 |
+# | Excon                        | 0.032877 |
 # +------------------------------+----------+
-# | em-http-request              | 2.973122 |
+# | em-http-request              | 0.042891 |
 # +------------------------------+----------+

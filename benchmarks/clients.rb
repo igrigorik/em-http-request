@@ -9,10 +9,10 @@ require 'rest_client'
 require 'tach'
 require 'typhoeus'
 
-url = 'http://localhost:9292/data/1000'
+url = 'http://127.0.0.1/10k.html'
 
 with_server do
-  Tach.meter(1000) do
+  Tach.meter(100) do
 
     tach('curb (persistent)') do |n|
       curb = Curl::Easy.new
@@ -27,18 +27,26 @@ with_server do
     tach('em-http-request') do |n|
       EventMachine.run {
         count = 0
+        error = 0
 
         n.times do
           http = EventMachine::HttpRequest.new(url).get
 
           http.callback {
             count += 1
-            EM.stop if count == n
+            if count == n
+              p [count, error]
+              EM.stop
+            end
           }
 
           http.errback {
             count += 1
-            EM.stop if count == n
+            error += 1
+            if count == n
+              p [count, error]
+              EM.stop
+            end
           }
         end
       }
@@ -47,18 +55,27 @@ with_server do
     tach('em-http-request (persistent)') do |n|
       EventMachine.run {
         count = 0
+        error = 0
+
         conn = EventMachine::HttpRequest.new(url)
 
         n.times do
           http = conn.get :keepalive => true
           http.callback {
             count += 1
-            EM.stop if count == n
+            if count == n
+              p [count, error]
+              EM.stop
+            end
           }
 
           http.errback {
             count += 1
-            EM.stop if count == n
+            error += 1
+            if count == n
+              p [count, error]
+              EM.stop
+            end
           }
         end
       }
@@ -77,14 +94,15 @@ with_server do
       HTTParty.get(url).body
     end
 
+    uri = Addressable::URI.parse(url)
     tach('Net::HTTP') do
-      # Net::HTTP.get('localhost', '/data/1000', 9292)
-      Net::HTTP.start('localhost', 9292) {|http| http.get('/data/1000').body }
+      Net::HTTP.start(uri.host, uri.port) {|http| http.get(uri.path).body }
     end
 
-    Net::HTTP.start('localhost', 9292) do |http|
+    uri = Addressable::URI.parse(url)
+    Net::HTTP.start(uri.host, uri.port) do |http|
       tach('Net::HTTP (persistent)') do
-        http.get('/data/1000').body
+        http.get(uri.path).body
       end
     end
 
@@ -108,30 +126,31 @@ with_server do
   end
 end
 
+
 # +------------------------------+----------+
 # | tach                         | total    |
 # +------------------------------+----------+
-# | em-http-request (persistent) | 1.769685 |
+# | em-http-request (persistent) | 0.016779 |
 # +------------------------------+----------+
-# | Excon (persistent)           | 1.810310 |
+# | Excon (persistent)           | 0.019606 |
 # +------------------------------+----------+
-# | Typhoeus                     | 1.971168 |
+# | curb (persistent)            | 0.022034 |
 # +------------------------------+----------+
-# | curb (persistent)            | 1.975028 |
+# | Typhoeus                     | 0.027276 |
 # +------------------------------+----------+
-# | StreamlyFFI (persistent)     | 2.101071 |
+# | Excon                        | 0.034482 |
 # +------------------------------+----------+
-# | Excon                        | 2.427039 |
+# | StreamlyFFI (persistent)     | 0.036474 |
 # +------------------------------+----------+
-# | Net::HTTP                    | 2.891856 |
+# | em-http-request              | 0.041866 |
 # +------------------------------+----------+
-# | em-http-request              | 3.037968 |
+# | Net::HTTP (persistent)       | 0.098379 |
 # +------------------------------+----------+
-# | HTTParty                     | 3.043875 |
+# | Net::HTTP                    | 0.103786 |
 # +------------------------------+----------+
-# | Net::HTTP (persistent)       | 3.094460 |
+# | RestClient                   | 0.111841 |
 # +------------------------------+----------+
-# | RestClient                   | 3.174572 |
+# | HTTParty                     | 0.118632 |
 # +------------------------------+----------+
-# | open-uri                     | 3.467549 |
+# | open-uri                     | 0.170172 |
 # +------------------------------+----------+

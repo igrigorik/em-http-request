@@ -32,12 +32,12 @@ end
 
 def with_server(&block)
   pid = Process.fork do
-    Benchmark::Server.run
+    # Benchmark::Server.run
   end
   loop do
     sleep(1)
     begin
-      Excon.get('http://localhost:9292/api/foo')
+      # Excon.get('http://localhost:9292/api/foo')
       break
     rescue
     end
