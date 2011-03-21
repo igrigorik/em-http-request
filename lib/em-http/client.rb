@@ -110,6 +110,14 @@ module EventMachine
       @response_header.status == 100 && (@method == 'POST' || @method == 'PUT')
     end
 
+    def pass_cookies?
+      @options[:pass_cookies].nil? || @options[:pass_cookies]
+    end
+
+    def cookie_hash
+      @cookie_hash ||= CookieHash.new
+    end
+
     def build_request
       head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
       proxy   = @options[:proxy]
@@ -122,8 +130,9 @@ module EventMachine
 
       # Set the cookie header if provided
       if cookie = head.delete('cookie')
-        head['cookie'] = encode_cookie(cookie)
+        cookie_hash.add_cookies(encode_cookie(cookie)) if cookie
       end
+      head['cookie'] = cookie_hash.to_cookie_string unless cookie_hash.empty?
 
       # Set connection close unless keepalive
       unless @options[:keepalive]
@@ -206,6 +215,9 @@ module EventMachine
         on_error "no HTTP response"
         return
       end
+
+      # add set-cookie's to cookie list
+      cookie_hash.add_cookies(@response_header.cookie) if @response_header.cookie && pass_cookies?
 
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location

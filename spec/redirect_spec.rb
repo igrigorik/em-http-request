@@ -111,4 +111,38 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should capture and pass cookies on redirect and pass_cookies by default" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/multiple-with-cookie').get :redirects => 2, :head => {'cookie' => 'id=2;'}
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == "compressed"
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+        http.redirects.should == 2
+        http.cookie_hash.to_cookie_string.should == "id=2; another_id=1"
+
+        EM.stop
+      }
+    }
+  end
+
+  it "should capture and not pass cookies on redirect if passing is disabled via pass_cookies" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/multiple-with-cookie').get :redirects => 2, :pass_cookies => false, :head => {'cookie' => 'id=2;'}
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == "compressed"
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+        http.redirects.should == 2
+        http.cookie_hash.to_cookie_string.should == "id=2;"
+
+        EM.stop
+      }
+    }
+  end
+
 end
