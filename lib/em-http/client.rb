@@ -114,8 +114,8 @@ module EventMachine
       @options[:pass_cookies].nil? || @options[:pass_cookies]
     end
 
-    def cookie_hash
-      @cookie_hash ||= CookieHash.new
+    def cookies
+      @cookies ||= []
     end
 
     def build_request
@@ -130,9 +130,9 @@ module EventMachine
 
       # Set the cookie header if provided
       if cookie = head.delete('cookie')
-        cookie_hash.add_cookies(encode_cookie(cookie)) if cookie
+        cookies << encode_cookie(cookie) if cookie
       end
-      head['cookie'] = cookie_hash.to_cookie_string unless cookie_hash.empty?
+      head['cookie'] = cookies.compact.uniq.join("; ").squeeze(";") unless cookies.empty?
 
       # Set connection close unless keepalive
       unless @options[:keepalive]
@@ -217,7 +217,7 @@ module EventMachine
       end
 
       # add set-cookie's to cookie list
-      cookie_hash.add_cookies(@response_header.cookie) if @response_header.cookie && pass_cookies?
+      cookies << @response_header.cookie if @response_header.cookie && pass_cookies?
 
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location

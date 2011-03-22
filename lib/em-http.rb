@@ -7,7 +7,6 @@ require 'base64'
 require 'socket'
 
 require 'em-http/core_ext/bytesize'
-require 'em-http/cookie_hash'
 require 'em-http/http_connection'
 require 'em-http/http_header'
 require 'em-http/http_encoding'

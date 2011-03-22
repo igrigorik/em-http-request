@@ -121,7 +121,8 @@ describe EventMachine::HttpRequest do
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2
-        http.cookie_hash.to_cookie_string.should == "id=2; another_id=1"
+        http.cookies.should include("id=2;")
+        http.cookies.should include("another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;")
 
         EM.stop
       }
@@ -138,7 +139,8 @@ describe EventMachine::HttpRequest do
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2
-        http.cookie_hash.to_cookie_string.should == "id=2;"
+        http.cookies.should include("id=2;")
+        http.cookies.should_not include("another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;")
 
         EM.stop
       }
