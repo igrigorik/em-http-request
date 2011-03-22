@@ -118,6 +118,12 @@ Stallion.saddle :spec do |stable|
       stable.response["Location"] = "/gzip"
       stable.response.write 'redirect'
 
+    elsif stable.request.path_info == '/redirect/multiple-with-cookie'
+      stable.response.status = 301
+      stable.response["Set-Cookie"] = "another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+      stable.response["Location"] = "/redirect"
+      stable.response.write 'redirect'
+
     elsif stable.request.path_info == '/redirect/bad'
       stable.response.status = 301
       stable.response["Location"] = "http://127.0.0.1:8090"
