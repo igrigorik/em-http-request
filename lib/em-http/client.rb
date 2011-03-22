@@ -132,7 +132,7 @@ module EventMachine
       if cookie = head.delete('cookie')
         cookies << encode_cookie(cookie) if cookie
       end
-      head['cookie'] = cookies.compact.uniq.join(" ") unless cookies.empty?
+      head['cookie'] = cookies.compact.uniq.join("; ").squeeze(";") unless cookies.empty?
 
       # Set connection close unless keepalive
       unless @options[:keepalive]
