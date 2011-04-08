@@ -81,7 +81,7 @@ module EventMachine
         @p << data
       rescue HTTP::Parser::Error => e
         c = @clients.shift
-        c.on_error(e.message)
+        c.nil? ? unbind : c.on_error(e.message)
       end
     end
 
