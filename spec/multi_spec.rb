@@ -38,4 +38,19 @@ describe EventMachine::MultiRequest do
     }
   end
 
+  it "should provide the responses in order of the given requests" do
+    EventMachine.run {
+      http1 = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get(:query => {:q => 'test'})
+      http2 = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get
+
+      multi = EventMachine::MultiRequest.new([http1, http2]) do
+        multi.responses[:succeeded].size.should == 2
+        multi.responses[:succeeded][0].response.should match(/test/)
+        multi.responses[:succeeded][1].response.should match(/Hello/)
+
+        EventMachine.stop
+      end
+    }
+  end
+
 end
