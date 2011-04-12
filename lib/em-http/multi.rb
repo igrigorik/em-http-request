@@ -4,6 +4,8 @@ module EventMachine
   # which allows you to open multiple parallel connections and return only when all
   # of them finish. (i.e. ideal for parallelizing workloads)
   #
+  # The responses will have the same order as the requests were given/added.
+  #
   # == Example
   #
   #  EventMachine.run {
@@ -26,11 +28,13 @@ module EventMachine
   class MultiRequest
     include EventMachine::Deferrable
 
-    attr_reader :requests, :responses
+    attr_reader :requests
 
     def initialize(conns=[], &block)
       @requests  = []
-      @responses = {:succeeded => [], :failed => []}
+      @responses = []
+      @status    = []
+      @index     = 0
 
       conns.each {|conn| add(conn)}
       callback(&block) if block_given?
@@ -39,16 +43,26 @@ module EventMachine
     def add(conn)
       @requests.push(conn)
 
-      conn.callback { @responses[:succeeded].push(conn); check_progress }
-      conn.errback  { @responses[:failed].push(conn); check_progress }
+      index = @index
+      @index += 1
+
+      conn.callback { @responses[index] = conn; @status[index] = :succeeded; check_progress }
+      conn.errback  { @responses[index] = conn; @status[index] = :failed;    check_progress }
+    end
+
+    def responses
+      @status.zip(@responses).inject({:succeeded => [], :failed => []}) { |result, response|
+        status, conn = response
+        result[status].push(conn)
+        result
+      }
     end
 
     protected
 
     # invoke callback if all requests have completed
     def check_progress
-      succeed(self) if (@responses[:succeeded].size +
-                        @responses[:failed].size) == @requests.size
+      succeed(self) if @status.compact.size == @requests.size
     end
 
   end
