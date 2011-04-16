@@ -228,6 +228,22 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should return peer's IP address" do
+     EventMachine.run {
+
+       conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/')
+       http = conn.get
+
+       http.errback { failed(http) }
+       http.callback {
+         conn.peer.should == '127.0.0.1'
+         http.peer.should == '127.0.0.1'
+
+         EventMachine.stop
+       }
+     }
+   end
+
   it "should remove all newlines from long basic auth header" do
     EventMachine.run {
       auth = {'authorization' => ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz']}

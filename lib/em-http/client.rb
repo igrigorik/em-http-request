@@ -44,6 +44,7 @@ module EventMachine
 
     def last_effective_url; @req.uri; end
     def redirects; @req.options[:followed]; end
+    def peer; @conn.peer; end
 
     def connection_completed
       @state = :response_header

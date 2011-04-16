@@ -76,6 +76,10 @@ module EventMachine
       @middleware << klass.new(*args, &block)
     end
 
+    def peer
+      Socket.unpack_sockaddr_in(get_peername)[1]
+    end
+
     def receive_data(data)
       begin
         @p << data
