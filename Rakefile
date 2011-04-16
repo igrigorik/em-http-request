@@ -7,3 +7,4 @@ desc "Run all RSpec tests"
 RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
+task :test => [:spec]
