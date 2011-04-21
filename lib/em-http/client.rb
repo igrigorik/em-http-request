@@ -40,7 +40,7 @@ module EventMachine
     end
 
     def last_effective_url; @req.uri; end
-    def redirects; @req.options[:followed]; end
+    def redirects; @req.followed; end
     def peer; @conn.peer; end
 
     def connection_completed
