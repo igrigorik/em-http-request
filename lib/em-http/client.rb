@@ -17,14 +17,11 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :response_header, :error, :content_charset, :req, :options
+    attr_reader   :response_header, :error, :content_charset, :req
 
-    def initialize(conn, req, options)
+    def initialize(conn, options)
       @conn = conn
-
-      @req = req
-      @method = req.method
-      @options = options
+      @req  = options
 
       @stream = nil
       @headers = nil
@@ -49,7 +46,7 @@ module EventMachine
     def connection_completed
       @state = :response_header
 
-      head, body = build_request, @options[:body]
+      head, body = build_request, @req.body
       @conn.middleware.each do |m|
         head, body = m.request(self, head, body) if m.respond_to?(:request)
       end
@@ -78,7 +75,7 @@ module EventMachine
     def unbind
       if finished?
         if redirect?
-          @req.options[:followed] += 1
+          @req.followed += 1
           @conn.redirect(self, @response_header.location)
         else
           succeed(self)
@@ -102,17 +99,8 @@ module EventMachine
       body.is_a?(Hash) ? form_encode_body(body) : body
     end
 
-    def proxy?; !@options[:proxy].nil?; end
-    def http_proxy?; proxy? && [nil, :http].include?(@options[:proxy][:type]); end
-
-    def ssl?; @req.uri.scheme == "https" || @req.uri.port == 443; end
-
     def continue?
-      @response_header.status == 100 && (@method == 'POST' || @method == 'PUT')
-    end
-
-    def pass_cookies?
-      @options[:pass_cookies].nil? || @options[:pass_cookies]
+      @response_header.status == 100 && (@req.method == 'POST' || @req.method == 'PUT')
     end
 
     def cookies
@@ -120,13 +108,11 @@ module EventMachine
     end
 
     def build_request
-      head    = @options[:head] ? munge_header_keys(@options[:head]) : {}
-      proxy   = @options[:proxy]
+      head    = @req.headers ? munge_header_keys(@req.headers) : {}
+      proxy   = @req.proxy
 
-      if http_proxy?
-        # initialize headers for the http proxy
-        head = proxy[:head] ? munge_header_keys(proxy[:head]) : {}
-        head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
+      if @req.http_proxy?
+        head['proxy-authorization'] = @req.proxy[:authorization] if @req.proxy[:authorization]
       end
 
       # Set the cookie header if provided
@@ -136,7 +122,7 @@ module EventMachine
       head['cookie'] = cookies.compact.uniq.join("; ").squeeze(";") unless cookies.empty?
 
       # Set connection close unless keepalive
-      unless @options[:keepalive]
+      if !@req.keepalive
         head['connection'] = 'close'
       end
 
@@ -151,8 +137,8 @@ module EventMachine
 
     def send_request(head, body)
       body    = normalize_body(body)
-      file    = @options[:file]
-      query   = @options[:query]
+      file    = @req.file
+      query   = @req.query
 
       # Set the Content-Length if file is given
       head['content-length'] = File.size(file) if file
@@ -161,19 +147,19 @@ module EventMachine
       head['content-length'] =  body.bytesize if body
 
       # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and @options[:body].is_a? Hash
+      if not head['content-type'] and @req.body.is_a? Hash
         head['content-type'] = 'application/x-www-form-urlencoded'
       end
 
-      request_header ||= encode_request(@method, @req.uri, query, @conn.opts.proxy)
+      request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts.proxy)
       request_header << encode_headers(head)
       request_header << CRLF
       @conn.send_data request_header
 
       if body
         @conn.send_data body
-      elsif @options[:file]
-        @conn.stream_file_data @options[:file], :http_chunks => false
+      elsif @req.file
+        @conn.stream_file_data @req.file, :http_chunks => false
       end
     end
 
@@ -218,7 +204,7 @@ module EventMachine
       end
 
       # add set-cookie's to cookie list
-      cookies << @response_header.cookie if @response_header.cookie && pass_cookies?
+      cookies << @response_header.cookie if @response_header.cookie && @req.pass_cookies
 
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location
@@ -242,7 +228,7 @@ module EventMachine
       # Fire callbacks immediately after recieving header requests
       # if the request method is HEAD. In case of a redirect, terminate
       # current connection and reinitialize the process.
-      if @method == "HEAD"
+      if @req.method == "HEAD"
         @state = :finished
         return
       end

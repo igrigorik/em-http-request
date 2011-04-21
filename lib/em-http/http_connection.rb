@@ -12,14 +12,15 @@ module EventMachine
     include HTTPMethods
     include Deferrable
 
-    attr_accessor :error, :opts
+    attr_accessor :error
 
-    def initialize(req)
-      @opts = req
+    def initialize(uri, opts)
+      @connopts = opts
+      @uri = uri
     end
 
     def setup_request(method, options)
-      c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
+      c = HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
       c.close(@error)
       c
     end
@@ -30,10 +31,10 @@ module EventMachine
     include Deferrable
     include Socksify
 
-    attr_accessor :error, :opts
+    attr_accessor :error, :connopts, :uri
 
     def setup_request(method, options = {})
-      c = HttpClient.new(self, HttpOptions.new(@opts.uri, options, method), options)
+      c = HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
       callback { c.connection_completed }
 
       middleware.each do |m|
@@ -90,18 +91,15 @@ module EventMachine
     end
 
     def connection_completed
-      if @opts.proxy && @opts.proxy[:type] == :socks5
-        socksify(client.req.uri.host, client.req.uri.port, *@opts.proxy[:authorization]) { start }
-
+      if @connopts.proxy && @connopts.proxy[:type] == :socks5
+        socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
       else
         start
       end
     end
 
     def start
-      ssl = @opts.options[:tls] || @opts.options[:ssl] || {}
-      start_tls(ssl) if client && client.ssl?
-
+      start_tls(@connopts.tls) if client && client.req.ssl?
       succeed
     end
 

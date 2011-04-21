@@ -4,13 +4,14 @@ module EventMachine
 
     def self.new(uri, options={})
       begin
-        req = HttpOptions.new(uri, options)
+        connopt = HttpConnectionOptions.new(uri, options)
 
-        EventMachine.connect(req.host, req.port, HttpConnection) do |c|
-          c.opts = req
+        EventMachine.connect(connopt.host, connopt.port, HttpConnection) do |c|
+          c.connopts = connopt
+          c.uri = uri
 
-          c.pending_connect_timeout = req.options[:connect_timeout]
-          c.comm_inactivity_timeout = req.options[:inactivity_timeout]
+          c.pending_connect_timeout = connopt.connect_timeout
+          c.comm_inactivity_timeout = connopt.inactivity_timeout
         end
 
       rescue EventMachine::ConnectionError => e
@@ -26,7 +27,7 @@ module EventMachine
         # Net outcome: failed connection will invoke the same ConnectionError
         # message on the connection deferred, and on the client deferred.
         #
-        conn = EventMachine::FailedConnection.new(req)
+        conn = EventMachine::FailedConnection.new(uri, connopt)
         conn.error = e.message
         conn.fail
         conn
