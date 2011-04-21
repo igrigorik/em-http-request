@@ -27,7 +27,7 @@ requires_connection do
         pipe2.callback {
           processed += 1
           pipe2.response_header.status.should == 200
-          pipe2.response.should match('biography')
+          pipe2.response.should match(/ilya/i)
           stop.call
         }
 

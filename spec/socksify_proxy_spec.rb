@@ -9,7 +9,7 @@ requires_connection do
 
     it "should use SOCKS5 proxy" do
       EventMachine.run {
-        http = EventMachine::HttpRequest.new('http://whatismyip.everdot.org/', proxy).get
+        http = EventMachine::HttpRequest.new('http://jsonip.com/', proxy).get
 
         http.errback { failed(http) }
         http.callback {
