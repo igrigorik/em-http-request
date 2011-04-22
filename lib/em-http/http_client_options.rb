@@ -19,7 +19,8 @@ class HttpClientOptions
     @file     = options[:file]
     @body     = options[:body]
 
-    @pass_cookies = options[:pass_cookies] || false
+    @pass_cookies = options[:pass_cookies]
+    @pass_cookies = true if @pass_cookies.nil?
 
     set_uri(uri)
   end

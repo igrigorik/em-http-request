@@ -17,7 +17,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :response_header, :error, :content_charset, :req
+    attr_reader   :response_header, :error, :content_charset, :req, :cookies
 
     def initialize(conn, options)
       @conn = conn
@@ -25,6 +25,7 @@ module EventMachine
 
       @stream = nil
       @headers = nil
+      @cookies = []
 
       reset!
     end
@@ -75,8 +76,15 @@ module EventMachine
     def unbind
       if finished?
         if redirect?
-          @req.followed += 1
-          @conn.redirect(self, @response_header.location)
+
+          begin
+            @req.followed += 1
+            @req.set_uri(@response_header.location)
+            @conn.redirect(self)
+          rescue Exception => e
+            on_error(e.message)
+          end
+
         else
           succeed(self)
         end
@@ -103,10 +111,6 @@ module EventMachine
       @response_header.status == 100 && (@req.method == 'POST' || @req.method == 'PUT')
     end
 
-    def cookies
-      @cookies ||= []
-    end
-
     def build_request
       head    = @req.headers ? munge_header_keys(@req.headers) : {}
       proxy   = @req.proxy
@@ -117,9 +121,9 @@ module EventMachine
 
       # Set the cookie header if provided
       if cookie = head.delete('cookie')
-        cookies << encode_cookie(cookie) if cookie
+        @cookies << encode_cookie(cookie) if cookie
       end
-      head['cookie'] = cookies.compact.uniq.join("; ").squeeze(";") unless cookies.empty?
+      head['cookie'] = @cookies.compact.uniq.join("; ").squeeze(";") unless @cookies.empty?
 
       # Set connection close unless keepalive
       if !@req.keepalive
@@ -204,7 +208,7 @@ module EventMachine
       end
 
       # add set-cookie's to cookie list
-      cookies << @response_header.cookie if @response_header.cookie && @req.pass_cookies
+      @cookies << @response_header.cookie if @response_header.cookie && @req.pass_cookies
 
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location

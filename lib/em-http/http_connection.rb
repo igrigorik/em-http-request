@@ -103,11 +103,8 @@ module EventMachine
       succeed
     end
 
-    def redirect(client, location)
-      client.req.set_uri(location)
+    def redirect(client)
       @pending.push client
-    rescue Exception => e
-      client.on_error(e.message)
     end
 
     def unbind
