@@ -65,6 +65,10 @@ module EventMachine
       unbind
     end
 
+    def continue?
+      @response_header.status == 100 && (@req.method == 'POST' || @req.method == 'PUT')
+    end
+
     def finished?
       @state == :finished || (@state == :body && @response_header.content_length.nil?)
     end
@@ -107,10 +111,6 @@ module EventMachine
       body.is_a?(Hash) ? form_encode_body(body) : body
     end
 
-    def continue?
-      @response_header.status == 100 && (@req.method == 'POST' || @req.method == 'PUT')
-    end
-
     def build_request
       head    = @req.headers ? munge_header_keys(@req.headers) : {}
       proxy   = @req.proxy
@@ -120,7 +120,7 @@ module EventMachine
       end
 
       # Set the cookie header if provided
-      if cookie = head.delete('cookie')
+      if cookie = head['cookie']
         @cookies << encode_cookie(cookie) if cookie
       end
       head['cookie'] = @cookies.compact.uniq.join("; ").squeeze(";") unless @cookies.empty?

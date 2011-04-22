@@ -57,15 +57,15 @@ module EventMachine
 
       @p = Http::Parser.new
       @p.on_headers_complete = proc do |h|
-        @clients.first.parse_response_header(h, @p.http_version, @p.status_code)
+        client.parse_response_header(h, @p.http_version, @p.status_code)
       end
 
       @p.on_body = proc do |b|
-        @clients.first.on_body_data(b)
+        client.on_body_data(b)
       end
 
       @p.on_message_complete = proc do
-        if not @clients.first.continue?
+        if not client.continue?
           c = @clients.shift
           c.state = :finished
           c.on_request_complete
