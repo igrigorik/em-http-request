@@ -1,5 +1,34 @@
 require 'helper'
 
+class RedirectMiddleware
+  class << self
+    attr_accessor :call_count
+  end
+
+  RedirectMiddleware.call_count = 0
+
+  def request(c, h, r)
+    RedirectMiddleware.call_count += 1
+    h['EM-Middleware'] = RedirectMiddleware.call_count.to_s
+    [h, r]
+  end
+
+  def redirect(r)
+    response(r)
+  end
+
+  def response(r)
+    RedirectMiddleware.call_count = (r.response_header['EM_MIDDLEWARE'].to_i + 1)
+  end
+end
+
+class PickyRedirectMiddleware < RedirectMiddleware
+  def redirect(r)
+    raise EventMachine::InvalidRedirectError if r.response_header['LOCATION'][-1] == '3'
+    super
+  end
+end
+
 describe EventMachine::HttpRequest do
 
   it "should follow location redirects" do
@@ -142,6 +171,34 @@ describe EventMachine::HttpRequest do
         http.cookies.should include("id=2;")
         http.cookies.should_not include("another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;")
 
+        EM.stop
+      }
+    }
+  end
+
+  it "should call middleware each time it redirects" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/middleware_redirects_1')
+      conn.use RedirectMiddleware
+      http = conn.get :redirects => 3
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        RedirectMiddleware.call_count.should == 6
+        EM.stop
+      }
+    }
+  end
+
+  it "should call middleware which may reject a redirection" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/middleware_redirects_1')
+      conn.use PickyRedirectMiddleware
+      http = conn.get :redirects => 3
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 301
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/redirect/middleware_redirects_2'
         EM.stop
       }
     }
