@@ -113,6 +113,10 @@ Stallion.saddle :spec do |stable|
       sleep(10)
       stable.response.write 'timeout'
 
+    elsif stable.request.path_info == '/cookie_parrot'
+      stable.response.status = 200
+      stable.response["Set-Cookie"] = stable.request.env['HTTP_COOKIE']
+
     elsif stable.request.path_info == '/redirect'
       stable.response.status = 301
       stable.response["Location"] = "/gzip"
