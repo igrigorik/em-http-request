@@ -8,17 +8,17 @@ module EventMachine
   #
   #  EventMachine.run {
   #
-  #   multi = EventMachine::MultiRequest.new
+  #    multi = EventMachine::MultiRequest.new
   #
-  #   # add multiple requests to the multi-handler
-  #   multi.add(EventMachine::HttpRequest.new('http://www.google.com/').get)
-  #   multi.add(EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
+  #    # add multiple requests to the multi-handler
+  #    multi.add(:a, EventMachine::HttpRequest.new('http://www.google.com/').get)
+  #    multi.add(:b, EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
   #
-  #    multi.callback  {
-  #       p multi.responses[:succeeded]
-  #       p multi.responses[:failed]
+  #    multi.callback {
+  #      p res.responses[:callback]
+  #      p res.responses[:errback]
   #
-  #       EventMachine.stop
+  #      EventMachine.stop
   #    }
   #  }
   #
@@ -28,27 +28,27 @@ module EventMachine
 
     attr_reader :requests, :responses
 
-    def initialize(conns=[], &block)
+    def initialize
       @requests  = []
-      @responses = {:succeeded => [], :failed => []}
-
-      conns.each {|conn| add(conn)}
-      callback(&block) if block_given?
+      @responses = {:callback => {}, :errback => {}}
     end
 
-    def add(conn)
+    def add(name, conn)
       @requests.push(conn)
 
-      conn.callback { @responses[:succeeded].push(conn); check_progress }
-      conn.errback  { @responses[:failed].push(conn); check_progress }
+      conn.callback { @responses[:callback][name] = conn; check_progress }
+      conn.errback  { @responses[:errback][name]  = conn; check_progress }
+    end
+
+    def finished?
+      (@responses[:callback].size + @responses[:errback].size) == @requests.size
     end
 
     protected
 
     # invoke callback if all requests have completed
     def check_progress
-      succeed(self) if (@responses[:succeeded].size +
-                        @responses[:failed].size) == @requests.size
+      succeed(self) if finished?
     end
 
   end
