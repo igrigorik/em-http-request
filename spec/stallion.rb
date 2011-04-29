@@ -159,6 +159,7 @@ Stallion.saddle :spec do |stable|
       deflater.deflate("compressed")
       stable.response.write deflater.finish
       stable.response["Content-Encoding"] = "deflate"
+      
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 
