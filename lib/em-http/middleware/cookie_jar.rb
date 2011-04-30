@@ -22,23 +22,14 @@ module EventMachine
         [h, r]
       end
 
-      def redirect(r)
-        store_cookies(r)
-        r.response
-      end
-
       def response(r)
-        store_cookies(r)
-        r.response
-      end
-
-      def store_cookies(r)
         cookies = r.response_header.cookie
         if cookies
           [cookies].flatten.each { |c|
             EventMachine::Middleware::CookieJar.cookiejar.set_cookie r.last_effective_url, c
           }
         end
+        r.response
      end
     end
   end
