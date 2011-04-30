@@ -78,6 +78,21 @@ requires_connection do
         }
       }
     end
+    
+    it "should detect deflate encoding" do
+      EventMachine.run {
+
+        http = EventMachine::HttpRequest.new('http://www.msn.com').get :head => {"accept-encoding" => "deflate"}
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "deflate"
+
+          EventMachine.stop
+        }
+      }
+    end
 
     context "keepalive" do
       it "should default to non-keepalive" do

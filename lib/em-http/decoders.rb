@@ -71,7 +71,7 @@ module EventMachine::HttpDecoders
   class Deflate < Base
     def decompress(compressed)
       begin
-        @zstream ||= Zlib::Inflate.new(nil)
+        @zstream ||= Zlib::Inflate.new(-Zlib::MAX_WBITS)
         @zstream.inflate(compressed)
       rescue Zlib::Error
         raise DecoderError
