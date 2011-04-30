@@ -150,9 +150,16 @@ Stallion.saddle :spec do |stable|
       stable.response["Content-Encoding"] = "gzip"
 
     elsif stable.request.path_info == '/deflate'
-      stable.response.write Zlib::Deflate.deflate("compressed")
+      deflater = Zlib::Deflate.new(
+        Zlib::DEFAULT_COMPRESSION,
+        -Zlib::MAX_WBITS, # drop the zlib header which causes both Safari and IE to choke
+        Zlib::DEF_MEM_LEVEL,
+        Zlib::DEFAULT_STRATEGY
+      )
+      deflater.deflate("compressed")
+      stable.response.write deflater.finish
       stable.response["Content-Encoding"] = "deflate"
-
+      
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 
