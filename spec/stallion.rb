@@ -132,6 +132,20 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 301
       stable.response["Location"] = "/"
 
+    elsif stable.request.path_info == '/redirect/middleware_redirects_1'
+      stable.response.status = 301
+      stable.response["EM-Middleware"] = stable.request.env["HTTP_EM_MIDDLEWARE"]
+      stable.response["Location"] = "/redirect/middleware_redirects_2"
+
+    elsif stable.request.path_info == '/redirect/middleware_redirects_2'
+      stable.response.status = 301
+      stable.response["EM-Middleware"] = stable.request.env["HTTP_EM_MIDDLEWARE"]
+      stable.response["Location"] = "/redirect/middleware_redirects_3"
+
+    elsif stable.request.path_info == '/redirect/middleware_redirects_3'
+      stable.response.status = 200
+      stable.response["EM-Middleware"] = stable.request.env["HTTP_EM_MIDDLEWARE"]
+
     elsif stable.request.path_info == '/redirect/nohost'
       stable.response.status = 301
       stable.response["Location"] = "http:/"
