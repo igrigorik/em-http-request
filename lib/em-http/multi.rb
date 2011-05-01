@@ -15,8 +15,8 @@ module EventMachine
   #    multi.add(:b, EventMachine::HttpRequest.new('http://www.yahoo.com/').get)
   #
   #    multi.callback {
-  #      p res.responses[:callback]
-  #      p res.responses[:errback]
+  #      p multi.responses[:callback]
+  #      p multi.responses[:errback]
   #
   #      EventMachine.stop
   #    }
