@@ -78,11 +78,12 @@ requires_connection do
         }
       }
     end
-    
+
     it "should detect deflate encoding" do
       EventMachine.run {
 
-        http = EventMachine::HttpRequest.new('http://www.msn.com').get :head => {"accept-encoding" => "deflate"}
+        options = {:head => {"accept-encoding" => "deflate"}, :redirects => 5}
+        http = EventMachine::HttpRequest.new('http://www.msn.com').get options
 
         http.errback { failed(http) }
         http.callback {
