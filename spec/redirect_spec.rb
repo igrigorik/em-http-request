@@ -13,18 +13,14 @@ class RedirectMiddleware
     [h, r]
   end
 
-  def redirect(r)
-    response(r)
-  end
-
   def response(r)
     RedirectMiddleware.call_count = (r.response_header['EM_MIDDLEWARE'].to_i + 1)
   end
 end
 
 class PickyRedirectMiddleware < RedirectMiddleware
-  def redirect(r)
-    raise EventMachine::InvalidRedirectError if r.response_header['LOCATION'][-1] == '3'
+  def response(r)
+    raise EventMachine::InvalidRedirectError if r.state == :redirecting && r.response_header['LOCATION'][-1] == '3'
     super
   end
 end
@@ -200,7 +196,7 @@ describe EventMachine::HttpRequest do
         http.response_header.status.should == 301
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/redirect/middleware_redirects_2'
         EM.stop
-      }
+      } 
     }
   end
 

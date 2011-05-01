@@ -86,13 +86,16 @@ module EventMachine
         if redirect?
 
           begin
+            @state = :redirecting
             @conn.middleware.each do |m|
-              m.redirect(self) if m.respond_to?(:redirect)
+              m.response(self) if m.respond_to?(:response)
             end
+            @state = :finished
             @req.followed += 1
             @req.set_uri(@response_header.location)
             @conn.redirect(self)
           rescue EventMachine::InvalidRedirectError
+            @state = :finished
             succeed(self)
           rescue Exception => e
             on_error(e.message)
