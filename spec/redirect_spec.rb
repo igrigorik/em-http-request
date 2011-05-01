@@ -1,27 +1,24 @@
 require 'helper'
 
 class RedirectMiddleware
-  class << self
-    attr_accessor :call_count
-  end
+  attr_reader :call_count
 
-  RedirectMiddleware.call_count = 0
+  def initialize
+    @call_count = 0
+  end
 
   def request(c, h, r)
-    RedirectMiddleware.call_count += 1
-    h['EM-Middleware'] = RedirectMiddleware.call_count.to_s
-    [h, r]
-  end
-
-  def response(r)
-    RedirectMiddleware.call_count = (r.response_header['EM_MIDDLEWARE'].to_i + 1)
+    @call_count += 1
+    [h.merge({'EM-Middleware' => @call_count.to_s}), r]
   end
 end
 
 class PickyRedirectMiddleware < RedirectMiddleware
   def response(r)
-    raise EventMachine::InvalidRedirectError if r.state == :redirecting && r.response_header['LOCATION'][-1] == '3'
-    super
+    if r.redirect? && r.response_header['LOCATION'][-1] == '3'
+      # set redirects to 0 to avoid further processing
+      r.req.redirects = 0
+    end
   end
 end
 
@@ -180,7 +177,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        RedirectMiddleware.call_count.should == 6
+        http.response_header['EM_MIDDLEWARE'].to_i.should == 3
         EM.stop
       }
     }
@@ -196,7 +193,7 @@ describe EventMachine::HttpRequest do
         http.response_header.status.should == 301
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/redirect/middleware_redirects_2'
         EM.stop
-      } 
+      }
     }
   end
 

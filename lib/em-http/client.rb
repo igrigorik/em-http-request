@@ -1,8 +1,5 @@
 module EventMachine
 
-  class InvalidRedirectError < StandardError
-  end
-
   class HttpClient
     include Deferrable
     include HttpEncoding
@@ -86,21 +83,24 @@ module EventMachine
         if redirect?
 
           begin
-            @state = :redirecting
             @conn.middleware.each do |m|
               m.response(self) if m.respond_to?(:response)
             end
-            @state = :finished
-            @req.followed += 1
-            @req.set_uri(@response_header.location)
-            @conn.redirect(self)
-          rescue EventMachine::InvalidRedirectError
-            @state = :finished
-            succeed(self)
+
+            # one of the injected middlewares could have changed
+            # our redirect settings, check if we still want to
+            # follow the location header
+            if redirect?
+              @req.followed += 1
+              @req.set_uri(@response_header.location)
+              @conn.redirect(self)
+            else
+              succeed(self)
+            end
+
           rescue Exception => e
             on_error(e.message)
           end
-
         else
           succeed(self)
         end

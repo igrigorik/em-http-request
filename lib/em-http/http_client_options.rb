@@ -1,9 +1,9 @@
 class HttpClientOptions
   attr_reader :uri, :method, :host, :port, :proxy
   attr_reader :headers, :file, :body, :query, :path
-  attr_reader :keepalive, :redirects, :pass_cookies
+  attr_reader :keepalive, :pass_cookies
 
-  attr_accessor :followed
+  attr_accessor :followed, :redirects
 
   def initialize(uri, options, method)
     @keepalive = options[:keepalive] || false  # default to single request per connection
