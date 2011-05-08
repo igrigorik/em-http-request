@@ -11,8 +11,8 @@ Async (EventMachine) HTTP client, with support for:
 - HTTP proxy and SOCKS5 support
 - Basic Auth & OAuth
 - Connection-level & Global middleware support
-- Ryan Dahl's HTTP parser via [http_parser.rb](https://github.com/tmm1/http_parser.rb)
-- Works wherever EventMachine runs
+- HTTP parser via [http_parser.rb](https://github.com/tmm1/http_parser.rb)
+- Works wherever EventMachine runs: Rubinius, JRuby, MRI
 
 ## Getting started
 
