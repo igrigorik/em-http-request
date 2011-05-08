@@ -17,6 +17,7 @@ module EventMachine
     def initialize(uri, opts)
       @connopts = opts
       @uri = uri
+      @peer = nil
     end
 
     def setup_request(method, options)
@@ -78,7 +79,7 @@ module EventMachine
     end
 
     def peer
-      Socket.unpack_sockaddr_in(get_peername)[1]
+      Socket.unpack_sockaddr_in(@peer)[1] rescue nil
     end
 
     def receive_data(data)
@@ -91,6 +92,8 @@ module EventMachine
     end
 
     def connection_completed
+      @peer = get_peername
+
       if @connopts.proxy && @connopts.proxy[:type] == :socks5
         socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
       else

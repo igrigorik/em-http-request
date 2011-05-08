@@ -232,7 +232,10 @@ describe EventMachine::HttpRequest do
      EventMachine.run {
 
        conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/')
+       conn.peer.should be_nil
+
        http = conn.get
+       http.peer.should be_nil
 
        http.errback { failed(http) }
        http.callback {
