@@ -324,6 +324,26 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should not decode the response when configured so" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {
+        "accept-encoding" => "gzip, compressed"
+      }, :no_decoding => true
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+
+        raw = http.response
+        Zlib::GzipReader.new(StringIO.new(raw)).read.should == "compressed"
+
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should timeout after 0.1 seconds of inactivity" do
     EventMachine.run {
       t = Time.now.to_i
