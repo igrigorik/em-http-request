@@ -601,4 +601,18 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should handle a redirect with an improperly escaped URL" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://nyti.ms/mJRbg7').get :redirects=>3
+      http.errback { failed(http) }
+      http.callback {
+
+        http.response_header.status.should equal(200)
+        http.last_effective_url.to_s.should match("Reed%20Abelson")
+        EventMachine.stop
+
+      }
+    }
+  end
+
 end
