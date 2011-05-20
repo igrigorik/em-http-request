@@ -329,7 +329,7 @@ describe EventMachine::HttpRequest do
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {
         "accept-encoding" => "gzip, compressed"
-      }, :no_decoding => true
+      }, :decoding => false
 
       http.errback { failed(http) }
       http.callback {
