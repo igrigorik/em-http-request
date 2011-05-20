@@ -1,7 +1,7 @@
 class HttpClientOptions
   attr_reader :uri, :method, :host, :port, :proxy
   attr_reader :headers, :file, :body, :query, :path
-  attr_reader :keepalive, :pass_cookies
+  attr_reader :keepalive, :pass_cookies, :decoding
 
   attr_accessor :followed, :redirects
 
@@ -21,6 +21,7 @@ class HttpClientOptions
 
     @pass_cookies = options[:pass_cookies]
     @pass_cookies = true if @pass_cookies.nil?
+    @decoding = options.fetch(:decoding, true)
 
     set_uri(uri)
   end
