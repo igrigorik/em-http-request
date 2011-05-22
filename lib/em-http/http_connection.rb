@@ -8,42 +8,91 @@ module EventMachine
     def post   options = {}, &blk;  setup_request(:post,  options, &blk); end
   end
 
-  class FailedConnection
-    include HTTPMethods
+  class HttpStubConnection < Connection
     include Deferrable
+    attr_reader :parent
 
-    attr_accessor :error
-
-    def initialize(uri, opts)
-      @connopts = opts
-      @uri = uri
-      @peer = nil
+    def parent=(p)
+      @parent = p
+      @parent.conn = self
     end
 
-    def setup_request(method, options)
-      c = HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
-      c.close(@error)
-      c
+    def receive_data(data)
+      @parent.receive_data data
+    end
+
+    def connection_completed
+      @parent.connection_completed
+    end
+
+    def unbind
+      @parent.unbind
     end
   end
 
-  class HttpConnection < Connection
+  class HttpConnection
     include HTTPMethods
-    include Deferrable
     include Socksify
 
-    attr_accessor :error, :connopts, :uri
+    attr_reader :deferred
+    attr_accessor :error, :connopts, :uri, :conn
 
-    def setup_request(method, options = {})
-      c = HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
-      callback { c.connection_completed }
+    def initialize
+      @deferred = true
+      @middleware = []
+    end
+
+    def conn=(c)
+      @conn = c
+      @deferred = false
+    end
+
+    def activate_connection(client)
+      begin
+        EventMachine.connect(@connopts.host, @connopts.port, HttpStubConnection) do |conn|
+          post_init
+          @deferred = false
+          @conn = conn
+          conn.parent = self
+          conn.pending_connect_timeout = @connopts.connect_timeout
+          conn.comm_inactivity_timeout = @connopts.inactivity_timeout
+        end
+        finalize_request(client)
+      rescue EventMachine::ConnectionError => e
+        #
+        # Currently, this can only fire on initial connection setup
+        # since #connect is a synchronous method. Hence, rescue the
+        # exception, and return a failed deferred which will immediately
+        # fail any client request.
+        #
+        # Once there is async-DNS, then we'll iterate over the outstanding
+        # client requests and fail them in order.
+        #
+        # Net outcome: failed connection will invoke the same ConnectionError
+        # message on the connection deferred, and on the client deferred.
+        #
+        client.close(e.message)
+      end
+    end
+
+    def setup_request(method, options = {}, c = nil)
+      c ||= HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
+      if @deferred
+        activate_connection(c)
+      else
+        finalize_request(c)
+      end
+      c
+    end
+
+    def finalize_request(c)
+      @conn.callback { c.connection_completed }
 
       middleware.each do |m|
         c.callback &m.method(:response) if m.respond_to?(:response)
       end
 
       @clients.push c
-      c
     end
 
     def middleware
@@ -53,8 +102,6 @@ module EventMachine
     def post_init
       @clients = []
       @pending = []
-
-      @middleware = []
 
       @p = Http::Parser.new
       @p.on_headers_complete = proc do |h|
@@ -92,7 +139,7 @@ module EventMachine
     end
 
     def connection_completed
-      @peer = get_peername
+      @peer = @conn.get_peername
 
       if @connopts.proxy && @connopts.proxy[:type] == :socks5
         socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
@@ -103,7 +150,7 @@ module EventMachine
 
     def start
       start_tls(@connopts.tls) if client && client.req.ssl?
-      succeed
+      @conn.succeed
     end
 
     def redirect(client)
@@ -111,7 +158,7 @@ module EventMachine
     end
 
     def unbind
-      @clients.map {|c| c.unbind }
+      @clients.map { |c| c.unbind }
 
       if r = @pending.shift
         @clients.push r
@@ -120,19 +167,27 @@ module EventMachine
         @p.reset!
 
         begin
-          set_deferred_status :unknown
-          reconnect(r.req.host, r.req.port)
-          callback { r.connection_completed }
+          @conn.set_deferred_status :unknown
+          @conn.reconnect(r.req.host, r.req.port)
+          @conn.callback { r.connection_completed }
         rescue EventMachine::ConnectionError => e
           @clients.pop.close(e.message)
         end
       end
     end
 
+    def send_data(data)
+      @conn.send_data data
+    end
+
+    def stream_file_data(filename, args = {})
+      @conn.stream_file_data filename, args
+    end
+
     private
 
-      def client
-        @clients.first
-      end
+    def client
+      @clients.first
+    end
   end
 end
