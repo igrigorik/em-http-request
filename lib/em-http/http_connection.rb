@@ -51,12 +51,15 @@ module EventMachine
       begin
         EventMachine.connect(@connopts.host, @connopts.port, HttpStubConnection) do |conn|
           post_init
+
           @deferred = false
           @conn = conn
+
           conn.parent = self
           conn.pending_connect_timeout = @connopts.connect_timeout
           conn.comm_inactivity_timeout = @connopts.inactivity_timeout
         end
+
         finalize_request(client)
       rescue EventMachine::ConnectionError => e
         #
@@ -77,11 +80,7 @@ module EventMachine
 
     def setup_request(method, options = {}, c = nil)
       c ||= HttpClient.new(self, HttpClientOptions.new(@uri, options, method))
-      if @deferred
-        activate_connection(c)
-      else
-        finalize_request(c)
-      end
+      @deferred ? activate_connection(c) : finalize_request(c)
       c
     end
 
@@ -149,7 +148,7 @@ module EventMachine
     end
 
     def start
-      start_tls(@connopts.tls) if client && client.req.ssl?
+      @conn.start_tls(@connopts.tls) if client && client.req.ssl?
       @conn.succeed
     end
 

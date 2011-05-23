@@ -104,7 +104,7 @@ requires_connection do
           http.errback { fail }
           start = Time.now.to_i
           http.callback {
-            (start - Time.now.to_i).should be_within(1).of(0)
+            (Time.now.to_i - start).should be_within(2).of(0)
             EventMachine.stop
           }
         }
