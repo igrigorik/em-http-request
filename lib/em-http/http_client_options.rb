@@ -9,6 +9,7 @@ class HttpClientOptions
     @keepalive = options[:keepalive] || false  # default to single request per connection
     @redirects = options[:redirects] ||= 0     # default number of redirects to follow
     @followed  = options[:followed]  ||= 0     # keep track of number of followed requests
+    @decoding  = options[:decoding]  || true   # auto-decode compressed response
 
     @method   = method.to_s.upcase
     @headers  = options[:head]  || {}
@@ -21,7 +22,6 @@ class HttpClientOptions
 
     @pass_cookies = options[:pass_cookies]
     @pass_cookies = true if @pass_cookies.nil?
-    @decoding = options.fetch(:decoding, true)
 
     set_uri(uri)
   end
