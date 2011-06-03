@@ -12,7 +12,7 @@ module EventMachine
 
       def request(client, head, body)
         @consumer.sign!(client, @access_token)
-        head.merge!(client.options[:head])
+        head.merge!(client.req.headers)
 
         [head,body]
       end
