@@ -3,6 +3,7 @@ module EventMachine
   class HttpClient
     include Deferrable
     include HttpEncoding
+    include HttpStatus
 
     TRANSFER_ENCODING="TRANSFER_ENCODING"
     CONTENT_ENCODING="CONTENT_ENCODING"
@@ -207,7 +208,7 @@ module EventMachine
 
       @response_header.http_version = version.join('.')
       @response_header.http_status  = status
-      @response_header.http_reason  = 'unknown'
+      @response_header.http_reason  = CODE[status]
 
       # invoke headers callback after full parse
       # if one is specified by the user

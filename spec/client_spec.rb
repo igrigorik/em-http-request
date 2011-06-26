@@ -97,6 +97,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should return HTTP reason" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/fail').get
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 404
+        http.response_header.http_reason.should == 'Not Found'
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should build query parameters from Hash" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get :query => {:q => 'test'}
