@@ -36,7 +36,7 @@ module EventMachine
       @state = :response_header
 
       @response = ''
-      @error = ''
+      @error = nil
       @content_decoder = nil
       @content_charset = nil
     end
@@ -78,7 +78,7 @@ module EventMachine
       @response_header.location && @req.follow_redirect?
     end
 
-    def unbind(msg = '')
+    def unbind(reason = nil)
       if finished?
         if redirect?
 
@@ -106,11 +106,11 @@ module EventMachine
         end
 
       else
-        fail(self)
+        on_error(reason)
       end
     end
 
-    def on_error(msg = '')
+    def on_error(msg = nil)
       @error = msg
       fail(self)
     end

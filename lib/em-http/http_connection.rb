@@ -25,8 +25,8 @@ module EventMachine
       @parent.connection_completed
     end
 
-    def unbind
-      @parent.unbind
+    def unbind(reason)
+      @parent.unbind(reason)
     end
   end
 
@@ -156,8 +156,8 @@ module EventMachine
       @pending.push client
     end
 
-    def unbind(msg = '')
-      @clients.map { |c| c.unbind(msg) }
+    def unbind(reason)
+      @clients.map { |c| c.unbind(reason) }
 
       if r = @pending.shift
         @clients.push r
