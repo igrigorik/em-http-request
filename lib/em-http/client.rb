@@ -78,7 +78,7 @@ module EventMachine
       @response_header.location && @req.follow_redirect?
     end
 
-    def unbind
+    def unbind(msg = '')
       if finished?
         if redirect?
 

@@ -156,8 +156,8 @@ module EventMachine
       @pending.push client
     end
 
-    def unbind
-      @clients.map { |c| c.unbind }
+    def unbind(msg = '')
+      @clients.map { |c| c.unbind(msg) }
 
       if r = @pending.shift
         @clients.push r
