@@ -93,7 +93,7 @@ module EventMachine
             # follow the location header
             if redirect?
               @req.followed += 1
-              @req.set_uri(@response_header.location)
+              @req.set_uri(Addressable::URI.parse(@response_header.location).normalize.to_s)
               @conn.redirect(self)
             else
               succeed(self)
