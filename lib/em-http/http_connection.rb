@@ -174,6 +174,7 @@ module EventMachine
         end
       end
     end
+    alias :close :unbind
 
     def send_data(data)
       @conn.send_data data
