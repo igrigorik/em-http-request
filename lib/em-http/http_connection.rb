@@ -25,7 +25,7 @@ module EventMachine
       @parent.connection_completed
     end
 
-    def unbind(reason)
+    def unbind(reason=nil)
       @parent.unbind(reason)
     end
   end
