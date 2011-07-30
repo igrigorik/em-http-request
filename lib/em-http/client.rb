@@ -208,7 +208,7 @@ module EventMachine
 
       @response_header.http_version = version.join('.')
       @response_header.http_status  = status
-      @response_header.http_reason  = CODE[status]
+      @response_header.http_reason  = CODE[status] || 'unknown'
 
       # invoke headers callback after full parse
       # if one is specified by the user
