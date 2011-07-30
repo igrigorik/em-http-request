@@ -74,6 +74,9 @@ Stallion.saddle :spec do |stable|
     if stable.request.path_info == '/fail'
       stable.response.status = 404
 
+    elsif stable.request.path_info == '/fail_with_nonstandard_response'
+      stable.response.status = 420
+
     elsif stable.request.query_string == 'q=test'
       stable.response.write 'test'
 
@@ -177,7 +180,7 @@ Stallion.saddle :spec do |stable|
       deflater.deflate("compressed")
       stable.response.write deflater.finish
       stable.response["Content-Encoding"] = "deflate"
-      
+
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 
