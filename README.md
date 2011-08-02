@@ -46,11 +46,12 @@ Several higher-order Ruby projects have incorporated em-http and other Ruby HTTP
 
 ## Other libraries & applications using EM-HTTP
 
-- [chirpstream](http://github.com/joshbuddy/chirpstream) - EM client for Twitters Chirpstream API
-- [rsolr-async](http://github.com/mwmitchell/rsolr-async) - An asynchronus connection adapter for RSolr
-- [PubSubHubbub](http://github.com/igrigorik/PubSubHubbub) - Asynchronous PubSubHubbub ruby client
-- [Firering](http://github.com/EmmanuelOga/firering) - Eventmachine powered Campfire API
-- [RDaneel](http://github.com/hasmanydevelopers/RDaneel) - Ruby crawler which respects robots.txt
+- [chirpstream](https://github.com/joshbuddy/chirpstream) - EM client for Twitters Chirpstream API
+- [rsolr-async](https://github.com/mwmitchell/rsolr-async) - An asynchronus connection adapter for RSolr
+- [PubSubHubbub](https://github.com/igrigorik/PubSubHubbub) - Asynchronous PubSubHubbub ruby client
+- [Firering](https://github.com/EmmanuelOga/firering) - Eventmachine powered Campfire API
+- [RDaneel](https://github.com/hasmanydevelopers/RDaneel) - Ruby crawler which respects robots.txt
+- [em-eventsource](https://github.com/AF83/em-eventsource) - EventSource client for EventMachine
 - and many others.. drop me a link if you want yours included!
 
 ### License
