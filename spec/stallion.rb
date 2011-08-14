@@ -109,6 +109,13 @@ Stallion.saddle :spec do |stable|
       stable.response["Set-Cookie"] = "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
       stable.response.write "cookie set"
 
+    elsif stable.request.path_info == '/set_multiple_cookies'
+      stable.response["Set-Cookie"] = [
+        "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;",
+        "id=2;"
+      ]
+      stable.response.write "cookies set"
+
     elsif stable.request.path_info == '/echo_cookie'
       stable.response.write stable.request.env["HTTP_COOKIE"]
 

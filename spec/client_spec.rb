@@ -565,6 +565,22 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should return array of cookies on multiple Set-Cookie headers" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/set_multiple_cookies').get
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header.cookie.size.should == 2
+        http.response_header.cookie.first.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        http.response_header.cookie.last.should == "id=2;"
+
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should pass cookie header to server from string" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_cookie').get :head => {'cookie' => 'id=2;'}
