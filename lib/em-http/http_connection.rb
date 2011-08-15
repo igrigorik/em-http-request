@@ -103,7 +103,7 @@ module EventMachine
       @pending = []
 
       @p = Http::Parser.new
-      @p.header_value_type = :mixed
+      @p.header_value_type = :mixed if @p.respond_to? :header_value_type=
       @p.on_headers_complete = proc do |h|
         client.parse_response_header(h, @p.http_version, @p.status_code)
       end
