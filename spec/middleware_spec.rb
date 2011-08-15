@@ -171,21 +171,23 @@ describe EventMachine::HttpRequest do
       }
     end
 
-    it "should store cookies and send them" do
-      EventMachine.run {
-        uri = 'http://127.0.0.1:8090/set_cookie'
-        conn = EventMachine::HttpRequest.new(uri)
-        middleware = EventMachine::Middleware::CookieJar
-        conn.use middleware
-        req = conn.get
-        req.callback {
-          req.response_header.cookie[0..3].should == 'id=1'
-          cookies = middleware.cookiejar.get_cookies(uri)
-          cookies.length.should == 1
-          cookies[0].to_s.should == "id=1"
-          EventMachine.stop
+    if Http::Parser.respond_to? :default_header_value_type
+      it "should store cookies and send them" do
+        EventMachine.run {
+          uri = 'http://127.0.0.1:8090/set_cookie'
+          conn = EventMachine::HttpRequest.new(uri)
+          middleware = EventMachine::Middleware::CookieJar
+          conn.use middleware
+          req = conn.get
+          req.callback {
+            req.response_header.cookie[0..3].should == 'id=1'
+            cookies = middleware.cookiejar.get_cookies(uri)
+            cookies.length.should == 1
+            cookies[0].to_s.should == "id=1"
+            EventMachine.stop
+          }
         }
-      }
+      end
     end
   end
 
