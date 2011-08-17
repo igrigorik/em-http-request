@@ -1,18 +1,17 @@
-require 'oauth'
-require 'oauth/client/em_http'
+require 'simple_oauth'
 
 module EventMachine
   module Middleware
 
     class OAuth
       def initialize(opts = {})
-        @consumer = ::OAuth::Consumer.new(opts[:consumer_key], opts[:consumer_secret])
-        @access_token = ::OAuth::AccessToken.new(@consumer, opts[:access_token], opts[:access_token_secret])
+        @opts = opts
       end
 
       def request(client, head, body)
-        @consumer.sign!(client, @access_token)
-        head.merge!(client.req.headers)
+        request = client.req
+
+        head["Authorization"] = SimpleOAuth::Header.new(request.method, request.uri, body, @opts)
 
         [head,body]
       end
