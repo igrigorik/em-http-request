@@ -14,9 +14,7 @@ module EventMachine
       def request(client, head, body)
         request = client.req
 
-        params = {}
-        params.merge!(request.query) if request.query
-        params.merge!(body) if body
+        params = request.query.to_a + body.to_a
 
         head["Authorization"] = SimpleOAuth::Header.new(request.method, request.uri, params, @opts)
 
