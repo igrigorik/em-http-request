@@ -1,5 +1,4 @@
 require 'helper'
-require 'em-http/middleware/cookie_jar'
 
 describe EventMachine::HttpRequest do
 
@@ -138,56 +137,6 @@ describe EventMachine::HttpRequest do
           EventMachine.stop
         }
       }
-    end
-  end
-
-  context "CookieJar" do
-    it "should use the cookie jar as opposed to any other method when in use" do
-      lambda {
-        EventMachine.run {
-          conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/')
-          middleware = EventMachine::Middleware::CookieJar
-          conn.use middleware
-          middleware.set_cookie('http://127.0.0.1:8090/', 'id=1')
-          req = conn.get :head => {'cookie' => 'id=2;'}
-          req.callback { failed(req) }
-          req.errback  { failed(req) }
-        }
-      }.should raise_error(ArgumentError)
-    end
-
-    it "should send cookies" do
-      EventMachine.run {
-        uri = 'http://127.0.0.1:8090/cookie_parrot'
-        conn = EventMachine::HttpRequest.new(uri)
-        middleware = EventMachine::Middleware::CookieJar
-        conn.use middleware
-        middleware.set_cookie(uri, 'id=1')
-        req = conn.get
-        req.callback {
-          req.response_header.cookie.should == 'id=1'
-          EventMachine.stop
-        }
-      }
-    end
-
-    if Http::Parser.respond_to? :default_header_value_type
-      it "should store cookies and send them" do
-        EventMachine.run {
-          uri = 'http://127.0.0.1:8090/set_cookie'
-          conn = EventMachine::HttpRequest.new(uri)
-          middleware = EventMachine::Middleware::CookieJar
-          conn.use middleware
-          req = conn.get
-          req.callback {
-            req.response_header.cookie[0..3].should == 'id=1'
-            cookies = middleware.cookiejar.get_cookies(uri)
-            cookies.length.should == 1
-            cookies[0].to_s.should == "id=1"
-            EventMachine.stop
-          }
-        }
-      end
     end
   end
 
