@@ -670,7 +670,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       response =<<-HTTP.gsub(/^ +/, '').strip
         HTTP/1.0 200 OK
-        Content-Type: text/plain; charset=latin1
+        Content-Type: text/plain; charset=iso-8859-1
         Content-Type: text/plain; charset=utf-8
         Content-Length: 5
         Connection: close
@@ -682,7 +682,7 @@ describe EventMachine::HttpRequest do
       http     = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
       http.errback { failed(http) }
       http.callback {
-        http.response.encoding.should == Encoding::US_ASCII
+        http.content_charset.should == Encoding::ISO_8859_1
         EventMachine.stop
       }
     }
