@@ -266,7 +266,10 @@ module EventMachine
         end
       end
 
-      if String.method_defined?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(response_header[CONTENT_TYPE])
+      # handle malformed header - Content-Type repetitions.
+      content_type = [response_header[CONTENT_TYPE]].flatten.first
+
+      if String.method_defined?(:force_encoding) && /;\s*charset=\s*(.+?)\s*(;|$)/.match(content_type)
         @content_charset = Encoding.find($1.gsub(/^\"|\"$/, '')) rescue Encoding.default_external
       end
     end
