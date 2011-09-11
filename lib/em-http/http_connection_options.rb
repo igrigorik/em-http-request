@@ -9,8 +9,10 @@ class HttpConnectionOptions
     @tls   = options[:tls] || options[:ssl] || {}
     @proxy = options[:proxy]
 
-    @bind       = options[:bind] || '0.0.0.0'
-    @bind_port  = options[:bind_port] || 0
+    if bind = options[:bind]
+      @bind = bind[:host] || '0.0.0.0'
+      @bind_port = bind[:port] || 0
+    end
 
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     uri.port = (uri.scheme == "https" ? (uri.port || 443) : (uri.port || 80))
