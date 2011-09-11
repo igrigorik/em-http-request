@@ -1,5 +1,5 @@
 class HttpConnectionOptions
-  attr_reader :host, :port, :tls, :proxy
+  attr_reader :host, :port, :tls, :proxy, :bind, :bind_port
   attr_reader :connect_timeout, :inactivity_timeout
 
   def initialize(uri, options)
@@ -9,6 +9,9 @@ class HttpConnectionOptions
     @tls   = options[:tls] || options[:ssl] || {}
     @proxy = options[:proxy]
 
+	@bind		= options[:bind] || '0.0.0.0'
+	@bind_port	= options[:bind_port] || 0
+	
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     uri.port = (uri.scheme == "https" ? (uri.port || 443) : (uri.port || 80))
 
