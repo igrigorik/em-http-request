@@ -15,11 +15,22 @@ module EventMachine
     LOCATION="LOCATION"
     HOST="HOST"
     ETAG="ETAG"
-
     CRLF="\r\n"
+    NORMALIZED_HEADERS = [
+      TRANSFER_ENCODING,
+      CONTENT_ENCODING,
+      CONTENT_LENGTH,
+      CONTENT_TYPE,
+      LAST_MODIFIED,
+      KEEP_ALIVE,
+      SET_COOKIE,
+      LOCATION,
+      HOST,
+      ETAG
+    ]
 
     attr_accessor :state, :response
-    attr_reader   :response_header, :error, :content_charset, :req, :cookies
+    attr_reader   :raw_header, :response_header, :error, :content_charset, :req, :cookies
 
     def initialize(conn, options)
       @conn = conn
@@ -203,7 +214,12 @@ module EventMachine
 
     def parse_response_header(header, version, status)
       header.each do |key, val|
-        @response_header[key.upcase.gsub('-','_')] = val
+        normalized = key.upcase.gsub('-','_')
+        if NORMALIZED_HEADERS.include?(normalized)
+          @response_header[normalized] = val
+        else
+          @response_header[key] = val
+        end
       end
 
       @response_header.http_version = version.join('.')

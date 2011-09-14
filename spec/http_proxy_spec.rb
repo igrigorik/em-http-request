@@ -28,8 +28,8 @@ describe EventMachine::HttpRequest do
           http.response_header.status.should == 200
 
           # The test proxy server gives the requested uri back in this header
-          http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/?q=test'
-          http.response_header['X_THE_REQUESTED_URI'].should_not == '/?q=test'
+          http.response_header['X-The-Requested-URI'].should == 'http://127.0.0.1:8090/?q=test'
+          http.response_header['X-The-Requested-URI'].should_not == '/?q=test'
           http.response.should match('test')
           EventMachine.stop
         }

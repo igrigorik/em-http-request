@@ -687,4 +687,27 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+
+  it 'should not normalize custom headers' do
+    EventMachine.run {
+      response =<<-HTTP.gsub(/^ +/, '').strip
+        HTTP/1.0 200 OK
+        Content-Type: text/plain; charset=iso-8859-1
+        Custom-Header: foo
+        Content-Length: 5
+        Connection: close
+
+        Hello
+      HTTP
+
+      @s       = StubServer.new(response)
+      http     = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header["Custom-Header"].should == "foo"
+        EventMachine.stop
+      }
+    }
+  end
+
 end

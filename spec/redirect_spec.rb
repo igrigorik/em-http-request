@@ -177,7 +177,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header['EM_MIDDLEWARE'].to_i.should == 3
+        http.response_header['EM-Middleware'].to_i.should == 3
         EM.stop
       }
     }
