@@ -52,5 +52,9 @@ module EventMachine
     def location
       self[HttpClient::LOCATION]
     end
+
+    def [](key)
+      super(key) || super(key.upcase.gsub('-','_'))
+    end
   end
 end
