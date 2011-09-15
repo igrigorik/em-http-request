@@ -687,4 +687,34 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+
+  it "should allow indifferent access to headers" do
+    EventMachine.run {
+      response =<<-HTTP.gsub(/^ +/, '').strip
+        HTTP/1.0 200 OK
+        Content-Type: text/plain; charset=utf-8
+        X-Custom-Header: foo
+        Content-Length: 5
+        Connection: close
+
+        Hello
+      HTTP
+
+      @s       = StubServer.new(response)
+      http     = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header["Content-Type"].should == "text/plain; charset=utf-8"
+        http.response_header["CONTENT_TYPE"].should == "text/plain; charset=utf-8"
+
+        http.response_header["Content-Length"].should == "5"
+        http.response_header["CONTENT_LENGTH"].should == "5"
+
+        http.response_header["X-Custom-Header"].should == "foo"
+        http.response_header["X_CUSTOM_HEADER"].should == "foo"
+
+        EventMachine.stop
+      }
+    }
+  end
 end
