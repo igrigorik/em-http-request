@@ -49,7 +49,7 @@ module EventMachine
 
     def activate_connection(client)
       begin
-        EventMachine.connect(@connopts.host, @connopts.port, HttpStubConnection) do |conn|
+        EventMachine.bind_connect(@connopts.bind, @connopts.bind_port, @connopts.host, @connopts.port, HttpStubConnection) do |conn|
           post_init
 
           @deferred = false
