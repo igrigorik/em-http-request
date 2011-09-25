@@ -559,7 +559,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header.cookie.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        http.response_header.cookie.should == "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
         EventMachine.stop
       }
     }
@@ -573,7 +573,7 @@ describe EventMachine::HttpRequest do
       http.callback {
         http.response_header.status.should == 200
         http.response_header.cookie.size.should == 2
-        http.response_header.cookie.first.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        http.response_header.cookie.first.should == "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
         http.response_header.cookie.last.should == "id=2;"
 
         EventMachine.stop

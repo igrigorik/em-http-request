@@ -40,6 +40,58 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should not forward cookies across domains with http redirect" do
+
+    expires  = (Date.today + 1).strftime('%a, %d %b %Y %T GMT')
+    response =<<-HTTP.gsub(/^ +/, '')
+      HTTP/1.1 301 MOVED PERMANENTLY
+      Location: http://localhost:8081/
+      Set-Cookie: foo=bar; expires=#{expires}; path=/; HttpOnly
+
+    HTTP
+
+    EventMachine.run do
+      @stub = StubServer.new(response: response, port: 8080)
+      @echo = StubServer.new(host: 'localhost',  port: 8081, echo: true)
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
+
+      http.errback  { failed(http) }
+      http.callback do
+        http.response.should_not match(/Cookie/)
+        @stub.stop
+        @echo.stop
+        EM.stop
+      end
+    end
+  end
+
+  it "should forward valid cookies across domains with http redirect" do
+
+    expires  = (Date.today + 1).strftime('%a, %d %b %Y %T GMT')
+    response =<<-HTTP.gsub(/^ +/, '')
+      HTTP/1.1 301 MOVED PERMANENTLY
+      Location: http://127.0.0.1:8081/
+      Set-Cookie: foo=bar; expires=#{expires}; path=/; HttpOnly
+
+    HTTP
+
+    EventMachine.run do
+      @stub = StubServer.new(port: 8080, response: response)
+      @echo = StubServer.new(port: 8081, echo: true)
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
+
+      http.errback  { failed(http) }
+      http.callback do
+        http.response.should match(/Cookie/)
+        @stub.stop
+        @echo.stop
+        EM.stop
+      end
+    end
+  end
+
   it "should redirect with missing content-length" do
     EventMachine.run {
       @s = StubServer.new("HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8090/redirect\r\n\r\n")
@@ -144,7 +196,7 @@ describe EventMachine::HttpRequest do
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2
         http.cookies.should include("id=2;")
-        http.cookies.should include("another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;")
+        http.cookies.should include("another_id=1")
 
         EM.stop
       }
@@ -162,7 +214,7 @@ describe EventMachine::HttpRequest do
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2
         http.cookies.should include("id=2;")
-        http.cookies.should_not include("another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;")
+        http.cookies.should_not include("another_id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;")
 
         EM.stop
       }
