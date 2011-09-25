@@ -51,8 +51,8 @@ describe EventMachine::HttpRequest do
     HTTP
 
     EventMachine.run do
-      @stub = StubServer.new(response: response, port: 8080)
-      @echo = StubServer.new(host: 'localhost',  port: 8081, echo: true)
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8080, :response => response)
+      @echo = StubServer.new(:host => 'localhost', :port => 8081, :echo     => true)
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
 
@@ -77,8 +77,8 @@ describe EventMachine::HttpRequest do
     HTTP
 
     EventMachine.run do
-      @stub = StubServer.new(port: 8080, response: response)
-      @echo = StubServer.new(port: 8081, echo: true)
+      @stub = StubServer.new(:port => 8080, :response => response)
+      @echo = StubServer.new(:port => 8081, :echo     => true)
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
 
