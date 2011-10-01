@@ -1,4 +1,7 @@
+require 'cookiejar'
+
 module EventMachine
+
 
   class HttpClient
     include Deferrable
@@ -25,9 +28,10 @@ module EventMachine
       @conn = conn
       @req  = options
 
-      @stream = nil
-      @headers = nil
-      @cookies = []
+      @stream    = nil
+      @headers   = nil
+      @cookies   = []
+      @cookiejar = CookieJar.new
 
       reset!
     end
@@ -93,6 +97,9 @@ module EventMachine
             # follow the location header
             if redirect?
               @req.followed += 1
+
+              @cookies.clear
+              @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
               @req.set_uri(@response_header.location)
               @conn.redirect(self)
             else
@@ -221,7 +228,9 @@ module EventMachine
       end
 
       # add set-cookie's to cookie list
-      @cookies << @response_header.cookie if @response_header.cookie && @req.pass_cookies
+      if @response_header.cookie && @req.pass_cookies
+        [@response_header.cookie].flatten.each {|cookie| @cookiejar.set(cookie, @req.uri)}
+      end
 
       # correct location header - some servers will incorrectly give a relative URI
       if @response_header.location
@@ -274,5 +283,19 @@ module EventMachine
       end
     end
 
+    class CookieJar
+      def initialize
+        @jar = ::CookieJar::Jar.new
+      end
+
+      def set string, uri
+        @jar.set_cookie(uri, string) rescue nil # drop invalid cookies
+      end
+
+      def get uri
+        uri = URI.parse(uri) rescue nil
+        uri ? @jar.get_cookies(uri) : []
+      end
+    end # CookieJar
   end
 end

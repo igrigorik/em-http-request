@@ -106,12 +106,12 @@ Stallion.saddle :spec do |stable|
       end
 
     elsif stable.request.path_info == '/set_cookie'
-      stable.response["Set-Cookie"] = "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+      stable.response["Set-Cookie"] = "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
       stable.response.write "cookie set"
 
     elsif stable.request.path_info == '/set_multiple_cookies'
       stable.response["Set-Cookie"] = [
-        "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;",
+        "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;",
         "id=2;"
       ]
       stable.response.write "cookies set"
@@ -134,7 +134,7 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.path_info == '/redirect/multiple-with-cookie'
       stable.response.status = 301
-      stable.response["Set-Cookie"] = "another_id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+      stable.response["Set-Cookie"] = "another_id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
       stable.response["Location"] = "/redirect"
       stable.response.write 'redirect'
 

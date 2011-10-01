@@ -432,7 +432,7 @@ describe EventMachine::HttpRequest do
           http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
-            http.content_charset.should == Encoding.find('utf-8')
+            http.content_charset.should == Encoding.find('utf-8') if defined? Encoding
             http.response_header["CONTENT_TYPE"].should == ct
             EventMachine.stop
           }
@@ -448,7 +448,7 @@ describe EventMachine::HttpRequest do
           http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
-            http.content_charset.should == Encoding.find('utf-8')
+            http.content_charset.should == Encoding.find('utf-8') if defined? Encoding
             http.response_header["CONTENT_TYPE"].should == ct
             EventMachine.stop
           }
@@ -464,7 +464,7 @@ describe EventMachine::HttpRequest do
           http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
-            http.content_charset.should == Encoding.find('ISO-8859-4')
+            http.content_charset.should == Encoding.find('ISO-8859-4') if defined? Encoding
             http.response_header["CONTENT_TYPE"].should == ct
             EventMachine.stop
           }
@@ -559,7 +559,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header.cookie.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        http.response_header.cookie.should == "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
         EventMachine.stop
       }
     }
@@ -573,7 +573,7 @@ describe EventMachine::HttpRequest do
       http.callback {
         http.response_header.status.should == 200
         http.response_header.cookie.size.should == 2
-        http.response_header.cookie.first.should == "id=1; expires=Tue, 09-Aug-2011 17:53:39 GMT; path=/;"
+        http.response_header.cookie.first.should == "id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
         http.response_header.cookie.last.should == "id=2;"
 
         EventMachine.stop
@@ -682,7 +682,7 @@ describe EventMachine::HttpRequest do
       http     = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
       http.errback { failed(http) }
       http.callback {
-        http.content_charset.should == Encoding::ISO_8859_1
+        http.content_charset.should == Encoding::ISO_8859_1 if defined? Encoding
         EventMachine.stop
       }
     }

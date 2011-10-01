@@ -1,8 +1,22 @@
 class StubServer
   module Server
     def receive_data(data)
-      send_data @response
+      if echo?
+        send_data("HTTP/1.0 200 OK\r\nContent-Length: #{data.bytesize}\r\nContent-Type: text/plain\r\n\r\n")
+        send_data(data)
+      else
+        send_data @response
+      end
+
       close_connection_after_writing
+    end
+
+    def echo= flag
+      @echo = flag
+    end
+
+    def echo?
+      !!@echo
     end
 
     def response=(response)
@@ -10,10 +24,16 @@ class StubServer
     end
   end
 
-  def initialize(response, port=8081)
-    @sig = EventMachine::start_server("127.0.0.1", port, Server) { |s|
-      s.response = response
-    }
+  def initialize options = {}
+    options = {:response => options} if options.kind_of?(String)
+    options = {:port     => 8081, :host => '127.0.0.1'}.merge(options)
+
+    host = options[:host]
+    port = options[:port]
+    @sig = EventMachine::start_server(host, port, Server) do |server|
+      server.response = options[:response]
+      server.echo     = options[:echo]
+    end
   end
 
   def stop

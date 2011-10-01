@@ -13,7 +13,8 @@ describe EventMachine::HttpEncoding do
 
   it "should transform a very complex hash into HTTP POST Params" do
     params = form_encode_body({:a => "a", :b => [{:c => "c", :d => "d"}, {:e => "e", :f => "f"}]})
-    params.should == "a=a&b[0][c]=c&b[0][d]=d&b[1][e]=e&b[1][f]=f"
+    # 1.8.7 does not have ordered hashes.
+    params.split(/&/).sort.join('&').should == "a=a&b[0][c]=c&b[0][d]=d&b[1][e]=e&b[1][f]=f"
   end
 
   it "should escape values" do
