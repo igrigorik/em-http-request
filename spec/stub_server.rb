@@ -25,10 +25,12 @@ class StubServer
   end
 
   def initialize options = {}
-    options = {response: options} if options.kind_of?(String)
-    options = {port: 8081, host: '127.0.0.1'}.merge(options)
+    options = {:response => options} if options.kind_of?(String)
+    options = {:port     => 8081, :host => '127.0.0.1'}.merge(options)
 
-    @sig = EventMachine::start_server(*options.values_at(:host, :port), Server) do |server|
+    host = options[:host]
+    port = options[:port]
+    @sig = EventMachine::start_server(host, port, Server) do |server|
       server.response = options[:response]
       server.echo     = options[:echo]
     end

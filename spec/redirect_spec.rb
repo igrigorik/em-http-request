@@ -15,7 +15,7 @@ end
 
 class PickyRedirectMiddleware < RedirectMiddleware
   def response(r)
-    if r.redirect? && r.response_header['LOCATION'][-1] == '3'
+    if r.redirect? && r.response_header['LOCATION'][-1].chr == '3'
       # set redirects to 0 to avoid further processing
       r.req.redirects = 0
     end
