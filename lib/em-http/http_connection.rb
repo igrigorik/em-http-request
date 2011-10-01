@@ -106,6 +106,7 @@ module EventMachine
       @p.header_value_type = :mixed
       @p.on_headers_complete = proc do |h|
         client.parse_response_header(h, @p.http_version, @p.status_code)
+        :reset if client.req.no_body?
       end
 
       @p.on_body = proc do |b|
@@ -187,8 +188,8 @@ module EventMachine
 
     private
 
-    def client
-      @clients.first
-    end
+      def client
+        @clients.first
+      end
   end
 end

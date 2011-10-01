@@ -28,6 +28,7 @@ class HttpClientOptions
   def follow_redirect?; @followed < @redirects; end
   def http_proxy?; @proxy && [nil, :http].include?(@proxy[:type]); end
   def ssl?; @uri.scheme == "https" || @uri.port == 443; end
+  def no_body?; @method == "HEAD"; end
 
   def set_uri(uri)
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)

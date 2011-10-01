@@ -23,7 +23,7 @@ requires_connection do
           stop.call
         }
 
-        pipe2.errback { p pipe2; failed(conn) }
+        pipe2.errback { failed(conn) }
         pipe2.callback {
           processed += 1
           pipe2.response_header.status.should == 200
@@ -32,6 +32,34 @@ requires_connection do
         }
 
       end
+    end
+
+    it "should perform successful pipelined HEAD requests" do
+      EventMachine.run do
+        conn = EventMachine::HttpRequest.new('http://www.igvita.com/')
+
+        pipe1 = conn.head :keepalive => true
+        pipe2 = conn.head :path => '/about/', :keepalive => true
+
+        processed = 0
+        stop = proc { EM.stop if processed == 2}
+
+        pipe1.errback { failed(conn) }
+        pipe1.callback {
+          processed += 1
+          pipe1.response_header.status.should == 200
+          stop.call
+        }
+
+        pipe2.errback { failed(conn) }
+        pipe2.callback {
+          processed += 1
+          pipe2.response_header.status.should == 200
+          stop.call
+        }
+
+      end
+
     end
   end
 
