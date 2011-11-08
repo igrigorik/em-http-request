@@ -214,6 +214,20 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+  
+  it "should set content-length to 0 on posts with empty bodies" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_content_length_from_header').post
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+
+        http.response.strip.split(':')[1].should == '0'
+        EventMachine.stop
+      }
+    }
+  end
 
   it "should perform successful POST with Ruby Hash/Array as params and with the correct content length" do
     EventMachine.run {
