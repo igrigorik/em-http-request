@@ -167,10 +167,11 @@ module EventMachine
       # Set the Content-Length if file is given
       head['content-length'] = File.size(file) if file
 
-      # Set the Content-Length if body is given, or we're doing an empty post
+      # Set the Content-Length if body is given,
+      # or we're doing an empty post or put
       if body
         head['content-length'] = body.bytesize 
-      elsif @req.method == 'POST'
+      elsif @req.method == 'POST' or @req.method == 'PUT'
         # wont happen if body is set and we already set content-length above
         head['content-length'] = 0
       end
