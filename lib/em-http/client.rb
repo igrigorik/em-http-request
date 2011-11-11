@@ -136,25 +136,25 @@ module EventMachine
       proxy   = @req.proxy
 
       if @req.http_proxy?
-        head['proxy-authorization'] = @req.proxy[:authorization] if @req.proxy[:authorization]
+        head['Proxy-Authorization'] = @req.proxy[:authorization] if @req.proxy[:authorization]
       end
 
       # Set the cookie header if provided
-      if cookie = head['cookie']
+      if cookie = head['Cookie']
         @cookies << encode_cookie(cookie) if cookie
       end
-      head['cookie'] = @cookies.compact.uniq.join("; ").squeeze(";") unless @cookies.empty?
+      head['Cookie'] = @cookies.compact.uniq.join("; ").squeeze(";") unless @cookies.empty?
 
       # Set connection close unless keepalive
       if !@req.keepalive
-        head['connection'] = 'close'
+        head['Connection'] = 'close'
       end
 
       # Set the Host header if it hasn't been specified already
-      head['host'] ||= encode_host
+      head['Host'] ||= encode_host
 
       # Set the User-Agent if it hasn't been specified
-      head['user-agent'] ||= "EventMachine HttpClient"
+      head['User-Agent'] ||= "EventMachine HttpClient"
 
       head
     end
@@ -165,14 +165,14 @@ module EventMachine
       query   = @req.query
 
       # Set the Content-Length if file is given
-      head['content-length'] = File.size(file) if file
+      head['Content-Length'] = File.size(file) if file
 
       # Set the Content-Length if body is given
-      head['content-length'] =  body.bytesize if body
+      head['Content-Length'] =  body.bytesize if body
 
       # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and @req.body.is_a? Hash
-        head['content-type'] = 'application/x-www-form-urlencoded'
+      if not head['Content-Type'] and @req.body.is_a? Hash
+        head['Content-Type'] = 'application/x-www-form-urlencoded'
       end
 
       request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts.proxy)
