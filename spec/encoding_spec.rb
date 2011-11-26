@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 require 'helper'
 
 describe EventMachine::HttpEncoding do
@@ -30,6 +32,12 @@ describe EventMachine::HttpEncoding do
   it "should escape keys and values" do
     params = form_encode_body({'bad&str'=> {'key&key' => ['bad+&stuff', '[test]']}})
     params.should == "bad%26str[key%26key][0]=bad%2B%26stuff&bad%26str[key%26key][1]=%5Btest%5D"
+  end
+
+  it "should not issue warnings on non-ASCII encodings" do
+    # I don't know how to check for ruby warnings.
+    params = escape('valö') 
+    params = escape('valö'.encode('ISO-8859-15'))
   end
 
   # xit "should be fast on long string escapes" do
