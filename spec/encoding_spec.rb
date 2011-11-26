@@ -36,7 +36,7 @@ describe EventMachine::HttpEncoding do
 
   it "should not issue warnings on non-ASCII encodings" do
     # I don't know how to check for ruby warnings.
-    params = escape('valö') 
+    params = escape('valö')
     params = escape('valö'.encode('ISO-8859-15'))
   end
 

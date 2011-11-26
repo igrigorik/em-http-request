@@ -17,7 +17,7 @@ module EventMachine
       if defined?(EscapeUtils)
         EscapeUtils.unescape_url(s.to_s)
       else
-        s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/n) {
+        s.tr('+', ' ').gsub(/((?:%[0-9a-fA-F]{2})+)/) {
           [$1.delete('%')].pack('H*')
         }
       end
