@@ -7,7 +7,7 @@ module EventMachine
       if defined?(EscapeUtils)
         EscapeUtils.escape_url(s.to_s)
       else
-        s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/n) {
+        s.to_s.gsub(/([^a-zA-Z0-9_.-]+)/) {
           '%'+$1.unpack('H2'*bytesize($1)).join('%').upcase
         }
       end
