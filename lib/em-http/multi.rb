@@ -29,12 +29,14 @@ module EventMachine
     attr_reader :requests, :responses
 
     def initialize
-      @requests  = []
+      @requests  = {}
       @responses = {:callback => {}, :errback => {}}
     end
 
     def add(name, conn)
-      @requests.push(conn)
+      raise 'Duplicate Multi key' if @requests.key? name
+
+      @requests[name] = conn
 
       conn.callback { @responses[:callback][name] = conn; check_progress }
       conn.errback  { @responses[:errback][name]  = conn; check_progress }

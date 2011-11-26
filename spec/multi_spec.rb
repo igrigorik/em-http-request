@@ -27,6 +27,14 @@ describe EventMachine::MultiRequest do
     }
   end
 
+  it "should require unique keys for each deferrable" do
+    lambda do
+      multi.add :df1, EM::DefaultDeferrable.new
+      multi.add :df1, EM::DefaultDeferrable.new
+    end.should raise_error("Duplicate Multi key")
+  end
+
+
   describe "#requests" do
     it "should return the added requests" do
       request1 = stub('request1', :callback => nil, :errback => nil)
@@ -35,7 +43,7 @@ describe EventMachine::MultiRequest do
       multi.add :a, request1
       multi.add :b, request2
 
-      multi.requests.should == [ request1, request2 ]
+      multi.requests.should == {:a => request1, :b => request2}
     end
   end
 
