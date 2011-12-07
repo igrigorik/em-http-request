@@ -64,9 +64,13 @@ module EventMachine
       rescue EventMachine::ConnectionError => e
         #
         # Currently, this can only fire on initial connection setup
-        # since #connect is a synchronous method. Hence, rescue the
-        # exception, and return a failed deferred which will immediately
-        # fail any client request.
+        # since #connect is a synchronous method. Hence, rescue the exception,
+        # and return a failed deferred which fail any client request at next
+        # tick.  We fail at next tick to keep a consistent API when the newly
+        # created HttpClient is failed. This approach has the advantage to
+        # remove a state check of @deferred_status after creating a new
+        # HttpRequest. The drawback is that users may setup a callback which we
+        # know won't be used.
         #
         # Once there is async-DNS, then we'll iterate over the outstanding
         # client requests and fail them in order.
@@ -74,7 +78,7 @@ module EventMachine
         # Net outcome: failed connection will invoke the same ConnectionError
         # message on the connection deferred, and on the client deferred.
         #
-        client.close(e.message)
+        EM.next_tick{client.close(e.message)}
       end
     end
 
