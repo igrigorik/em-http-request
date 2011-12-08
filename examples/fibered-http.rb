@@ -33,6 +33,10 @@ EventMachine.run do
     puts "Setting up HTTP request #2"
     data = async_fetch('http://www.yahoo.com/')
     puts "Fetched page #2: #{data.response_header.status}"
+    
+    puts "Setting up HTTP request #3"
+    data = async_fetch('http://non-existing.domain/')
+    puts "Fetched page #3: #{data.response_header.status}"
 
     EventMachine.stop
   }.resume
