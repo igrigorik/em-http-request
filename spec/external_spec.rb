@@ -80,6 +80,7 @@ requires_connection do
     end
 
     it "should detect deflate encoding" do
+      pending "need an endpoint which supports deflate.. MSN is no longer"
       EventMachine.run {
 
         options = {:head => {"accept-encoding" => "deflate"}, :redirects => 5}
