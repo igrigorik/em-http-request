@@ -14,7 +14,7 @@ requires_connection do
           http.errback { failed(http) }
           http.callback {
             http.response_header.status.should == 200
-            http.response.should match('72.52.131')
+            http.response.should match('173.230.151.99')
             EventMachine.stop
           }
         }
