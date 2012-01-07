@@ -11,7 +11,7 @@ requires_connection do
         conn = EventMachine::HttpRequest.new('http://www.igvita.com/')
 
         pipe1 = conn.get :keepalive => true
-        pipe2 = conn.get :path => '/about/', :keepalive => true
+        pipe2 = conn.get :path => '/archives/', :keepalive => true
 
         processed = 0
         stop = proc { EM.stop if processed == 2}
@@ -27,7 +27,7 @@ requires_connection do
         pipe2.callback {
           processed += 1
           pipe2.response_header.status.should == 200
-          pipe2.response.should match(/ilya/i)
+          pipe2.response.should match(/2011/i)
           stop.call
         }
 
@@ -39,7 +39,7 @@ requires_connection do
         conn = EventMachine::HttpRequest.new('http://www.igvita.com/')
 
         pipe1 = conn.head :keepalive => true
-        pipe2 = conn.head :path => '/about/', :keepalive => true
+        pipe2 = conn.head :path => '/archives/', :keepalive => true
 
         processed = 0
         stop = proc { EM.stop if processed == 2}
