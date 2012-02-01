@@ -173,7 +173,13 @@ module EventMachine
 
         begin
           @conn.set_deferred_status :unknown
-          @conn.reconnect(r.req.host, r.req.port)
+
+          if @connopts.proxy
+            @conn.reconnect(@connopts.host, @connopts.port)
+          else
+            @conn.reconnect(r.req.host, r.req.port)
+          end
+
           @conn.callback { r.connection_completed }
         rescue EventMachine::ConnectionError => e
           @clients.pop.close(e.message)

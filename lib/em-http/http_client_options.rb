@@ -12,7 +12,6 @@ class HttpClientOptions
 
     @method   = method.to_s.upcase
     @headers  = options[:head]  || {}
-    @proxy    = options[:proxy] || {}
     @query    = options[:query]
     @path     = options[:path]
 
@@ -45,13 +44,8 @@ class HttpClientOptions
       @uri.port ||= 80
     end
 
-    if !@proxy.empty?
-      @host = @proxy[:host]
-      @port = @proxy[:port]
-    else
-      @host = @uri.host
-      @port = @uri.port
-    end
+    @host = @uri.host
+    @port = @uri.port
 
   end
 end

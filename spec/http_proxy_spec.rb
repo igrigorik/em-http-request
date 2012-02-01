@@ -48,6 +48,27 @@ describe EventMachine::HttpRequest do
         }
       }
     end
+
+    it "should use HTTP proxy while redirecting" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect', proxy).get :redirects => 1
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+
+          http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/gzip'
+          http.response_header['X_THE_REQUESTED_URI'].should_not == '/redirect'
+
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == "compressed"
+          http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+          http.redirects.should == 1
+
+          EventMachine.stop
+        }
+      }
+    end
   end
 
 end
