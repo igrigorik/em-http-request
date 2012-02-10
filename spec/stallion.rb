@@ -194,19 +194,16 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 
-    elsif stable.request.env["HTTP_AUTHORIZATION"]
-      if stable.request.path_info == '/auth'
+    elsif stable.request.path_info == '/auth' && stable.request.env["HTTP_AUTHORIZATION"]
+      stable.response.status = 200
+      stable.response.write stable.request.env["HTTP_AUTHORIZATION"]
+    elsif stable.request.path_info == '/authtest'
+      auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).split.join
+      if auth == stable.request.env["HTTP_AUTHORIZATION"]
         stable.response.status = 200
-        stable.response.write stable.request.env["HTTP_AUTHORIZATION"]
+        stable.response.write 'success'
       else
-        auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).split.join
-
-        if auth == stable.request.env["HTTP_AUTHORIZATION"]
-          stable.response.status = 200
-          stable.response.write 'success'
-        else
-          stable.response.status = 401
-        end
+        stable.response.status = 401
       end
     elsif stable.request.path_info == '/relative-location'
       stable.response.status = 301
