@@ -184,6 +184,9 @@ module EventMachine
         rescue EventMachine::ConnectionError => e
           @clients.pop.close(e.message)
         end
+      else
+        @conn = nil
+        @deferred = true
       end
     end
     alias :close :unbind
