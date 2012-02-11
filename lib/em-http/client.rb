@@ -155,6 +155,9 @@ module EventMachine
       # Set the User-Agent if it hasn't been specified
       head['user-agent'] ||= "EventMachine HttpClient"
 
+      # Set the auth from the URI if given
+      head['Authorization'] = @req.uri.userinfo.split(/:/, 2) if @req.uri.userinfo
+
       head
     end
 
