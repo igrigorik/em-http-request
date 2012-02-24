@@ -632,6 +632,22 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should get the body without Content-Length" do
+    EventMachine.run {
+      @s = StubServer.new("HTTP/1.1 200 OK\r\n\r\nFoo")
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get
+      http.errback { failed(http) }
+      http.callback {
+        http.response.should match(/Foo/)
+        http.response_header['CONTENT_LENGTH'].should be_nil
+
+        @s.stop
+        EventMachine.stop
+      }
+    }
+  end
+
   context "when talking to a stub HTTP/1.0 server" do
     it "should get the body without Content-Length" do
 
@@ -642,7 +658,7 @@ describe EventMachine::HttpRequest do
         http.errback { failed(http) }
         http.callback {
           http.response.should match(/Foo/)
-          http.response_header['CONTENT_LENGTH'].should_not == 0
+          http.response_header['CONTENT_LENGTH'].should be_nil
 
           @s.stop
           EventMachine.stop
