@@ -42,7 +42,7 @@ describe EventMachine::HttpRequest do
 
   it "should not forward cookies across domains with http redirect" do
 
-    expires  = (Date.today + 1).strftime('%a, %d %b %Y %T GMT')
+    expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
     response =<<-HTTP.gsub(/^ +/, '')
       HTTP/1.1 301 MOVED PERMANENTLY
       Location: http://localhost:8081/
@@ -68,7 +68,7 @@ describe EventMachine::HttpRequest do
 
   it "should forward valid cookies across domains with http redirect" do
 
-    expires  = (Date.today + 1).strftime('%a, %d %b %Y %T GMT')
+    expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
     response =<<-HTTP.gsub(/^ +/, '')
       HTTP/1.1 301 MOVED PERMANENTLY
       Location: http://127.0.0.1:8081/
@@ -77,8 +77,8 @@ describe EventMachine::HttpRequest do
     HTTP
 
     EventMachine.run do
-      @stub = StubServer.new(:port => 8080, :response => response)
-      @echo = StubServer.new(:port => 8081, :echo     => true)
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8080, :response => response)
+      @echo = StubServer.new(:host => '127.0.0.1', :port => 8081, :echo     => true)
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
 
