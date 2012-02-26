@@ -124,6 +124,44 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  # According to RFC 2616 Section 10.3.3 this is the most common implementation
+  # in browsers. It's also how libraries such as HTTParty work
+  it "should use GET method for 302 redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/head/302').head :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.req.method.should == 'GET'
+        EM.stop
+      }
+    }
+  end
+
+  it "should use GET method for 303 redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/head/303').head :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.req.method.should == 'GET'
+        EM.stop
+      }
+    }
+  end
+
+  it "should not change method for 307 redirects" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/head/307').head :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.req.method.should == 'HEAD'
+        EM.stop
+      }
+    }
+  end
+
   it "should report last_effective_url" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get

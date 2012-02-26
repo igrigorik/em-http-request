@@ -100,6 +100,7 @@ module EventMachine
 
               @cookies.clear
               @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
+              @req.set_method('GET') unless @response_header.status == 307
               @req.set_uri(@response_header.location)
               @conn.redirect(self)
             else
