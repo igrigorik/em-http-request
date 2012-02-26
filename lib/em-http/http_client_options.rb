@@ -48,4 +48,8 @@ class HttpClientOptions
     @port = @uri.port
 
   end
+
+  def set_method(method)
+    @method   = method.to_s.upcase
+  end
 end
