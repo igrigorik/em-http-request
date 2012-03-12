@@ -49,9 +49,9 @@ module EventMachine
     def encode_request(method, uri, query, proxy)
       query = encode_query(uri, query)
 
-      # Non CONNECT proxies require that you provide the full request
+      # Some Non CONNECT proxies require that you provide the full request
       # uri in request header, as opposed to a relative path.
-      query = uri.join(query) if proxy
+      query = uri.join(query) if proxy and proxy[:type] != :socks5
 
       HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
