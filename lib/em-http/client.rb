@@ -172,10 +172,10 @@ module EventMachine
       # Set the Content-Length if body is given,
       # or we're doing an empty post or put
       if body
-        head['content-length'] = body.bytesize 
+        head['content-length'] = body.bytesize
       elsif @req.method == 'POST' or @req.method == 'PUT'
         # wont happen if body is set and we already set content-length above
-        head['content-length'] = 0
+        head['content-length'] ||= 0
       end
 
       # Set content-type header if missing and body is a Ruby hash
