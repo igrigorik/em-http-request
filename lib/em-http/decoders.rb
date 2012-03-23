@@ -105,7 +105,6 @@ module EventMachine::HttpDecoders
         @gzip ||= Zlib::GzipReader.new @buf
         @gzip.readline
       end
-      nil
     end
 
     def finalize
