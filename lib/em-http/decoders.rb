@@ -10,7 +10,7 @@ module EventMachine::HttpDecoders
 
   class << self
     def accepted_encodings
-      DECODERS.inject([]) { |r,d| r + d.encoding_names }
+      DECODERS.inject([]) { |r, d| r + d.encoding_names }
     end
 
     def decoder_for_encoding(encoding)
@@ -44,7 +44,7 @@ module EventMachine::HttpDecoders
       decompressed = finalize
       receive_decompressed decompressed
     end
-    
+
     private
 
     def receive_decompressed(decompressed)
@@ -91,28 +91,51 @@ module EventMachine::HttpDecoders
     end
   end
 
-  ##
-  # Oneshot decompressor, due to lack of a streaming Gzip reader
-  # implementation. We may steal code from Zliby to improve this.
-  #
-  # For now, do not put `gzip' or `compressed' in your accept-encoding
-  # header if you expect much data through the :on_response interface.
   class GZip < Base
     def self.encoding_names
       %w(gzip compressed)
     end
 
     def decompress(compressed)
-      @buf ||= ''
-      @buf += compressed
+      @buf ||= LazyStringIO.new
+      @buf << compressed
+
+      # Zlib::GzipReader loads input in 2048 byte chunks
+      if @buf.size > 2048
+        @gzip ||= Zlib::GzipReader.new @buf
+        @gzip.readline
+      end
       nil
     end
 
     def finalize
       begin
-        Zlib::GzipReader.new(StringIO.new(@buf.to_s)).read
+        @gzip ||= Zlib::GzipReader.new @buf
+        @gzip.read
       rescue Zlib::Error
         raise DecoderError
+      end
+    end
+
+    class LazyStringIO
+      def initialize(string="")
+        @stream = string
+      end
+
+      def <<(string)
+        @stream << string
+      end
+
+      def read(length=nil, buffer=nil)
+        buffer ||= ""
+        length ||= 0
+        buffer << @stream[0..(length-1)]
+        @stream = @stream[length..-1]
+        buffer
+      end
+
+      def size
+        @stream.size
       end
     end
   end
