@@ -188,6 +188,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should perform successful PATCH" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').patch :body => "data"
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/data/)
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should escape body on POST" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').post :body => {:stuff => 'string&string'}
