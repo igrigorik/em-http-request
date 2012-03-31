@@ -214,7 +214,7 @@ describe EventMachine::HttpRequest do
       }
     }
   end
-  
+
   it "should set content-length to 0 on posts with empty bodies" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_content_length_from_header').post
@@ -633,6 +633,9 @@ describe EventMachine::HttpRequest do
   end
 
   it "should get the body without Content-Length" do
+    pending "blocked on new http_parser.rb release"
+    # https://github.com/igrigorik/em-http-request/issues/168
+
     EventMachine.run {
       @s = StubServer.new("HTTP/1.1 200 OK\r\n\r\nFoo")
 
