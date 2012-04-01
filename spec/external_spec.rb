@@ -96,6 +96,22 @@ requires_connection do
       }
     end
 
+    it "should detect gzip encoding" do
+      pending "need an endpoint which supports gzip"
+      EventMachine.run {
+        options = {:head => {"accept-encoding" => "gzip"}}
+        http = EventMachine::HttpRequest.new('https://stream.twitter.com/1/statuses/sample.json').get options
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+
+          EventMachine.stop
+        }
+      }
+    end
+
     context "keepalive" do
       it "should default to non-keepalive" do
         EventMachine.run {

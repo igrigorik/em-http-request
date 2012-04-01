@@ -90,7 +90,7 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.path_info == '/echo_content_length_from_header'
       stable.response.write "content-length:#{stable.request.env["CONTENT_LENGTH"]}"
-    
+
     elsif stable.request.head? && stable.request.path_info == '/'
       stable.response.status = 200
 
@@ -178,6 +178,12 @@ Stallion.saddle :spec do |stable|
       gzip.close
 
       stable.response.write io.string
+      stable.response["Content-Encoding"] = "gzip"
+
+    elsif stable.request.path_info == '/gzip-large'
+      contents = File.open(File.dirname(__FILE__) + "/fixtures/gzip-sample.gz", 'r') { |f| f.read }
+
+      stable.response.write contents
       stable.response["Content-Encoding"] = "gzip"
 
     elsif stable.request.path_info == '/deflate'
