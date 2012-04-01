@@ -6,6 +6,7 @@ module EventMachine
     def delete options = {}, &blk;  setup_request(:delete,options, &blk); end
     def put    options = {}, &blk;  setup_request(:put,   options, &blk); end
     def post   options = {}, &blk;  setup_request(:post,  options, &blk); end
+    def patch  options = {}, &blk;  setup_request(:patch, options, &blk); end
   end
 
   class HttpStubConnection < Connection
@@ -184,6 +185,8 @@ module EventMachine
         rescue EventMachine::ConnectionError => e
           @clients.pop.close(e.message)
         end
+      else
+        @conn.close_connection
       end
     end
     alias :close :unbind

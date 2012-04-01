@@ -188,6 +188,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should perform successful PATCH" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').patch :body => "data"
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should match(/data/)
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should escape body on POST" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').post :body => {:stuff => 'string&string'}
@@ -649,6 +662,9 @@ describe EventMachine::HttpRequest do
   end
 
   it "should get the body without Content-Length" do
+    pending "blocked on new http_parser.rb release"
+    # https://github.com/igrigorik/em-http-request/issues/168
+
     EventMachine.run {
       @s = StubServer.new("HTTP/1.1 200 OK\r\n\r\nFoo")
 

@@ -100,7 +100,7 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.put?
       stable.response.write stable.request.body.read
 
-    elsif stable.request.post?
+    elsif stable.request.post? || stable.request.patch?
       if stable.request.path_info == '/echo_content_type'
         stable.response["Content-Type"] = stable.request.env["CONTENT_TYPE"] || 'text/html'
         stable.response.write stable.request.env["CONTENT_TYPE"]
