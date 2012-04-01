@@ -375,18 +375,34 @@ describe EventMachine::HttpRequest do
   it "should detect gzip encoding" do
     EventMachine.run {
 
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {
-      "accept-encoding" => "gzip, compressed"
-    }
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {"accept-encoding" => "gzip, compressed"}
 
-    http.errback { failed(http) }
-    http.callback {
-      http.response_header.status.should == 200
-      http.response_header["CONTENT_ENCODING"].should == "gzip"
-      http.response.should == "compressed"
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == "compressed"
 
-      EventMachine.stop
+        EventMachine.stop
+      }
     }
+  end
+
+  it "should handle gzip responses larger than 2048 bytes" do
+    expected_response = Zlib::GzipReader.open(File.dirname(__FILE__) + "/fixtures/gzip-sample.gz") { |f| f.read }
+
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip-large').get :head => {"accept-encoding" => "gzip, compressed"}
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response.should == expected_response
+
+        EventMachine.stop
+      }
     }
   end
 

@@ -6,3 +6,4 @@ Gemfile.lock
 misc
 gems/
 vendor/
+.idea
