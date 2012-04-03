@@ -388,8 +388,9 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should handle gzip responses larger than 2048 bytes" do
+  it "should stream gzip responses" do
     expected_response = Zlib::GzipReader.open(File.dirname(__FILE__) + "/fixtures/gzip-sample.gz") { |f| f.read }
+    actual_response = ''
 
     EventMachine.run {
 
@@ -399,10 +400,15 @@ describe EventMachine::HttpRequest do
       http.callback {
         http.response_header.status.should == 200
         http.response_header["CONTENT_ENCODING"].should == "gzip"
-        http.response.should == expected_response
+        http.response.should == ''
+
+        actual_response.should == expected_response
 
         EventMachine.stop
       }
+      http.stream do |chunk|
+        actual_response << chunk
+      end
     }
   end
 

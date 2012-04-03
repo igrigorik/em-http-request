@@ -96,19 +96,25 @@ requires_connection do
       }
     end
 
-    it "should detect gzip encoding" do
-      pending "need an endpoint which supports gzip"
+    it "should stream chunked gzipped data" do
       EventMachine.run {
         options = {:head => {"accept-encoding" => "gzip"}}
-        http = EventMachine::HttpRequest.new('https://stream.twitter.com/1/statuses/sample.json').get options
+        # GitHub sends chunked gzip, time for a little Inception ;)
+        http = EventMachine::HttpRequest.new('https://github.com/igrigorik/em-http-request/commits/master').get options
 
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
           http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == ''
 
           EventMachine.stop
         }
+
+        body = ''
+        http.stream do |chunk|
+          body << chunk
+        end
       }
     end
 
