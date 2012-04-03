@@ -180,6 +180,12 @@ Stallion.saddle :spec do |stable|
       stable.response.write io.string
       stable.response["Content-Encoding"] = "gzip"
 
+    elsif stable.request.path_info == '/gzip-large'
+      contents = File.open(File.dirname(__FILE__) + "/fixtures/gzip-sample.gz", 'r') { |f| f.read }
+
+      stable.response.write contents
+      stable.response["Content-Encoding"] = "gzip"
+
     elsif stable.request.path_info == '/deflate'
       deflater = Zlib::Deflate.new(
         Zlib::DEFAULT_COMPRESSION,

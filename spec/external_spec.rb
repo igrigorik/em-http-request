@@ -96,6 +96,28 @@ requires_connection do
       }
     end
 
+    it "should stream chunked gzipped data" do
+      EventMachine.run {
+        options = {:head => {"accept-encoding" => "gzip"}}
+        # GitHub sends chunked gzip, time for a little Inception ;)
+        http = EventMachine::HttpRequest.new('https://github.com/igrigorik/em-http-request/commits/master').get options
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response.should == ''
+
+          EventMachine.stop
+        }
+
+        body = ''
+        http.stream do |chunk|
+          body << chunk
+        end
+      }
+    end
+
     context "keepalive" do
       it "should default to non-keepalive" do
         EventMachine.run {
