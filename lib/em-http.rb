@@ -1,5 +1,9 @@
 require 'eventmachine'
+begin
 require 'em-socksify'
+rescue LoadError
+	# Only need this if using SOCKS
+end
 require 'addressable/uri'
 require 'http/parser'
 

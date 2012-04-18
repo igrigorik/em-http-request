@@ -1,4 +1,8 @@
-require 'cookiejar'
+begin
+  require 'cookiejar'
+rescue LoadError
+  # We only need cookiejar if using cookies
+end
 
 module EventMachine
 
@@ -293,7 +297,9 @@ module EventMachine
 
     class CookieJar
       def initialize
-        @jar = ::CookieJar::Jar.new
+        if defined?(::CookieJar)
+          @jar = ::CookieJar::Jar.new
+        end
       end
 
       def set string, uri
@@ -301,6 +307,7 @@ module EventMachine
       end
 
       def get uri
+        return nil unless @jar
         uri = URI.parse(uri) rescue nil
         uri ? @jar.get_cookies(uri) : []
       end
