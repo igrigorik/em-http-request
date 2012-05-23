@@ -1,5 +1,5 @@
 class HttpClientOptions
-  attr_reader :uri, :method, :host, :port, :proxy
+  attr_reader :uri, :method, :host, :port
   attr_reader :headers, :file, :body, :query, :path
   attr_reader :keepalive, :pass_cookies, :decoding
 
