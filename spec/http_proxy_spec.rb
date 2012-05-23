@@ -35,13 +35,13 @@ describe EventMachine::HttpRequest do
 
     it "should send absolute URIs to the proxy server" do
       EventMachine.run {
-  
+
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/?q=test', proxy).get
 
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-  
+
           # The test proxy server gives the requested uri back in this header
           http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/?q=test'
           http.response_header['X_THE_REQUESTED_URI'].should_not == '/?q=test'
@@ -50,11 +50,11 @@ describe EventMachine::HttpRequest do
         }
       }
     end
-    
+
     it "should include query parameters specified in the options" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/', proxy).get :query => { 'q' => 'test' }
-    
+
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
@@ -63,23 +63,23 @@ describe EventMachine::HttpRequest do
         }
       }
     end
-    
+
     it "should use HTTP proxy while redirecting" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect', proxy).get :redirects => 1
-    
+
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-    
+
           http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/gzip'
           http.response_header['X_THE_REQUESTED_URI'].should_not == '/redirect'
-    
+
           http.response_header["CONTENT_ENCODING"].should == "gzip"
           http.response.should == "compressed"
           http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
           http.redirects.should == 1
-    
+
           EventMachine.stop
         }
       }
