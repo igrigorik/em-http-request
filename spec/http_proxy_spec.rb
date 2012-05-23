@@ -13,6 +13,7 @@ describe EventMachine::HttpRequest do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
+          http.response_header.should_not include("X_PROXY_AUTH")
           http.response.should match('test')
           EventMachine.stop
         }
