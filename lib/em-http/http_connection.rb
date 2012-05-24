@@ -1,12 +1,13 @@
 module EventMachine
 
   module HTTPMethods
-    def get    options = {}, &blk;  setup_request(:get,   options, &blk); end
-    def head   options = {}, &blk;  setup_request(:head,  options, &blk); end
-    def delete options = {}, &blk;  setup_request(:delete,options, &blk); end
-    def put    options = {}, &blk;  setup_request(:put,   options, &blk); end
-    def post   options = {}, &blk;  setup_request(:post,  options, &blk); end
-    def patch  options = {}, &blk;  setup_request(:patch, options, &blk); end
+    def get      options = {}, &blk;  setup_request(:get,     options, &blk); end
+    def head     options = {}, &blk;  setup_request(:head,    options, &blk); end
+    def delete   options = {}, &blk;  setup_request(:delete,  options, &blk); end
+    def put      options = {}, &blk;  setup_request(:put,     options, &blk); end
+    def post     options = {}, &blk;  setup_request(:post,    options, &blk); end
+    def patch    options = {}, &blk;  setup_request(:patch,   options, &blk); end
+    def options  options = {}, &blk;  setup_request(:options, options, &blk); end
   end
 
   class HttpStubConnection < Connection
