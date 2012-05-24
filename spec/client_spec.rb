@@ -747,6 +747,24 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should reconnect if connection was closed between requests" do
+    EventMachine.run {
+      conn = EM::HttpRequest.new('http://127.0.0.1:8090/', :inactivity_timeout => 0.5)
+      req = conn.get :keepalive => true
+
+      req.callback do
+        EM.add_timer(1) do
+          req = conn.get
+
+          req.callback do
+            req.response_header.status.should == 200
+            EventMachine.stop
+          end
+        end
+      end
+    }
+  end
+
   it 'should handle malformed Content-Type header repetitions' do
     EventMachine.run {
       response =<<-HTTP.gsub(/^ +/, '').strip

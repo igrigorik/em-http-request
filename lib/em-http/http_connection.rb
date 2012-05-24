@@ -187,6 +187,7 @@ module EventMachine
           @clients.pop.close(e.message)
         end
       else
+        @deferred = true
         @conn.close_connection
       end
     end
