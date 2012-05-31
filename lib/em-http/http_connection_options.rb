@@ -25,4 +25,6 @@ class HttpConnectionOptions
       @port = uri.port
     end
   end
+
+  def http_proxy?; @proxy && [nil, :http].include?(@proxy[:type]); end
 end
