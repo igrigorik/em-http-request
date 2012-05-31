@@ -133,9 +133,10 @@ module EventMachine
 
     def build_request
       head    = @req.headers ? munge_header_keys(@req.headers) : {}
-
-      if @req.http_proxy?
-        head['proxy-authorization'] = @req.proxy[:authorization] if @req.proxy[:authorization]
+      
+      if @conn.connopts.http_proxy?
+        proxy = @conn.connopts.proxy
+        head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
       end
 
       # Set the cookie header if provided

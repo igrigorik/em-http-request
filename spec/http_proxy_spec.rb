@@ -4,6 +4,7 @@ describe EventMachine::HttpRequest do
 
   context "connections via" do
     let(:proxy) { {:proxy => { :host => '127.0.0.1', :port => 8083 }} }
+    let(:authenticated_proxy) { {:proxy => { :host => '127.0.0.1', :port => 8083, :authorization => ["user", "name"] } } }
 
     it "should use HTTP proxy" do
       EventMachine.run {
@@ -12,6 +13,21 @@ describe EventMachine::HttpRequest do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
+          http.response_header.should_not include("X_PROXY_AUTH")
+          http.response.should match('test')
+          EventMachine.stop
+        }
+      }
+    end
+
+    it "should use HTTP proxy with authentication" do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/proxyauth?q=test', authenticated_proxy).get
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header['X_PROXY_AUTH'].should == "Proxy-Authorization: Basic dXNlcjpuYW1l"
           http.response.should match('test')
           EventMachine.stop
         }

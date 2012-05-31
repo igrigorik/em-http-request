@@ -1,5 +1,5 @@
 class HttpClientOptions
-  attr_reader :uri, :method, :host, :port, :proxy
+  attr_reader :uri, :method, :host, :port
   attr_reader :headers, :file, :body, :query, :path
   attr_reader :keepalive, :pass_cookies, :decoding
 
@@ -25,7 +25,6 @@ class HttpClientOptions
   end
 
   def follow_redirect?; @followed < @redirects; end
-  def http_proxy?; @proxy && [nil, :http].include?(@proxy[:type]); end
   def ssl?; @uri.scheme == "https" || @uri.port == 443; end
   def no_body?; @method == "HEAD"; end
 

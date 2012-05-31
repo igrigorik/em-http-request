@@ -243,6 +243,7 @@ Thread.new do
     end
     parts = request.split("\r\n")
     method, destination, http_version = parts.first.split(' ')
+    proxy = parts.find { |part| part =~ /Proxy-Authorization/ }
     if destination =~ /^http:/
       uri = Addressable::URI.parse(destination)
       absolute_path = uri.path + (uri.query ? "?#{uri.query}" : "")
@@ -259,7 +260,11 @@ Thread.new do
 
       # Take the initial line from the upstream response
       session.write client.gets
-
+      
+      if proxy
+        session.write "X-Proxy-Auth: #{proxy}\r\n"
+      end
+      
       # What (absolute) uri was requested?  Send it back in a header
       session.write "X-The-Requested-URI: #{destination}\r\n"
 
