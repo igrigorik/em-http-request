@@ -11,6 +11,9 @@ module EventMachine
     # The status code (as a string!)
     attr_accessor :http_status
 
+    # Raw headers
+    attr_accessor :raw
+
     # E-Tag
     def etag
       self[HttpClient::ETAG]

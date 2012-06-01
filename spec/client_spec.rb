@@ -356,6 +356,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should return raw headers in a hash" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_headers').get
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response_header.raw['Set-Cookie'].should match('test=yes')
+        http.response_header.raw['X-Forward-Host'].should match('proxy.local')
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should detect deflate encoding" do
     EventMachine.run {
 
