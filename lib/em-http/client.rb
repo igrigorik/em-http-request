@@ -218,6 +218,7 @@ module EventMachine
     end
 
     def parse_response_header(header, version, status)
+      @response_header.raw = header
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
       end

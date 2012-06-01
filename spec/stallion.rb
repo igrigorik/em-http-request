@@ -85,6 +85,11 @@ Stallion.saddle :spec do |stable|
       stable.response["Last-Modified"] = "Fri, 13 Aug 2010 17:31:21 GMT"
       stable.response.write stable.request.query_string
 
+    elsif stable.request.path_info == '/echo_headers'
+      stable.response["Set-Cookie"] = "test=yes"
+      stable.response["X-Forward-Host"] = "proxy.local"
+      stable.response.write stable.request.query_string
+
     elsif stable.request.path_info == '/echo_content_length'
       stable.response.write stable.request.content_length
 
