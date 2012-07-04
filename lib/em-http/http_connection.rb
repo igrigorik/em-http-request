@@ -182,6 +182,8 @@ module EventMachine
             @conn.reconnect(r.req.host, r.req.port)
           end
 
+          @conn.pending_connect_timeout = @connopts.connect_timeout
+          @conn.comm_inactivity_timeout = @connopts.inactivity_timeout
           @conn.callback { r.connection_completed }
         rescue EventMachine::ConnectionError => e
           @clients.pop.close(e.message)

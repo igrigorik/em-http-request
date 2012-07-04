@@ -185,6 +185,21 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should apply timeout settings on redirects" do
+    EventMachine.run {
+      t = Time.now.to_i
+      EventMachine.heartbeat_interval = 0.1
+
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/timeout', :inactivity_timeout => 0.1)
+      http = conn.get :redirects => 1
+      http.callback { failed(http) }
+      http.errback {
+        (Time.now.to_i - t).should <= 1
+        EM.stop
+      }
+    }
+  end
+
   it "should capture and pass cookies on redirect and pass_cookies by default" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/multiple-with-cookie').get :redirects => 2, :head => {'cookie' => 'id=2;'}

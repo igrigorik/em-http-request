@@ -150,6 +150,10 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 301
       stable.response["Location"] = "http://127.0.0.1:8090"
 
+    elsif stable.request.path_info == '/redirect/timeout'
+      stable.response.status = 301
+      stable.response["Location"] = "http://127.0.0.1:8090/timeout"
+
     elsif stable.request.path_info == '/redirect/head'
       stable.response.status = 301
       stable.response["Location"] = "/"
