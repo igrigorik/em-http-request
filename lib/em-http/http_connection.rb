@@ -34,7 +34,10 @@ module EventMachine
 
   class HttpConnection
     include HTTPMethods
-    include Socksify
+
+    if defined?(Socksify)
+      include Socksify
+    end
 
     attr_reader :deferred
     attr_accessor :error, :connopts, :uri, :conn
@@ -149,6 +152,7 @@ module EventMachine
       @peer = @conn.get_peername
 
       if @connopts.proxy && @connopts.proxy[:type] == :socks5
+        raise 'Need to install em-socksify to use socks5 proxy!' unless defined?(Socksify)
         socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
       else
         start
