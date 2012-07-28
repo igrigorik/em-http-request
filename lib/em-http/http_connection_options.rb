@@ -11,7 +11,10 @@ class HttpConnectionOptions
 
     if bind = options[:bind]
       @bind = bind[:host] || '0.0.0.0'
-      @bind_port = bind[:port] || 0
+
+      # Eventmachine will open a UNIX socket if bind :port
+      # is explicitly set to nil
+      @bind_port = bind[:port]
     end
 
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
