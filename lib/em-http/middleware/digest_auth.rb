@@ -5,7 +5,7 @@ module EventMachine
     require 'cgi'
 
     class DigestAuth
-      attr_accessor :auth_digest
+      attr_accessor :auth_digest, :is_digest_auth
 
       def initialize(www_authenticate, opts = {})
         @nonce_count = -1
@@ -14,84 +14,86 @@ module EventMachine
         opts.each {|k, v| @opts[k.to_sym] = v}
         @digest_params = {
             algorithm: 'MD5' # MD5 is the default hashing algorithm
-          }
-          get_params(www_authenticate)
+        }
+        chunks = www_authenticate.split(' ')
+        if (@is_digest_auth = 'Digest' == chunks.shift)
+          get_params(chunks.join(' '))
+        end
       end
 
       def request(client, head, body)
-        head["Authorization"] = build_auth_digest(client.req.method, client.req.uri.path)
+        # Allow HTTP basic auth fallback
+        if @is_digest_auth
+          digest = build_auth_digest(client.req.method, client.req.uri.path, @opts.merge(@digest_params))
+          head['Authorization'] = digest
+        else
+          head['Authorization'] = [@opts[:username], @opts[:password]]
+        end
         [head, body]
       end
 
       def response(resp)
-        # If the server respons with the Authentication-Info header, set the nonce to the new value
-        if (authentication_info = resp.response_header['Authentication-Info'])
-          authentication_info =~ /nextnonce=(\w+)/
-          @digest_params[:nonce] = $1
+        # If the server responds with the Authentication-Info header, set the nonce to the new value
+        if @is_digest_auth && (authentication_info = resp.response_header['Authentication-Info'])
+          authentication_info =~ /nextnonce=(.*?)(,|\z)/
+          @digest_params[:nonce] = $1.chomp('"').reverse.chomp('"').reverse
         end
       end
 
       private
-      def build_auth_digest(method, uri)
+      def build_auth_digest(method, uri, params = {})
         nonce_count = next_nonce
 
-        user = CGI.unescape @opts[:username]
-        password = CGI.unescape @opts[:password]
+        user = CGI.unescape params[:username]
+        password = CGI.unescape params[:password]
 
-        splitted_algorithm = @digest_params[:algorithm].split('-')
-        sess = splitted_algorithm[1]
+        splitted_algorithm = params[:algorithm].split('-')
+        sess = "-sess" if splitted_algorithm[1]
         raw_algorithm = splitted_algorithm[0]
         if %w(MD5 SHA1 SHA2 SHA256 SHA384 SHA512 RMD160).include? raw_algorithm
           algorithm = eval("Digest::#{raw_algorithm}")
         else
-          raise Error, "unknown algorithm: #{raw_algorithm}"
+          raise "Unknown algorithm: #{raw_algorithm}"
         end
-        qop = @digest_params[:qop]
+        qop = params[:qop]
         cnonce = make_cnonce if qop or sess
         a1 = if sess
           [
-            algorithm.hexdigest("#{@opts[:username]}:#{@digest_params[:realm]}:#{@opts[:password]}"),
-            @digest_params[:nonce],
+            algorithm.hexdigest("#{params[:username]}:#{params[:realm]}:#{params[:password]}"),
+            params[:nonce],
             cnonce,
             ].join ':'
         else
-          "#{@opts[:username]}:#{@digest_params[:realm]}:#{@opts[:password]}"
+          "#{params[:username]}:#{params[:realm]}:#{params[:password]}"
         end
         ha1 = algorithm.hexdigest a1
         ha2 = algorithm.hexdigest "#{method}:#{uri}"
 
-        request_digest = [ha1, @digest_params[:nonce]]
+        request_digest = [ha1, params[:nonce]]
         request_digest.push(('%08x' % @nonce_count), cnonce, qop) if qop
         request_digest << ha2
         request_digest = request_digest.join ':'
         header = [
-          "Digest username=\"#{@opts[:username]}\"",
-          "realm=\"#{@digest_params[:realm]}\"",
-          "algorithm=#{raw_algorithm}",
+          "Digest username=\"#{params[:username]}\"",
+          "realm=\"#{params[:realm]}\"",
+          "algorithm=#{raw_algorithm}#{sess}",
           "uri=\"#{uri}\"",
-          "nonce=\"#{@digest_params[:nonce]}\"",
+          "nonce=\"#{params[:nonce]}\"",
           "response=\"#{algorithm.hexdigest(request_digest)[0, 32]}\"",
         ]
-        if @digest_params[:qop]
+        if params[:qop]
           header << "qop=#{qop}"
           header << "nc=#{'%08x' % @nonce_count}"
           header << "cnonce=\"#{cnonce}\""
         end
-        header << "opaque=\"#{@digest_params[:opaque]}\"" if @digest_params.key? :opaque
+        header << "opaque=\"#{params[:opaque]}\"" if params.key? :opaque
         header.join(', ')
       end
 
       # Process the WWW_AUTHENTICATE header to get the authentication parameters
       def get_params(www_authenticate)
-        chunks = www_authenticate.split(' ')
-        method = chunks[0]
-        if method == 'Digest'
-          chunks.shift
-          chunks.each do |chunk|
-            splitted_chunk = chunk.split('=')
-            # [1..-3] is necessary to avoid keeping symbols like \ and = in the value.
-            @digest_params[splitted_chunk[0].to_sym] = splitted_chunk[1][1..-3]
-          end
+        www_authenticate.scan(/(\w+)=(.*?)(,|\z)/).each do |match|
+          @digest_params[match[0].to_sym] = match[1].chomp('"').reverse.chomp('"').reverse
         end
       end
 
