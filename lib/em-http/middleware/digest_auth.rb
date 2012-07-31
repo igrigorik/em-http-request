@@ -24,8 +24,7 @@ module EventMachine
       def request(client, head, body)
         # Allow HTTP basic auth fallback
         if @is_digest_auth
-          digest = build_auth_digest(client.req.method, client.req.uri.path, @opts.merge(@digest_params))
-          head['Authorization'] = digest
+          head['Authorization'] = build_auth_digest(client.req.method, client.req.uri.path, @opts.merge(@digest_params))
         else
           head['Authorization'] = [@opts[:username], @opts[:password]]
         end
@@ -40,8 +39,8 @@ module EventMachine
         end
       end
 
-      private
-      def build_auth_digest(method, uri, params = {})
+      def build_auth_digest(method, uri, params = nil)
+        params = @opts.merge(@digest_params) if !params
         nonce_count = next_nonce
 
         user = CGI.unescape params[:username]
