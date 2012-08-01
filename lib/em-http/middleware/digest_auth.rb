@@ -14,9 +14,8 @@ module EventMachine
         @digest_params = {
             algorithm: 'MD5' # MD5 is the default hashing algorithm
         }
-        chunks = www_authenticate.split(' ')
-        if (@is_digest_auth = 'Digest' == chunks.shift)
-          get_params(chunks.join(' '))
+        if (@is_digest_auth = www_authenticate =~ /^Digest/)
+          get_params(www_authenticate)
         end
       end
 
@@ -33,8 +32,8 @@ module EventMachine
       def response(resp)
         # If the server responds with the Authentication-Info header, set the nonce to the new value
         if @is_digest_auth && (authentication_info = resp.response_header['Authentication-Info'])
-          authentication_info =~ /nextnonce=(.*?)(,|\z)/
-          @digest_params[:nonce] = $1.chomp('"').reverse.chomp('"').reverse
+          authentication_info =~ /nextnonce="?(.*?)"?(,|\z)/
+          @digest_params[:nonce] = $1
         end
       end
 
@@ -90,8 +89,8 @@ module EventMachine
 
       # Process the WWW_AUTHENTICATE header to get the authentication parameters
       def get_params(www_authenticate)
-        www_authenticate.scan(/(\w+)=(.*?)(,|\z)/).each do |match|
-          @digest_params[match[0].to_sym] = match[1].chomp('"').reverse.chomp('"').reverse
+        www_authenticate.scan(/(\w+)="?(.*?)"?(,|\z)/).each do |match|
+          @digest_params[match[0].to_sym] = match[1]
         end
       end
 
