@@ -2,9 +2,10 @@ module EventMachine
   module Middleware
     require 'digest'
     require 'securerandom'
-    require 'cgi'
 
     class DigestAuth
+      include EventMachine::HttpEncoding
+
       attr_accessor :auth_digest, :is_digest_auth
 
       def initialize(www_authenticate, opts = {})
@@ -43,8 +44,8 @@ module EventMachine
         params = @opts.merge(@digest_params) if !params
         nonce_count = next_nonce
 
-        user = CGI.unescape params[:username]
-        password = CGI.unescape params[:password]
+        user = unescape params[:username]
+        password = unescape params[:password]
 
         splitted_algorithm = params[:algorithm].split('-')
         sess = "-sess" if splitted_algorithm[1]
