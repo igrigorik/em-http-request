@@ -10,9 +10,7 @@ module EventMachine
 
       def initialize(www_authenticate, opts = {})
         @nonce_count = -1
-        @opts = {}
-        # Symbolize the opts hash's keys
-        opts.each {|k, v| @opts[k.to_sym] = v}
+        @opts = opts
         @digest_params = {
             algorithm: 'MD5' # MD5 is the default hashing algorithm
         }
