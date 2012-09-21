@@ -453,6 +453,7 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/timeout', :inactivity_timeout => 0.1).get
 
       http.errback {
+        http.error.should == Errno::ETIMEDOUT
         (Time.now.to_i - t).should <= 1
         EventMachine.stop
       }
