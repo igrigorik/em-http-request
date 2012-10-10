@@ -1,7 +1,7 @@
 class HttpClientOptions
   attr_reader :uri, :method, :host, :port
   attr_reader :headers, :file, :body, :query, :path
-  attr_reader :keepalive, :pass_cookies, :decoding
+  attr_reader :keepalive, :pass_cookies, :decoding, :user_agent
 
   attr_accessor :followed, :redirects
 
@@ -20,6 +20,7 @@ class HttpClientOptions
 
     @pass_cookies = options.fetch(:pass_cookies, true)  # pass cookies between redirects
     @decoding     = options.fetch(:decoding, true)      # auto-decode compressed response
+    @user_agent   = options.fetch(:user_agent, "EventMachine HttpClient") # set the user agent (pass nil to omit)
 
     set_uri(uri)
   end
