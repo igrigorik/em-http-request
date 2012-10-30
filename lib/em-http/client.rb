@@ -99,8 +99,10 @@ module EventMachine
               @req.followed += 1
 
               @cookies.clear
-              @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
-              @req.set_uri(@response_header.location)
+              url = URI.parse(@response_header.location)
+              url.path = "/" if url.path.empty?
+              @cookies = @cookiejar.get(url.to_s).map(&:to_s) if @req.pass_cookies
+              @req.set_uri(url.to_s)
               @conn.redirect(self)
             else
               succeed(self)
@@ -133,7 +135,7 @@ module EventMachine
 
     def build_request
       head    = @req.headers ? munge_header_keys(@req.headers) : {}
-      
+
       if @conn.connopts.http_proxy?
         proxy = @conn.connopts.proxy
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]

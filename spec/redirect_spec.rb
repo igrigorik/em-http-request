@@ -92,6 +92,33 @@ describe EventMachine::HttpRequest do
     end
   end
 
+
+  it "should forward valid cookies across domains with http redirect even if Location redirects to slightly different valid URL of same domain" do
+
+    expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
+    response =<<-HTTP.gsub(/^ +/, '')
+      HTTP/1.1 301 MOVED PERMANENTLY
+      Location: http://127.0.0.1:8081?omg=ponies
+      Set-Cookie: foo=bar; expires=#{expires}; path=/; HttpOnly
+
+    HTTP
+
+    EventMachine.run do
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8080, :response => response)
+      @echo = StubServer.new(:host => '127.0.0.1', :port => 8081, :echo     => true)
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
+
+      http.errback  { failed(http) }
+      http.callback do
+        http.response.should match(/Cookie/)
+        @stub.stop
+        @echo.stop
+        EM.stop
+      end
+    end
+  end
+
   it "should redirect with missing content-length" do
     EventMachine.run {
       @s = StubServer.new("HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8090/redirect\r\n\r\n")
