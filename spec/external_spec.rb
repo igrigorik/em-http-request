@@ -17,7 +17,7 @@ requires_connection do
 
     it "should follow redirect to https and initiate the handshake" do
       EventMachine.run {
-        http = EventMachine::HttpRequest.new('http://analytics.postrank.com/').get :redirects => 5
+        http = EventMachine::HttpRequest.new('http://github.com/').get :redirects => 5
 
         http.errback { failed(http) }
         http.callback {
@@ -31,7 +31,7 @@ requires_connection do
       EventMachine.run {
 
         # digg.com uses chunked encoding
-        http = EventMachine::HttpRequest.new('http://digg.com/news').get
+        http = EventMachine::HttpRequest.new('http://www.httpwatch.com/httpgallery/chunked/').get
 
         http.errback { failed(http) }
         http.callback {
