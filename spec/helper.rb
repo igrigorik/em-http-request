@@ -2,6 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'em-http'
+require 'em-http/middleware/oauth2'
 require 'yajl'
 
 require 'stallion'
