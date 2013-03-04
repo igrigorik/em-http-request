@@ -59,5 +59,25 @@ module EventMachine
     def [](key)
       super(key) || super(key.upcase.gsub('-','_'))
     end
+
+    def informational?
+      100 <= status && 200 > status
+    end
+
+    def successful?
+      200 <= status && 300 > status
+    end
+
+    def redirection?
+      300 <= status && 400 > status
+    end
+
+    def client_error?
+      400 <= status && 500 > status
+    end
+
+    def server_error?
+      500 <= status && 600 > status
+    end
   end
 end
