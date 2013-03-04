@@ -140,6 +140,11 @@ Stallion.saddle :spec do |stable|
       stable.response["Location"] = "/gzip"
       stable.response.write 'redirect'
 
+    elsif stable.request.path_info == '/redirect/created'
+      stable.response.status = 201
+      stable.response["Location"] = "/"
+      stable.response.write  'Hello, World!'
+
     elsif stable.request.path_info == '/redirect/multiple-with-cookie'
       stable.response.status = 301
       stable.response["Set-Cookie"] = "another_id=1; expires=Sat, 09 Aug 2031 17:53:39 GMT; path=/;"
