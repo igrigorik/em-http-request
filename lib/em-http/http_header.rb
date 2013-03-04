@@ -25,7 +25,7 @@ module EventMachine
 
     # HTTP response status as an integer
     def status
-      Integer(http_status) rescue 0
+      @status ||= Integer(http_status) rescue 0
     end
 
     # Length of content as an integer, or nil if chunked/unspecified
