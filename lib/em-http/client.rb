@@ -80,7 +80,7 @@ module EventMachine
     end
 
     def redirect?
-      @response_header.location && @req.follow_redirect?
+      @response_header.redirection? && @req.follow_redirect?
     end
 
     def unbind(reason = nil)

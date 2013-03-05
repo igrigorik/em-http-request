@@ -40,6 +40,18 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should not follow redirects on created" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/created').get :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 201
+        http.response.should match(/Hello/)
+        EM.stop
+      }
+    }
+  end
+
   it "should not forward cookies across domains with http redirect" do
 
     expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
