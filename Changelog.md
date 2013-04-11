@@ -1,5 +1,9 @@
 # Changelog
 
+## master
+
+- User-Agent header is now removed if set to nil.
+
 ## 1.0.0.beta.1 / 2011-02-20 - The big rewrite
 
 - Switched parser from Ragel to http_parser.rb
