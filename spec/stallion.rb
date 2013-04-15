@@ -228,6 +228,8 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/relative-location'
       stable.response.status = 301
       stable.response["Location"] = '/forwarded'
+    elsif stable.request.path_info == '/echo-user-agent'
+      stable.response.write stable.request.env["HTTP_USER_AGENT"].inspect
 
     elsif
       stable.response.write  'Hello, World!'
