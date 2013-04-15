@@ -831,4 +831,42 @@ describe EventMachine::HttpRequest do
       }
     }
   end
+
+  context "User-Agent" do
+    it 'should default to "EventMachine HttpClient"' do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo-user-agent').get
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response.should == '"EventMachine HttpClient"'
+          EventMachine.stop
+        }
+      }
+    end
+
+    it 'should keep header if given empty string' do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo-user-agent').get(:head => { 'user-agent'=>'' })
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response.should == '""'
+          EventMachine.stop
+        }
+      }
+    end
+
+    it 'should ommit header if given nil' do
+      EventMachine.run {
+        http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo-user-agent').get(:head => { 'user-agent'=>nil })
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response.should == 'nil'
+          EventMachine.stop
+        }
+      }
+    end
+  end
 end
