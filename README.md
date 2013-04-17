@@ -36,7 +36,7 @@ Several higher-order Ruby projects have incorporated em-http and other Ruby HTTP
 - [EM-Synchrony](https://github.com/igrigorik/em-synchrony) - Collection of convenience classes and primitives to help untangle evented code (Ruby 1.9 + Fibers).
 - [Rack-Client](https://github.com/halorgium/rack-client) - Use Rack API for server, test, and client side. Supports Rack middleware!
     - [Example in action](https://gist.github.com/802391)
-- [Faraday](https://github.com/technoweenie/faraday) - Modular HTTP client library using middleware heavily inspired by Rack.
+- [Faraday](https://github.com/lostisland/faraday) - Modular HTTP client library using middleware heavily inspired by Rack.
     - [Example in action](https://gist.github.com/802395)
 
 ## Testing
