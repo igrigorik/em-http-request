@@ -53,7 +53,8 @@ module Stallion
 
   def self.run(options = {})
     options = {:Host => "127.0.0.1", :Port => 8090}.merge(options)
-    Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
+    pid = fork { Rack::Handler::Thin.run(Rack::Lint.new(self), options) }
+    at_exit { Process.kill("INT", pid) }
   end
 
   def self.call(env)
