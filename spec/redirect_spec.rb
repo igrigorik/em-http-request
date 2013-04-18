@@ -40,6 +40,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should follow location redirects with path and query" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get :path => '/redirect', :query => 'q=1', :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+        http.response_header.status.should == 200
+        http.redirects.should == 1
+
+        EM.stop
+      }
+    }
+  end
+
   it "should not follow redirects on created" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/created').get :redirects => 1

@@ -29,6 +29,7 @@ class HttpClientOptions
   def no_body?; @method == "HEAD"; end
 
   def set_uri(uri)
+    @path = @query = nil if @uri # clear path and query except first time.
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     uri.path = '/' if uri.path.empty?
     uri.path = @path if @path
