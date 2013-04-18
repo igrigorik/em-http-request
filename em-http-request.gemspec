@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "rack"
   s.add_development_dependency "yajl-ruby"
-  s.add_development_dependency "mongrel", "~> 1.2.0.pre2"
+  s.add_development_dependency "thin"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
