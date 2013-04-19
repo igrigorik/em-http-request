@@ -248,6 +248,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should follow location redirects with path" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect').get :path => '/redirect', :redirects => 1
+      http.errback { failed(http) }
+      http.callback {
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
+        http.response_header.status.should == 200
+        http.redirects.should == 1
+
+        EM.stop
+      }
+    }
+  end
+
   it "should call middleware each time it redirects" do
     EventMachine.run {
       conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/middleware_redirects_1')

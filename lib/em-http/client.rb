@@ -133,7 +133,7 @@ module EventMachine
 
     def build_request
       head    = @req.headers ? munge_header_keys(@req.headers) : {}
-      
+
       if @conn.connopts.http_proxy?
         proxy = @conn.connopts.proxy
         head['proxy-authorization'] = proxy[:authorization] if proxy[:authorization]
