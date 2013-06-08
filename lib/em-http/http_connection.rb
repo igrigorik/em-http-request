@@ -35,6 +35,7 @@ module EventMachine
   class HttpConnection
     include HTTPMethods
     include Socksify
+    include Connectify
 
     attr_reader :deferred
     attr_accessor :error, :connopts, :uri, :conn
@@ -150,6 +151,8 @@ module EventMachine
 
       if @connopts.proxy && @connopts.proxy[:type] == :socks5
         socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
+      elsif @connopts.proxy && @connopts.proxy[:type] == :connect
+        connectify(client.req.uri.host, client.req.uri.port) { start }
       else
         start
       end

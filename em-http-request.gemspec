@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency "addressable", ">= 2.2.3"
   s.add_dependency "http_parser.rb", ">= 0.5.3"
   s.add_dependency "em-socksify"
+  s.add_dependency "em-connectify"
   s.add_dependency "cookiejar"
 
   s.add_development_dependency "rspec"
