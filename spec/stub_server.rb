@@ -33,6 +33,7 @@ class StubServer
     @sig = EventMachine::start_server(host, port, Server) do |server|
       server.response = options[:response]
       server.echo     = options[:echo]
+      server.start_tls if options[:https]
     end
   end
 

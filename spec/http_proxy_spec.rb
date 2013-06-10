@@ -85,6 +85,21 @@ describe EventMachine::HttpRequest do
         }
       }
     end
-  end
 
+    it "should connect to the proxy over HTTP even for HTTPS urls" do
+      EventMachine.run {
+        @s = StubServer.new(:host => 'localhost', :port => 8443, :https => true, :response => "HTTP/1.0 200 OK\r\nConnection: close\r\n\r\nFoo")
+        http = EventMachine::HttpRequest.new('https://localhost:8443/', proxy).get
+        http.errback{ failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response_header['X_THE_REQUESTED_URI'].should == 'https://localhost:8443/'
+          http.response.should match('Foo')
+
+          @s.stop
+          EM::stop
+        }
+      }
+    end
+  end
 end

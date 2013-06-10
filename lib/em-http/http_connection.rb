@@ -156,7 +156,7 @@ module EventMachine
     end
 
     def start
-      @conn.start_tls(@connopts.tls) if client && client.req.ssl?
+      @conn.start_tls(@connopts.tls) if client && client.req.ssl? && !@connopts.http_proxy?
       @conn.succeed
     end
 
