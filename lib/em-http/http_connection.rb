@@ -149,9 +149,9 @@ module EventMachine
     def connection_completed
       @peer = @conn.get_peername
 
-      if @connopts.proxy && @connopts.proxy[:type] == :socks5
+      if @connopts.socks_proxy?
         socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
-      elsif @connopts.proxy && @connopts.proxy[:type] == :connect
+      elsif @connopts.connect_proxy?
         connectify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
       else
         start

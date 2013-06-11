@@ -18,7 +18,8 @@ class HttpConnectionOptions
     end
 
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
-    uri.port = (uri.scheme == "https" ? (uri.port || 443) : (uri.port || 80))
+    @https = uri.scheme == "https"
+    uri.port ||= (@https ? 443 : 80)
 
     if proxy = options[:proxy]
       @host = proxy[:host]
@@ -29,5 +30,15 @@ class HttpConnectionOptions
     end
   end
 
-  def http_proxy?; @proxy && [nil, :http].include?(@proxy[:type]); end
+  def http_proxy?
+    @proxy && (@proxy[:type] == :http || @proxy[:type].nil? && !@https)
+  end
+
+  def connect_proxy?
+    @proxy && (@proxy[:type] == :connect || @proxy[:type].nil? && @https)
+  end
+
+  def socks_proxy?
+    @proxy && (@proxy[:type] == :socks5)
+  end
 end
