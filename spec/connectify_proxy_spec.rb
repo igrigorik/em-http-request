@@ -4,12 +4,12 @@ requires_connection do
   requires_port(3128) do
     describe EventMachine::HttpRequest do
 
-      let(:connect_proxy) { {:proxy => { :host => '127.0.0.1', :port => 3128, :type => :connect }} }
-      let(:default_proxy) { {:proxy => { :host => '127.0.0.1', :port => 3128, }} }
+      let(:http_proxy) { {:proxy => { :host => '127.0.0.1', :port => 3128, :type => :http }} }
+      let(:default_proxy) { {:proxy => { :host => '127.0.0.1', :port => 3128 }} }
 
-      it "should use CONNECT proxy when specified" do
+      it "should use CONNECT proxy for HTTPS requests when :http specified" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://jsonip.com/', connect_proxy).get
+          http = EventMachine::HttpRequest.new('https://ipjson.herokuapp.com/', http_proxy).get
 
           http.errback { failed(http) }
           http.callback {
@@ -20,7 +20,7 @@ requires_connection do
         }
       end
 
-      it "should use CONNECT proxy by default for HTTPS requests" do
+      it "should use CONNECT proxy for HTTPS when no type specified" do
         EventMachine.run {
           http = EventMachine::HttpRequest.new('https://ipjson.herokuapp.com/', default_proxy).get
 

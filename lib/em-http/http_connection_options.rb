@@ -31,11 +31,11 @@ class HttpConnectionOptions
   end
 
   def http_proxy?
-    @proxy && (@proxy[:type] == :http || @proxy[:type].nil? && !@https)
+    @proxy && (@proxy[:type] == :http || @proxy[:type].nil?) && !@https
   end
 
   def connect_proxy?
-    @proxy && (@proxy[:type] == :connect || @proxy[:type].nil? && @https)
+    @proxy && (@proxy[:type] == :http || @proxy[:type].nil?) && @https
   end
 
   def socks_proxy?
