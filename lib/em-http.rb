@@ -1,6 +1,5 @@
 require 'eventmachine'
 require 'em-socksify'
-require 'em-connectify'
 require 'addressable/uri'
 require 'http/parser'
 
