@@ -4,6 +4,7 @@
 # #--
 
 require 'rack'
+require 'openssl'
 
 module Stallion
   class Mount
@@ -260,10 +261,16 @@ Thread.new do
     parts = request.split("\r\n")
     method, destination, http_version = parts.first.split(' ')
     proxy = parts.find { |part| part =~ /Proxy-Authorization/ }
-    if destination =~ /^http:/
+    if destination =~ /^https?:/
       uri = Addressable::URI.parse(destination)
       absolute_path = uri.path + (uri.query ? "?#{uri.query}" : "")
-      client = TCPSocket.open(uri.host, uri.port || 80)
+      if uri.scheme == 'https'
+        client = TCPSocket.open(uri.host, uri.port || 443)
+        client = OpenSSL::SSL::SSLSocket.new(client)
+        client.connect
+      else
+        client = TCPSocket.open(uri.host, uri.port || 80)
+      end
 
       client.write "#{method} #{absolute_path} #{http_version}\r\n"
       parts[1..-1].each do |part|
@@ -272,7 +279,7 @@ Thread.new do
 
       client.write "\r\n"
       client.flush
-      client.close_write
+      client.close_write if client.respond_to?(:close_write)
 
       # Take the initial line from the upstream response
       session.write client.gets
