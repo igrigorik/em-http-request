@@ -154,7 +154,7 @@ module EventMachine
       head['host'] ||= encode_host
 
       # Set the User-Agent if it hasn't been specified
-      if not head.key?('user-agent')
+      if !head.key?('user-agent')
         head['user-agent'] = "EventMachine HttpClient"
       elsif head['user-agent'].nil?
         head.delete('user-agent')
@@ -184,7 +184,7 @@ module EventMachine
       end
 
       # Set content-type header if missing and body is a Ruby hash
-      if not head['content-type'] and @req.body.is_a? Hash
+      if !head['content-type'] and @req.body.is_a? Hash
         head['content-type'] = 'application/x-www-form-urlencoded'
       end
 

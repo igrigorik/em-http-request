@@ -121,7 +121,7 @@ module EventMachine
       end
 
       @p.on_message_complete = proc do
-        if not client.continue?
+        if !client.continue?
           c = @clients.shift
           c.state = :finished
           c.on_request_complete
