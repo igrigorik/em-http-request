@@ -683,9 +683,6 @@ describe EventMachine::HttpRequest do
   end
 
   it "should get the body without Content-Length" do
-    pending "blocked on new http_parser.rb release"
-    # https://github.com/igrigorik/em-http-request/issues/168
-
     EventMachine.run {
       @s = StubServer.new("HTTP/1.1 200 OK\r\n\r\nFoo")
 

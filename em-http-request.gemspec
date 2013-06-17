@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "eventmachine", ">= 1.0.0.beta.4"
   s.add_dependency "addressable", ">= 2.2.3"
-  s.add_dependency "http_parser.rb", ">= 0.5.3"
+  s.add_dependency "http_parser.rb", ">= 0.6.0.beta.2"
   s.add_dependency "em-socksify"
   s.add_dependency "cookiejar"
 
