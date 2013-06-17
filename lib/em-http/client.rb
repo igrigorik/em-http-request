@@ -99,18 +99,9 @@ module EventMachine
               @req.followed += 1
 
               @cookies.clear
+              @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
+              @req.set_uri(@response_header.location)
 
-              url = @response_header.location
-
-              begin
-                url = URI.parse(@response_header.location)
-                url.path = "/" if url.path.empty?
-                url = url.to_s
-              rescue
-              end
-
-              @cookies = @cookiejar.get(url).map(&:to_s) if @req.pass_cookies
-              @req.set_uri(url)
               @conn.redirect(self)
             else
               succeed(self)
@@ -260,14 +251,16 @@ module EventMachine
       if @response_header.location
         begin
           location = Addressable::URI.parse(@response_header.location)
+          location.path = "/" if location.path.empty?
 
           if location.relative?
             location = @req.uri.join(location)
-            @response_header[LOCATION] = location.to_s
           else
             # if redirect is to an absolute url, check for correct URI structure
             raise if location.host.nil?
           end
+
+          @response_header[LOCATION] = location.to_s
 
         rescue
           on_error "Location header format error"
