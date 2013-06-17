@@ -3,6 +3,7 @@ module EventMachine
     @middleware = []
 
     def self.new(uri, options={})
+      uri = uri.clone
       connopt = HttpConnectionOptions.new(uri, options)
 
       c = HttpConnection.new
