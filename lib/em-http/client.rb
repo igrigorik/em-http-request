@@ -99,8 +99,18 @@ module EventMachine
               @req.followed += 1
 
               @cookies.clear
-              @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
-              @req.set_uri(@response_header.location)
+
+              url = @response_header.location
+
+              begin
+                url = URI.parse(@response_header.location)
+                url.path = "/" if url.path.empty?
+                url = url.to_s
+              rescue
+              end
+
+              @cookies = @cookiejar.get(url).map(&:to_s) if @req.pass_cookies
+              @req.set_uri(url)
               @conn.redirect(self)
             else
               succeed(self)
