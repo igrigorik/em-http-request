@@ -57,16 +57,16 @@ describe EventMachine::HttpRequest do
     expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
     response =<<-HTTP.gsub(/^ +/, '')
       HTTP/1.1 301 MOVED PERMANENTLY
-      Location: http://localhost:8081/
+      Location: http://localhost:8071/
       Set-Cookie: foo=bar; expires=#{expires}; path=/; HttpOnly
 
     HTTP
 
     EventMachine.run do
-      @stub = StubServer.new(:host => '127.0.0.1', :port => 8080, :response => response)
-      @echo = StubServer.new(:host => 'localhost', :port => 8081, :echo     => true)
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8070, :response => response)
+      @echo = StubServer.new(:host => 'localhost', :port => 8071, :echo     => true)
 
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8070/').get :redirects => 1
 
       http.errback  { failed(http) }
       http.callback do
@@ -83,16 +83,16 @@ describe EventMachine::HttpRequest do
     expires  = (Date.today + 2).strftime('%a, %d %b %Y %T GMT')
     response =<<-HTTP.gsub(/^ +/, '')
       HTTP/1.1 301 MOVED PERMANENTLY
-      Location: http://127.0.0.1:8081/
+      Location: http://127.0.0.1:8071/
       Set-Cookie: foo=bar; expires=#{expires}; path=/; HttpOnly
 
     HTTP
 
     EventMachine.run do
-      @stub = StubServer.new(:host => '127.0.0.1', :port => 8080, :response => response)
-      @echo = StubServer.new(:host => '127.0.0.1', :port => 8081, :echo     => true)
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8070, :response => response)
+      @echo = StubServer.new(:host => '127.0.0.1', :port => 8071, :echo     => true)
 
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8080/').get :redirects => 1
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8070/').get :redirects => 1
 
       http.errback  { failed(http) }
       http.callback do
@@ -106,9 +106,10 @@ describe EventMachine::HttpRequest do
 
   it "should redirect with missing content-length" do
     EventMachine.run {
-      @s = StubServer.new("HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8090/redirect\r\n\r\n")
+      response = "HTTP/1.0 301 MOVED PERMANENTLY\r\nlocation: http://127.0.0.1:8090/redirect\r\n\r\n"
+      @stub = StubServer.new(:host => '127.0.0.1', :port => 8070, :response => response)
 
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/').get :redirects => 3
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8070/').get :redirects => 3
       http.errback { failed(http) }
 
       http.callback {
@@ -118,7 +119,7 @@ describe EventMachine::HttpRequest do
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 3
 
-        @s.stop
+        @stub.stop
         EM.stop
       }
     }
@@ -165,7 +166,7 @@ describe EventMachine::HttpRequest do
 
   it "should not invoke redirect logic on failed(http) connections" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8081/', :connect_timeout => 0.1).get :redirects => 5
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8070/', :connect_timeout => 0.1).get :redirects => 5
       http.callback { failed(http) }
       http.errback {
         http.redirects.should == 0
