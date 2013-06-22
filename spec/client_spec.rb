@@ -761,17 +761,36 @@ describe EventMachine::HttpRequest do
 
   it "should reconnect if connection was closed between requests" do
     EventMachine.run {
-      conn = EM::HttpRequest.new('http://127.0.0.1:8090/', :inactivity_timeout => 0.5)
+      conn = EM::HttpRequest.new('http://127.0.0.1:8090/')
+      req = conn.get
+
+      req.callback do
+        conn.close('client closing connection')
+
+        EM.next_tick do
+          req = conn.get :path => "/gzip"
+          req.callback do
+            req.response_header.status.should == 200
+            req.response.should match('compressed')
+            EventMachine.stop
+          end
+        end
+      end
+    }
+  end
+
+  it "should report error if connection was closed by server on client keepalive requests" do
+    EventMachine.run {
+      conn = EM::HttpRequest.new('http://127.0.0.1:8090/')
       req = conn.get :keepalive => true
 
       req.callback do
-        EM.add_timer(1) do
-          req = conn.get
+        req = conn.get
 
-          req.callback do
-            req.response_header.status.should == 200
-            EventMachine.stop
-          end
+        req.callback { failed(http) }
+        req.errback do
+          req.error.should match('connection closed by server')
+          EventMachine.stop
         end
       end
     }

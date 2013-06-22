@@ -52,7 +52,9 @@ module EventMachine
 
     def activate_connection(client)
       begin
-        EventMachine.bind_connect(@connopts.bind, @connopts.bind_port, @connopts.host, @connopts.port, HttpStubConnection) do |conn|
+        EventMachine.bind_connect(@connopts.bind, @connopts.bind_port,
+                                  @connopts.host, @connopts.port,
+                                  HttpStubConnection) do |conn|
           post_init
 
           @deferred = false
@@ -167,7 +169,7 @@ module EventMachine
       @pending.push client
     end
 
-    def unbind(reason)
+    def unbind(reason = nil)
       @clients.map { |c| c.unbind(reason) }
 
       if r = @pending.shift

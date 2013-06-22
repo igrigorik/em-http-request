@@ -115,7 +115,7 @@ module EventMachine
         end
 
       else
-        on_error(reason)
+        on_error(reason || 'connection closed by server')
       end
     end
 
