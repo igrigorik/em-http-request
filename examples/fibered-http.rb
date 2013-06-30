@@ -27,13 +27,13 @@ EventMachine.run do
   Fiber.new{
 
     puts "Setting up HTTP request #1"
-    data = async_fetch('http://0.0.0.0/')    
+    data = async_fetch('http://0.0.0.0/')
     puts "Fetched page #1: #{data.response_header.status}"
 
     puts "Setting up HTTP request #2"
     data = async_fetch('http://www.yahoo.com/')
     puts "Fetched page #2: #{data.response_header.status}"
-    
+
     puts "Setting up HTTP request #3"
     data = async_fetch('http://non-existing.domain/')
     puts "Fetched page #3: #{data.response_header.status}"
