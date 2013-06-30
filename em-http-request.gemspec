@@ -14,17 +14,17 @@ Gem::Specification.new do |s|
   s.description = s.summary
   s.rubyforge_project = "em-http-request"
 
-  s.add_dependency "eventmachine", ">= 1.0.3"
   s.add_dependency "addressable", ">= 2.3.4"
-  s.add_dependency "http_parser.rb", ">= 0.6.0.beta.2"
-  s.add_dependency "em-socksify", ">= 0.3"
   s.add_dependency "cookiejar"
+  s.add_dependency "em-socksify", ">= 0.3"
+  s.add_dependency "eventmachine", ">= 1.0.3"
+  s.add_dependency "http_parser.rb", ">= 0.6.0.beta.2"
 
-  s.add_development_dependency "rspec"
-  s.add_development_dependency "rake"
-  s.add_development_dependency "rack"
-  s.add_development_dependency "yajl-ruby"
   s.add_development_dependency "mongrel", "~> 1.2.0.pre2"
+  s.add_development_dependency "rack"
+  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "yajl-ruby"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
