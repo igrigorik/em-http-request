@@ -3,7 +3,7 @@ require 'bundler/setup'
 
 require 'em-http'
 require 'em-http/middleware/oauth2'
-require 'yajl'
+require 'multi_json'
 
 require 'stallion'
 require 'stub_server'

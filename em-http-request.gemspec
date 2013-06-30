@@ -21,10 +21,10 @@ Gem::Specification.new do |s|
   s.add_dependency 'http_parser.rb', '>= 0.6.0.beta.2'
 
   s.add_development_dependency 'mongrel', '~> 1.2.0.pre2'
+  s.add_development_dependency 'multi_json'
   s.add_development_dependency 'rack'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec'
-  s.add_development_dependency 'yajl-ruby'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
