@@ -276,11 +276,11 @@ Thread.new do
 
       # Take the initial line from the upstream response
       session.write client.gets
-      
+
       if proxy
         session.write "X-Proxy-Auth: #{proxy}\r\n"
       end
-      
+
       # What (absolute) uri was requested?  Send it back in a header
       session.write "X-The-Requested-URI: #{destination}\r\n"
 
