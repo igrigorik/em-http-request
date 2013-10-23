@@ -42,7 +42,7 @@ describe EventMachine::HttpRequest do
         http.response.should match(/Hello/)
         EventMachine.stop
       }
-    }.should_not raise_error(ArgumentError)
+    }.should_not raise_error
 
     }
   end

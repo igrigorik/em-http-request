@@ -37,8 +37,8 @@ describe EventMachine::MultiRequest do
 
   describe "#requests" do
     it "should return the added requests" do
-      request1 = stub('request1', :callback => nil, :errback => nil)
-      request2 = stub('request2', :callback => nil, :errback => nil)
+      request1 = double('request1', :callback => nil, :errback => nil)
+      request2 = double('request2', :callback => nil, :errback => nil)
 
       multi.add :a, request1
       multi.add :b, request2
