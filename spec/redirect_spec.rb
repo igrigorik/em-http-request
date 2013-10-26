@@ -318,4 +318,48 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should not add default http port to redirect url that don't include it" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/http_no_port')
+      http = conn.get :redirects => 1
+      http.errback {
+        http.last_effective_url.to_s.should == 'http://host/'
+        EM.stop
+      }
+    }
+  end
+
+  it "should not add default https port to redirect url that don't include it" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/https_no_port')
+      http = conn.get :redirects => 1
+      http.errback {
+        http.last_effective_url.to_s.should == 'https://host/'
+        EM.stop
+      }
+    }
+  end
+
+  it "should keep default http port in redirect url that include it" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/http_with_port')
+      http = conn.get :redirects => 1
+      http.errback {
+        http.last_effective_url.to_s.should == 'http://host:80/'
+        EM.stop
+      }
+    }
+  end
+
+  it "should keep default https port in redirect url that include it" do
+    EventMachine.run {
+      conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/https_with_port')
+      http = conn.get :redirects => 1
+      http.errback {
+        http.last_effective_url.to_s.should == 'https://host:443/'
+        EM.stop
+      }
+    }
+  end
+
 end

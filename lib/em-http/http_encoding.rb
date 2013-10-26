@@ -39,7 +39,7 @@ module EventMachine
     end
 
     def encode_host
-      if @req.uri.port == 80 || @req.uri.port == 443
+      if @req.uri.port.nil? || @req.uri.port == 80 || @req.uri.port == 443
         return @req.uri.host
       else
         @req.uri.host + ":#{@req.uri.port}"
