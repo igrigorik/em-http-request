@@ -22,7 +22,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :request_header, :request_body, :response_header, :error, :content_charset, :req, :cookies
+    attr_reader   :request_header_history, :request_body, :response_header, :error, :content_charset, :req, :cookies
 
     def initialize(conn, options)
       @conn = conn
@@ -32,6 +32,8 @@ module EventMachine
       @headers   = nil
       @cookies   = []
       @cookiejar = CookieJar.new
+
+      @request_header_history = []
 
       reset!
     end
@@ -189,10 +191,13 @@ module EventMachine
         head['content-type'] = 'application/x-www-form-urlencoded'
       end
 
-      @request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts.proxy)
-      @request_header << encode_headers(head)
-      @request_header << CRLF
-      @conn.send_data @request_header
+      request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts.proxy)
+      request_header << encode_headers(head)
+      request_header << CRLF
+
+      @request_header_history << request_header.dup
+
+      @conn.send_data request_header
 
       if body
         @conn.send_data body
