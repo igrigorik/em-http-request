@@ -22,7 +22,7 @@ module EventMachine
     CRLF="\r\n"
 
     attr_accessor :state, :response
-    attr_reader   :request_header_history, :request_body, :response_header, :error, :content_charset, :req, :cookies
+    attr_reader   :header_history, :request_body, :response_header, :error, :content_charset, :req, :cookies
 
     def initialize(conn, options)
       @conn = conn
@@ -33,7 +33,7 @@ module EventMachine
       @cookies   = []
       @cookiejar = CookieJar.new
 
-      @request_header_history = []
+      @header_history = []
 
       reset!
     end
@@ -195,7 +195,7 @@ module EventMachine
       request_header << encode_headers(head)
       request_header << CRLF
 
-      @request_header_history << request_header.dup
+      @header_history << request_header.split("\r\n")
 
       @conn.send_data request_header
 
@@ -228,6 +228,7 @@ module EventMachine
     end
 
     def parse_response_header(header, version, status)
+      @header_history << header.dup
       @response_header.raw = header
       header.each do |key, val|
         @response_header[key.upcase.gsub('-','_')] = val
