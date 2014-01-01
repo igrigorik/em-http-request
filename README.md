@@ -1,4 +1,7 @@
-# EM-HTTP-Request
+# EM-HTTP-Request 
+
+[![Gem Version](https://badge.fury.io/rb/em-http-request.png)](http://rubygems.org/gems/em-http-request)
+[![Analytics](https://ga-beacon.appspot.com/UA-71196-10/em-http-request/readme)](https://github.com/igrigorik/ga-beacon)
 
 Async (EventMachine) HTTP client, with support for:
 
