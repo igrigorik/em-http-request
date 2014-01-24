@@ -41,7 +41,7 @@ class HttpClientOptions
     # Make sure the ports are set as Addressable::URI doesn't
     # set the port if it isn't there
     if @port.nil?
-      @port = @uri.scheme == "https" ? 443 : 80
+      @uri.port = @port = @uri.scheme == "https" ? 443 : 80
     end
 
   end
