@@ -16,8 +16,8 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'em-http-request'
 
   s.add_dependency 'addressable', '>= 2.3.4'
-  s.add_dependency 'cookiejar'
-  s.add_dependency 'em-socksify', '>= 0.3'
+  s.add_dependency 'cookiejar', '<= 0.3.0'
+  s.add_dependency 'em-socksify', '<= 0.3.1'
   s.add_dependency 'eventmachine', '>= 1.0.3'
   s.add_dependency 'http_parser.rb', '>= 0.6.0'
 
