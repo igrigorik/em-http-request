@@ -57,7 +57,6 @@ Several higher-order Ruby projects have incorporated em-http and other Ruby HTTP
 - [Firering](https://github.com/EmmanuelOga/firering) - Eventmachine powered Campfire API
 - [RDaneel](https://github.com/hasmanydevelopers/RDaneel) - Ruby crawler which respects robots.txt
 - [em-eventsource](https://github.com/AF83/em-eventsource) - EventSource client for EventMachine
-- [sinatra-synchrony](https://github.com/kyledrake/sinatra-synchrony) - Sinatra plugin for synchronous use of EM
 - and many others.. drop me a link if you want yours included!
 
 ### License
