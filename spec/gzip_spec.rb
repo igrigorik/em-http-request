@@ -6,13 +6,6 @@ describe EventMachine::HttpDecoders::GZip do
     compressed = ["1f8b08089668a6500003686900cbc8e402007a7a6fed03000000"].pack("H*")
   }
 
-  it "should extract the stream of a vanilla gzip" do
-    header = EventMachine::HttpDecoders::GZipHeader.new
-    stream = header.extract_stream(compressed)
-
-    stream.unpack("H*")[0].should eq("cbc8e402007a7a6fed03000000")
-  end
-
   it "should decompress a vanilla gzip" do
     decompressed = ""
 
@@ -41,6 +34,22 @@ describe EventMachine::HttpDecoders::GZip do
 
     decompressed.should eq("hi\n")
   end
+  
+  it "should decompress a vanilla gzip file from various-sized chunks" do
+    decompressed = ""
+
+    gz = EventMachine::HttpDecoders::GZip.new do |data|
+      decompressed << data
+    end
+    
+    gz << compressed[0...1]
+    gz << compressed[1...2]
+    gz << compressed[2...3]
+    gz << compressed[3..-1]
+    gz.finalize!
+    
+    decompressed.should eq("hi\n")
+  end
 
   it "should decompress a large file" do
     decompressed = ""
@@ -58,10 +67,14 @@ describe EventMachine::HttpDecoders::GZip do
 
   it "should fail with a DecoderError if not a gzip file" do
     not_a_gzip = ["1f8c08089668a650000"].pack("H*")
-    header = EventMachine::HttpDecoders::GZipHeader.new
 
     lambda {
-      header.extract_stream(not_a_gzip)
+      gz = EventMachine::HttpDecoders::GZip.new
+      
+      gz << not_a_gzip
+      
+      gz.finalize!
+      
     }.should raise_exception(EventMachine::HttpDecoders::DecoderError)
   end
 
