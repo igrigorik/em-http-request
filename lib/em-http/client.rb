@@ -285,6 +285,7 @@ module EventMachine
       end
 
       if @req.decoding && decoder_class = HttpDecoders.decoder_for_encoding(response_header[CONTENT_ENCODING])
+        response_header.delete(CONTENT_ENCODING)
         begin
           @content_decoder = decoder_class.new do |s| on_decoded_body_data(s) end
         rescue HttpDecoders::DecoderError
