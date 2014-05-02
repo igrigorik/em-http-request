@@ -76,7 +76,7 @@ describe EventMachine::HttpRequest do
           http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/gzip'
           http.response_header['X_THE_REQUESTED_URI'].should_not == '/redirect'
 
-          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response_header["CONTENT_ENCODING"].should be_nil
           http.response.should == "compressed"
           http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
           http.redirects.should == 1

@@ -89,7 +89,7 @@ requires_connection do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-          http.response_header["CONTENT_ENCODING"].should == "deflate"
+          http.response_header["CONTENT_ENCODING"].should be_nil
 
           EventMachine.stop
         }
@@ -105,7 +105,7 @@ requires_connection do
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
-          http.response_header["CONTENT_ENCODING"].should == "gzip"
+          http.response_header["CONTENT_ENCODING"].should be_nil
           http.response.should == ''
 
           EventMachine.stop
