@@ -35,16 +35,16 @@ describe EventMachine::HttpDecoders::GZip do
     decompressed.should eq("hi\n")
   end
   
-  it "should decompress a vanilla gzip file from various-sized chunks" do
+  it "should decompress a vanilla gzip file from 3 individual bytes followed by remaining bytes" do
     decompressed = ""
 
     gz = EventMachine::HttpDecoders::GZip.new do |data|
       decompressed << data
     end
     
-    gz << compressed[0...1]
-    gz << compressed[1...2]
-    gz << compressed[2...3]
+    gz << compressed[0, 1]
+    gz << compressed[1, 1]
+    gz << compressed[2, 1]
     gz << compressed[3..-1]
     gz.finalize!
     
