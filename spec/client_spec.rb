@@ -886,3 +886,22 @@ describe EventMachine::HttpRequest do
     end
   end
 end
+
+describe EventMachine::HttpClient do
+  describe '#close!' do
+    let(:conn) { double :conn, unbind: nil }
+    subject { EM::HttpClient.new conn, {} }
+
+    it 'should unbind the connection' do
+      expect(conn).to receive :unbind
+
+      subject.close!
+    end
+
+    it 'should trigger an error' do
+      expect(subject).to receive :on_error
+
+      subject.close!
+    end
+  end
+end
