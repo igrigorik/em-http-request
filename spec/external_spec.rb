@@ -135,7 +135,7 @@ requires_connection do
 
       it "should work with keep-alive servers" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://mexicodiario.com/touch.public.json.php').get :keepalive => true
+          http = EventMachine::HttpRequest.new('https://github.com/igrigorik/em-http-request').get :keepalive => true
 
           http.errback { failed(http) }
           http.callback {
