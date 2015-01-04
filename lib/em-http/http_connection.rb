@@ -24,10 +24,16 @@ module EventMachine
     end
 
     def connection_completed
+      @connected = true
       @parent.connection_completed
     end
 
+    def close_connection
+      super if @connected
+    end
+
     def unbind(reason=nil)
+      @connected = false
       @parent.unbind(reason)
     end
   end
