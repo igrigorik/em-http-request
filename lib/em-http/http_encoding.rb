@@ -46,12 +46,14 @@ module EventMachine
       end
     end
 
-    def encode_request(method, uri, query, proxy)
+    def encode_request(method, uri, query, connopts)
       query = encode_query(uri, query)
 
       # Non CONNECT proxies require that you provide the full request
       # uri in request header, as opposed to a relative path.
-      query = uri.join(query) if proxy
+      # Don't modify the header with CONNECT proxies. It's unneeded and will
+      # cause 400 Bad Request errors with many standard setups.
+      query = uri.join(query) if connopts.proxy && !connopts.connect_proxy?
 
       HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
