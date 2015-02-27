@@ -152,9 +152,9 @@ module EventMachine
       @peer = @conn.get_peername
 
       if @connopts.socks_proxy?
-        socksify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
+        socksify(client.req.uri.host, client.req.uri.inferred_port, *@connopts.proxy[:authorization]) { start }
       elsif @connopts.connect_proxy?
-        connectify(client.req.uri.host, client.req.uri.port, *@connopts.proxy[:authorization]) { start }
+        connectify(client.req.uri.host, client.req.uri.inferred_port, *@connopts.proxy[:authorization]) { start }
       else
         start
       end
