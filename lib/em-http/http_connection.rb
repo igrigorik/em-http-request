@@ -114,7 +114,7 @@ module EventMachine
       @p = Http::Parser.new
       @p.header_value_type = :mixed
       @p.on_headers_complete = proc do |h|
-        client.parse_response_header(h, @p.http_version, @p.status_code)
+        client.parse_response_header(h, @p.http_version, @p.status_code.to_s)
         :reset if client.req.no_body?
       end
 
