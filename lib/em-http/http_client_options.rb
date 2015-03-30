@@ -1,6 +1,6 @@
 class HttpClientOptions
-  attr_reader :uri, :method, :host, :port
-  attr_reader :headers, :file, :body, :query, :path
+  attr_reader :uri, :method
+  attr_reader :headers, :file, :body, :query
   attr_reader :keepalive, :pass_cookies, :decoding
 
   attr_accessor :followed, :redirects
@@ -34,15 +34,24 @@ class HttpClientOptions
     uri.path = '/' if uri.path.empty?
 
     @uri = uri
-    @path = uri.path
-    @host = uri.host
-    @port = uri.port
 
     # Make sure the ports are set as Addressable::URI doesn't
     # set the port if it isn't there
-    if @port.nil?
-      @port = @uri.scheme == "https" ? 443 : 80
+    if @uri.port.nil?
+      @uri.port = @uri.scheme == "https" ? 443 : 80
     end
 
+  end
+
+  def path
+    @uri.path
+  end
+
+  def host
+    @uri.host
+  end
+
+  def port
+    @uri.port
   end
 end
