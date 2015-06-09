@@ -362,4 +362,20 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should ignore query option when redirecting" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/ignore_query_option').get :redirects => 1, :query => 'ignore=1'
+      http.errback { failed(http) }
+      http.callback {
+        http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/redirect/url'
+        http.redirects.should == 1
+
+        redirect_url = http.response
+        redirect_url.should == http.last_effective_url.to_s
+
+        EM.stop
+      }
+    }
+  end
+
 end
