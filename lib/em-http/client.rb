@@ -189,7 +189,7 @@ module EventMachine
         head['content-type'] = 'application/x-www-form-urlencoded'
       end
 
-      request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts.proxy)
+      request_header ||= encode_request(@req.method, @req.uri, query, @conn.connopts)
       request_header << encode_headers(head)
       request_header << CRLF
       @conn.send_data request_header

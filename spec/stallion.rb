@@ -201,6 +201,14 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 301
       stable.response["Location"] = "https://host:443/"
 
+    elsif stable.request.path_info == '/redirect/ignore_query_option'
+      stable.response.status = 301
+      stable.response['Location'] = '/redirect/url'
+
+    elsif stable.request.path_info == '/redirect/url'
+      stable.response.status = 200
+      stable.response.write stable.request.url
+
     elsif stable.request.path_info == '/gzip'
       io = StringIO.new
       gzip = Zlib::GzipWriter.new(io)
@@ -234,7 +242,7 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 200
       stable.response.write stable.request.env["HTTP_AUTHORIZATION"]
     elsif stable.request.path_info == '/authtest'
-      auth = "Basic %s" % Base64.encode64(['user', 'pass'].join(':')).split.join
+      auth = "Basic %s" % Base64.strict_encode64(['user', 'pass'].join(':')).split.join
       if auth == stable.request.env["HTTP_AUTHORIZATION"]
         stable.response.status = 200
         stable.response.write 'success'
