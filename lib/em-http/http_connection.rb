@@ -37,8 +37,8 @@ module EventMachine
     include Socksify
     include Connectify
 
-    attr_reader :deferred
-    attr_accessor :error, :connopts, :uri, :conn
+    attr_reader :deferred, :conn
+    attr_accessor :error, :connopts, :uri
 
     def initialize
       @deferred = true
@@ -97,7 +97,7 @@ module EventMachine
       @conn.callback { c.connection_completed }
 
       middleware.each do |m|
-        c.callback &m.method(:response) if m.respond_to?(:response)
+        c.callback(&m.method(:response)) if m.respond_to?(:response)
       end
 
       @clients.push c
