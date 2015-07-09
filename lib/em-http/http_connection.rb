@@ -100,7 +100,7 @@ module EventMachine
         c.callback(&m.method(:response)) if m.respond_to?(:response)
       end
 
-      c.errback { c.req.redirects = 0 }
+      c.errback { @conn.close_connection }
 
       @clients.push c
     end
