@@ -378,4 +378,26 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should stop redirect after invoking fail(http)" do
+    EventMachine.run {
+      slow_redirect_url = "http://127.0.0.1:8090/slow_redirect/ok"
+      http = EventMachine::HttpRequest.new(slow_redirect_url).get(redirects: 1)
+
+      http.timeout(0.5)
+
+      http.errback {
+        http.last_effective_url.to_s.should == slow_redirect_url
+        http.redirects.should == 0
+      }
+
+      http.callback { failed(http) }
+
+      EventMachine.add_timer(2) {
+        http.last_effective_url.to_s.should == slow_redirect_url
+        http.redirects.should == 0
+        EventMachine.stop
+      }
+    }
+  end
+
 end

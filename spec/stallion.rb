@@ -209,6 +209,15 @@ Stallion.saddle :spec do |stable|
       stable.response.status = 200
       stable.response.write stable.request.url
 
+    elsif stable.request.path_info == '/slow_redirect/ok'
+      sleep(1)
+      stable.response.status = 301
+      stable.response["Location"] = "/ok"
+
+    elsif stable.request.path_info == "/ok"
+      stable.response.status = 200
+      stable.response.write "ok"
+
     elsif stable.request.path_info == '/gzip'
       io = StringIO.new
       gzip = Zlib::GzipWriter.new(io)
