@@ -51,7 +51,7 @@ describe EventMachine::HttpRequest do
     EventMachine.run {
       lambda {
       EventMachine::HttpRequest.new('random?text').get
-    }.should raise_error
+    }.should raise_error(Addressable::URI::InvalidURIError)
 
     EM.stop
     }
