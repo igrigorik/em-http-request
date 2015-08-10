@@ -1,5 +1,7 @@
 class StubServer
   module Server
+    attr_accessor :keepalive
+
     def receive_data(data)
       if echo?
         send_data("HTTP/1.0 200 OK\r\nContent-Length: #{data.bytesize}\r\nContent-Type: text/plain\r\n\r\n")
@@ -8,7 +10,7 @@ class StubServer
         send_data @response
       end
 
-      close_connection_after_writing
+      close_connection_after_writing unless keepalive
     end
 
     def echo= flag
@@ -31,8 +33,9 @@ class StubServer
     host = options[:host]
     port = options[:port]
     @sig = EventMachine::start_server(host, port, Server) do |server|
-      server.response = options[:response]
-      server.echo     = options[:echo]
+      server.response  = options[:response]
+      server.echo      = options[:echo]
+      server.keepalive = options[:keepalive]
     end
   end
 

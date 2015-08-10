@@ -103,6 +103,7 @@ module EventMachine
               @req.set_uri(@response_header.location)
 
               @conn.redirect(self)
+              @conn.conn.close_connection
             else
               succeed(self)
             end
