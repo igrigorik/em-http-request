@@ -43,5 +43,6 @@ class HttpClientOptions
       @port = @uri.scheme == "https" ? 443 : 80
     end
 
+    uri
   end
 end

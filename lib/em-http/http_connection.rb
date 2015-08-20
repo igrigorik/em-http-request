@@ -165,8 +165,32 @@ module EventMachine
       @conn.succeed
     end
 
-    def redirect(client)
-      @pending.push client
+    def redirect(client, new_location)
+      old_location = client.req.uri
+      new_location = client.req.set_uri(new_location)
+
+      if client.req.keepalive
+        # Application requested a keep-alive connection but one of the requests
+        # hits a cross-origin redirect. We need to open a new connection and
+        # let both connections proceed simultaneously.
+        if old_location.origin != new_location.origin
+          conn = HttpConnection.new
+          client.conn = conn
+          conn.connopts = @connopts
+          conn.uri = client.req.uri
+          conn.activate_connection(client)
+
+        # If the redirect is a same-origin redirect on a keep-alive request
+        # then immidiately dispatch the request over existing connection.
+        else
+          @clients.push client
+          client.connection_completed
+        end
+      else
+        # If connection is not keep-alive the unbind will fire and we'll
+        # reconnect using the same connection object.
+        @pending.push client
+      end
     end
 
     def unbind(reason = nil)

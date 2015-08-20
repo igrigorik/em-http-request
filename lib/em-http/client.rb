@@ -21,7 +21,7 @@ module EventMachine
 
     CRLF="\r\n"
 
-    attr_accessor :state, :response
+    attr_accessor :state, :response, :conn
     attr_reader   :response_header, :error, :content_charset, :req, :cookies
 
     def initialize(conn, options)
@@ -100,10 +100,8 @@ module EventMachine
 
               @cookies.clear
               @cookies = @cookiejar.get(@response_header.location).map(&:to_s) if @req.pass_cookies
-              @req.set_uri(@response_header.location)
 
-              @conn.redirect(self)
-              @conn.conn.close_connection
+              @conn.redirect(self, @response_header.location)
             else
               succeed(self)
             end
