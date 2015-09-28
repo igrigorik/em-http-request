@@ -265,7 +265,7 @@ end
 Thread.new do
   begin
     Stallion.run :Host => '127.0.0.1', :Port => 8090
-  rescue Exception => e
+  rescue => e
     print e
   end
 end

@@ -106,7 +106,7 @@ module EventMachine
               succeed(self)
             end
 
-          rescue Exception => e
+          rescue => e
             on_error(e.message)
           end
         else
