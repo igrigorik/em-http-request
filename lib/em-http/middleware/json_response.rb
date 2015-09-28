@@ -7,7 +7,7 @@ module EventMachine
         begin
           body = MultiJson.load(resp.response)
           resp.response = body
-        rescue Exception => e
+        rescue => e
         end
       end
     end
