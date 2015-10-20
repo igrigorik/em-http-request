@@ -848,6 +848,33 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "should close connection on invalid HTTP response" do
+    EventMachine.run {
+      response =<<-HTTP.gsub(/^ +/, '').strip
+        HTTP/1.1 403 Forbidden
+        Content-Type: text/plain
+        Content-Length: 13
+
+        Access Denied
+
+        HTTP/1.1 403 Forbidden
+        Content-Type: text/plain
+        Content-Length: 13
+
+        Access Denied
+      HTTP
+
+      @s = StubServer.new(response)
+      lambda {
+        conn = EventMachine::HttpRequest.new('http://127.0.0.1:8081/')
+        req = conn.get
+        req.errback { failed(http) }
+        req.callback { EM.stop }
+      }.should_not raise_error
+
+    }
+  end
+
   context "User-Agent" do
     it 'should default to "EventMachine HttpClient"' do
       EventMachine.run {

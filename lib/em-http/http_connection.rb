@@ -114,8 +114,16 @@ module EventMachine
       @p = Http::Parser.new
       @p.header_value_type = :mixed
       @p.on_headers_complete = proc do |h|
-        client.parse_response_header(h, @p.http_version, @p.status_code)
-        :reset if client.req.no_body?
+        if client
+          client.parse_response_header(h, @p.http_version, @p.status_code)
+          :reset if client.req.no_body?
+        else
+          # if we receive unexpected data without a pending client request
+          # reset the parser to avoid firing any further callbacks and close
+          # the connection because we're processing invalid HTTP
+          @p.reset!
+          unbind
+        end
       end
 
       @p.on_body = proc do |b|
