@@ -1,7 +1,6 @@
 # EM-HTTP-Request 
 
-[![Gem Version](https://badge.fury.io/rb/em-http-request.png)](http://rubygems.org/gems/em-http-request)
-[![Analytics](https://ga-beacon.appspot.com/UA-71196-10/em-http-request/readme)](https://github.com/igrigorik/ga-beacon)
+[![Gem Version](https://badge.fury.io/rb/em-http-request.png)](http://rubygems.org/gems/em-http-request) [![Build Status](https://travis-ci.org/igrigorik/em-http-request.svg)](https://travis-ci.org/igrigorik/em-http-request)
 
 Async (EventMachine) HTTP client, with support for:
 
@@ -13,7 +12,7 @@ Async (EventMachine) HTTP client, with support for:
 - Streaming file uploads
 - HTTP proxy and SOCKS5 support
 - Basic Auth & OAuth
-- Connection-level & Global middleware support
+- Connection-level & global middleware support
 - HTTP parser via [http_parser.rb](https://github.com/tmm1/http_parser.rb)
 - Works wherever EventMachine runs: Rubinius, JRuby, MRI
 
