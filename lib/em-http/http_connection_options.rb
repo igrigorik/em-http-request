@@ -20,6 +20,7 @@ class HttpConnectionOptions
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     @https = uri.scheme == "https"
     uri.port ||= (@https ? 443 : 80)
+    @tls[:sni_hostname] = uri.host
 
     if proxy = options[:proxy]
       @host = proxy[:host]
