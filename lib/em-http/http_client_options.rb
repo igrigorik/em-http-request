@@ -1,7 +1,7 @@
 class HttpClientOptions
   attr_reader :uri, :method, :host, :port
   attr_reader :headers, :file, :body, :query, :path
-  attr_reader :keepalive, :pass_cookies, :decoding
+  attr_reader :keepalive, :pass_cookies, :decoding, :compressed
 
   attr_accessor :followed, :redirects
 
@@ -18,6 +18,7 @@ class HttpClientOptions
 
     @pass_cookies = options.fetch(:pass_cookies, true)  # pass cookies between redirects
     @decoding     = options.fetch(:decoding, true)      # auto-decode compressed response
+    @compressed   = options.fetch(:compressed, true)    # auto-negotiated compressed response
 
     set_uri(uri, options[:path], options[:query])
   end

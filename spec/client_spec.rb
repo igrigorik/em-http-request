@@ -386,7 +386,7 @@ describe EventMachine::HttpRequest do
     }
   end
 
-  it "should detect gzip encoding" do
+  it "should auto-detect and decode gzip encoding" do
     EventMachine.run {
 
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/gzip').get :head => {"accept-encoding" => "gzip, compressed"}
@@ -440,6 +440,36 @@ describe EventMachine::HttpRequest do
 
         raw = http.response
         Zlib::GzipReader.new(StringIO.new(raw)).read.should == "compressed"
+
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should default to requesting compressed response" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_accept_encoding').get
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == "gzip, compressed"
+
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "should default to requesting compressed response" do
+    EventMachine.run {
+
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/echo_accept_encoding').get :compressed => false
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == ""
 
         EventMachine.stop
       }

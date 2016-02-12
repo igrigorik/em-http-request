@@ -155,9 +155,14 @@ module EventMachine
 
       # Set the User-Agent if it hasn't been specified
       if !head.key?('user-agent')
-        head['user-agent'] = "EventMachine HttpClient"
+        head['user-agent'] = 'EventMachine HttpClient'
       elsif head['user-agent'].nil?
         head.delete('user-agent')
+      end
+
+      # Set the Accept-Encoding header if none is provided
+      if !head.key?('accept-encoding') && req.compressed
+        head['accept-encoding'] = 'gzip, compressed'
       end
 
       # Set the auth from the URI if given

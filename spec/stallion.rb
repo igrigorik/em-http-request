@@ -235,6 +235,10 @@ Stallion.saddle :spec do |stable|
       stable.response.write deflater.finish
       stable.response["Content-Encoding"] = "deflate"
 
+    elsif stable.request.path_info == '/echo_accept_encoding'
+      stable.response.status = 200
+      stable.response.write stable.request.env["HTTP_ACCEPT_ENCODING"]
+
     elsif stable.request.env["HTTP_IF_NONE_MATCH"]
       stable.response.status = 304
 
