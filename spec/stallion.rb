@@ -96,6 +96,9 @@ Stallion.saddle :spec do |stable|
     elsif stable.request.path_info == '/echo_content_length_from_header'
       stable.response.write "content-length:#{stable.request.env["CONTENT_LENGTH"]}"
 
+    elsif stable.request.path_info == '/echo_authorization_header'
+      stable.response.write "authorization:#{stable.request.env["HTTP_AUTHORIZATION"]}"
+
     elsif stable.request.head? && stable.request.path_info == '/'
       stable.response.status = 200
 

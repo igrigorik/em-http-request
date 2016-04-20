@@ -52,6 +52,23 @@ describe EventMachine::HttpRequest do
       }
     end
 
+    it "should strip basic auth from before the host in URI sent to proxy" do
+      EventMachine.run {
+
+        http = EventMachine::HttpRequest.new('http://user:pass@127.0.0.1:8090/echo_authorization_header', proxy).get
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          # The test proxy server gives the requested uri back in this header
+          http.response_header['X_THE_REQUESTED_URI'].should == 'http://127.0.0.1:8090/echo_authorization_header'
+          # Ensure the basic auth was converted to a header correctly
+          http.response.should match('authorization:Basic dXNlcjpwYXNz')
+          EventMachine.stop
+        }
+      }
+    end
+
     it "should include query parameters specified in the options" do
       EventMachine.run {
         http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/', proxy).get :query => { 'q' => 'test' }
