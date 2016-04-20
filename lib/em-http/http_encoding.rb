@@ -53,7 +53,12 @@ module EventMachine
       # uri in request header, as opposed to a relative path.
       # Don't modify the header with CONNECT proxies. It's unneeded and will
       # cause 400 Bad Request errors with many standard setups.
-      query = uri.join(query) if connopts.proxy && !connopts.connect_proxy?
+      if connopts.proxy && !connopts.connect_proxy?
+        query = uri.join(query)
+        # Drop the userinfo, it's been converted to a header and won't be
+        # accepted by the proxy
+        query.userinfo = nil
+      end
 
       HTTP_REQUEST_HEADER % [method.to_s.upcase, query]
     end
