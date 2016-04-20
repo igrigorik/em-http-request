@@ -17,7 +17,7 @@ module Stallion
 
     def match?(request)
       method = request['REQUEST_METHOD']
-      right_method = @methods.empty? or @methods.include?(method)
+      @methods.empty? or @methods.include?(method)
     end
   end
 
@@ -36,7 +36,7 @@ module Stallion
 
     def call(request, response)
       @request, @response = request, response
-      @boxes.each do |(path, methods), mount|
+      @boxes.each do |_, mount|
         if mount.match?(request)
           mount.ride
         end
