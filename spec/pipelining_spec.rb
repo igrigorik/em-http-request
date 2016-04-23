@@ -8,10 +8,10 @@ requires_connection do
       EventMachine.run do
 
         # Mongrel doesn't support pipelined requests - bah!
-        conn = EventMachine::HttpRequest.new('http://www.mexicodiario.com/')
+        conn = EventMachine::HttpRequest.new('http://www.bing.com/')
 
         pipe1 = conn.get :keepalive => true
-        pipe2 = conn.get :path => '/contact/', :keepalive => true
+        pipe2 = conn.get :path => '/news', :keepalive => true
 
         processed = 0
         stop = proc { EM.stop if processed == 2}
@@ -36,10 +36,10 @@ requires_connection do
 
     it "should perform successful pipelined HEAD requests" do
       EventMachine.run do
-        conn = EventMachine::HttpRequest.new('http://www.mexicodiario.com/')
+        conn = EventMachine::HttpRequest.new('http://www.bing.com/')
 
         pipe1 = conn.head :keepalive => true
-        pipe2 = conn.head :path => '/contact/', :keepalive => true
+        pipe2 = conn.head :path => '/news', :keepalive => true
 
         processed = 0
         stop = proc { EM.stop if processed == 2}
