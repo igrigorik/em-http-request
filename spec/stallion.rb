@@ -17,7 +17,7 @@ module Stallion
 
     def match?(request)
       method = request['REQUEST_METHOD']
-      right_method = @methods.empty? or @methods.include?(method)
+      @methods.empty? or @methods.include?(method)
     end
   end
 
@@ -36,7 +36,7 @@ module Stallion
 
     def call(request, response)
       @request, @response = request, response
-      @boxes.each do |(path, methods), mount|
+      @boxes.each do |_, mount|
         if mount.match?(request)
           mount.ride
         end
@@ -95,6 +95,9 @@ Stallion.saddle :spec do |stable|
 
     elsif stable.request.path_info == '/echo_content_length_from_header'
       stable.response.write "content-length:#{stable.request.env["CONTENT_LENGTH"]}"
+
+    elsif stable.request.path_info == '/echo_authorization_header'
+      stable.response.write "authorization:#{stable.request.env["HTTP_AUTHORIZATION"]}"
 
     elsif stable.request.head? && stable.request.path_info == '/'
       stable.response.status = 200
