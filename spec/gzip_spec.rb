@@ -56,6 +56,29 @@ describe EventMachine::HttpDecoders::GZip do
     decompressed.size.should eq(32907)
   end
 
+  it "should not care how many chunks the file is split up into" do
+    examples = [
+      ["\x1F", "\x8B", "\b", "\x00", "\x00", "\x00", "\x00", "\x00", "\x00", "\x00", "\xF3", "\xCB", "/", "Q", "p\xCB/\xCDK\x01\x00M\x8Ct\xB1\t\x00\x00\x00"],
+      ["\x1F", "\x8B", "\b", "\x00", "\x00", "\x00", "\x00", "\x00\x00\x00\xF3\xCB/Qp\xCB/\xCDK\x01\x00M\x8Ct\xB1\t\x00\x00\x00"]
+    ]
+
+    examples.each do |example|
+      decompressed = ""
+
+      gz = EventMachine::HttpDecoders::GZip.new do |data|
+        decompressed << data
+      end
+
+      example.each do |bytes|
+        gz << bytes
+      end
+
+      gz.finalize!
+
+      decompressed.should eq("Not Found")
+    end
+  end
+
   it "should fail with a DecoderError if not a gzip file" do
     not_a_gzip = ["1f8c08089668a650000"].pack("H*")
     header = EventMachine::HttpDecoders::GZipHeader.new
