@@ -127,7 +127,6 @@ module EventMachine::HttpDecoders
 
     def extract_stream(compressed)
       @data << compressed
-      pos = @pos
 
       while !eof? && !finished?
         buffer = ""
@@ -208,7 +207,7 @@ module EventMachine::HttpDecoders
       end
 
       if finished?
-        compressed[(@pos - pos)..-1]
+        compressed[(@pos - (@data.length - compressed.length))..-1]
       else
         ""
       end
