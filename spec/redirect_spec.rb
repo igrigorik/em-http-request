@@ -30,7 +30,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 1
@@ -141,7 +141,7 @@ describe EventMachine::HttpRequest do
 
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 3
@@ -246,7 +246,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2
@@ -264,7 +264,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
         http.last_effective_url.to_s.should == 'http://127.0.0.1:8090/gzip'
         http.redirects.should == 2

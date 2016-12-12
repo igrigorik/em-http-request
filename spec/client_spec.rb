@@ -378,7 +378,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "deflate"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
 
         EventMachine.stop
@@ -394,7 +394,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == "compressed"
 
         EventMachine.stop
@@ -413,7 +413,7 @@ describe EventMachine::HttpRequest do
       http.errback { failed(http) }
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "gzip"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == ''
 
         actual_response.should == expected_response
@@ -651,7 +651,7 @@ describe EventMachine::HttpRequest do
 
       http.callback {
         http.response_header.status.should == 200
-        http.response_header["CONTENT_ENCODING"].should == "deflate"
+        http.response_header["CONTENT_ENCODING"].should be_nil
         http.response.should == ''
         body.should == "compressed"
         EventMachine.stop
