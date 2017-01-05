@@ -1,5 +1,5 @@
 class HttpConnectionOptions
-  attr_reader :host, :port, :tls, :proxy, :bind, :bind_port
+  attr_reader :host, :port, :tls, :bind, :bind_port
   attr_reader :connect_timeout, :inactivity_timeout
 
   def initialize(uri, options)
@@ -41,5 +41,20 @@ class HttpConnectionOptions
 
   def socks_proxy?
     @proxy && (@proxy[:type] == :socks5)
+  end
+
+  def proxy
+    @proxy ||= proxy_env_uri && { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
+  end
+
+  def proxy_env_uri
+    # TODO: Add support for $http_no_proxy or $no_proxy ?
+    @proxy_env_uri ||= \
+      begin
+        proxy_str = @https ?
+          ENV['HTTPS_PROXY'] || ENV['https_proxy'] || ENV['ALL_PROXY'] :
+          ENV['HTTP_PROXY'] || ENV['http_proxy'] || ENV['ALL_PROXY']
+        Addressable::URI::parse(proxy_str) if proxy_str
+      end
   end
 end
