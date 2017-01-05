@@ -22,7 +22,7 @@ class HttpConnectionOptions
     uri.port ||= (@https ? 443 : 80)
     @tls[:sni_hostname] = uri.host
 
-    if proxy = options[:proxy]
+    if proxy
       @host = proxy[:host]
       @port = proxy[:port]
     else
