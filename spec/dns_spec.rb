@@ -7,7 +7,7 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect/badhost', :connect_timeout => 0.1).get :redirects => 1
       http.callback { failed(http) }
       http.errback {
-        http.error.should match('unable to resolve server address')
+        http.error.should match(/unable to resolve (server |)address/)
         EventMachine.stop
       }
     }
@@ -31,7 +31,7 @@ describe EventMachine::HttpRequest do
       http = EventMachine::HttpRequest.new('http://somethinglocal/', :connect_timeout => 0.1).get
       http.callback { failed(http) }
       http.errback {
-        http.error.should match(/unable to resolve server address/)
+        http.error.should match(/unable to resolve (server |)address/)
         http.response_header.status.should == 0
         EventMachine.stop
       }
