@@ -1,5 +1,5 @@
 class HttpConnectionOptions
-  attr_reader :host, :port, :tls, :bind, :bind_port
+  attr_reader :host, :port, :proxy, :tls, :bind, :bind_port
   attr_reader :connect_timeout, :inactivity_timeout
 
   def initialize(uri, options)
@@ -7,7 +7,7 @@ class HttpConnectionOptions
     @inactivity_timeout  = options[:inactivity_timeout] ||= 10   # default connection inactivity (post-setup) timeout
 
     @tls   = options[:tls] || options[:ssl] || {}
-    @proxy = options[:proxy]
+    @proxy = options[:proxy] || proxy_from_env
 
     if bind = options[:bind]
       @bind = bind[:host] || '0.0.0.0'
@@ -43,18 +43,17 @@ class HttpConnectionOptions
     @proxy && (@proxy[:type] == :socks5)
   end
 
-  def proxy
-    @proxy ||= proxy_env_uri && { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
-  end
-
-  def proxy_env_uri
+  def proxy_from_env
     # TODO: Add support for $http_no_proxy or $no_proxy ?
-    @proxy_env_uri ||= \
-      begin
-        proxy_str = @https ?
-          ENV['HTTPS_PROXY'] || ENV['https_proxy'] || ENV['ALL_PROXY'] :
-          ENV['HTTP_PROXY'] || ENV['http_proxy'] || ENV['ALL_PROXY']
-        Addressable::URI::parse(proxy_str) if proxy_str
-      end
+    proxy_str = if @https
+                  ENV['HTTPS_PROXY'] || ENV['https_proxy']
+                else
+                  ENV['HTTP_PROXY'] || ENV['http_proxy']
+
+                # Fall-back to $ALL_PROXY if none of the above env-vars have values
+                end || ENV['ALL_PROXY']
+
+    proxy_env_uri = Addressable::URI::parse(proxy_str)
+    { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
   end
 end
