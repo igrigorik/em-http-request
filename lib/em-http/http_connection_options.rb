@@ -53,7 +53,16 @@ class HttpConnectionOptions
                 # Fall-back to $ALL_PROXY if none of the above env-vars have values
                 end || ENV['ALL_PROXY']
 
+    # Addressable::URI::parse will return `nil` if given `nil` and an empty URL for an empty string
+    # so, let's short-circuit that:
+    return if !proxy_str || proxy_str.empty?
+
     proxy_env_uri = Addressable::URI::parse(proxy_str)
     { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
+
+  rescue Addressable::URI::InvalidURIError
+    # An invalid env-var shouldn't crash the config step, IMHO.
+    # We should somehow log / warn about this, perhaps...
+    return
   end
 end
