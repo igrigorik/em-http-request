@@ -3,7 +3,7 @@ require 'helper'
 shared_examples "*_PROXY var" do
   it "should use HTTP proxy" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/?q=test').get
+      http = EventMachine::HttpRequest.new("#{proxy_test_scheme}://127.0.0.1:8090/?q=test").get
 
       http.errback { failed(http) }
       http.callback {
@@ -121,44 +121,64 @@ describe EventMachine::HttpRequest do
       end
     end
 
-    context "with HTTP_PROXY env" do
-      before(:each) do
-        ENV['HTTP_PROXY'] = 'http://127.0.0.1:8083'
+    context "when parsing *_PROXY vars" do
+      context "with $HTTP_PROXY env" do
+        let(:proxy_test_scheme) { :http }
+
+        before(:all) do
+          PROXY_ENV_VARS.each {|k| ENV.delete k }
+          ENV['HTTP_PROXY'] = 'http://127.0.0.1:8083'
+        end
+
+        include_examples "*_PROXY var"
       end
 
-      include_examples "*_PROXY var"
-    end
+      context "with $http_proxy env" do
+        let(:proxy_test_scheme) { :http }
 
-    context "with http_proxy env" do
-      before(:each) do
-        ENV['http_proxy'] = 'http://127.0.0.1:8083'
+        before(:all) do
+          PROXY_ENV_VARS.each {|k| ENV.delete k }
+          ENV['http_proxy'] = 'http://127.0.0.1:8083'
+        end
+
+        include_examples "*_PROXY var"
       end
 
-      include_examples "*_PROXY var"
-    end
+      ## TODO: Use a Mongrel HTTP server that can handle SSL:
+      context "with $HTTPS_PROXY env", skip: "Mongrel isn't configured to handle HTTPS, currently" do
+        let(:proxy_test_scheme) { :https }
 
-    context "with HTTPS_PROXY env" do
-      before(:each) do
-        ENV['HTTPS_PROXY'] = 'http://127.0.0.1:8083'
+        before(:all) do
+          PROXY_ENV_VARS.each {|k| ENV.delete k }
+          ENV['HTTPS_PROXY'] = 'http://127.0.0.1:8083'
+        end
+
+        include_examples "*_PROXY var"
       end
 
-      include_examples "*_PROXY var"
-    end
+      ## TODO: Use a Mongrel HTTP server that can handle SSL:
+      context "with $https_proxy env", skip: "Mongrel isn't configured to handle HTTPS, currently" do
+        let(:proxy_test_scheme) { :https }
 
-    context "with https_proxy env" do
-      before(:each) do
-        ENV['https_proxy'] = 'http://127.0.0.1:8083'
+        before(:all) do
+          PROXY_ENV_VARS.each {|k| ENV.delete k }
+          ENV['https_proxy'] = 'http://127.0.0.1:8083'
+        end
+
+        include_examples "*_PROXY var"
       end
 
-      include_examples "*_PROXY var"
-    end
+      context "with $ALL_PROXY env" do
+        let(:proxy_test_scheme) { :http }
 
-    context "with ALL_PROXY env" do
-      before(:each) do
-        ENV['ALL_PROXY'] = 'http://127.0.0.1:8083'
+        before(:all) do
+          PROXY_ENV_VARS.each {|k| ENV.delete k }
+          ENV['ALL_PROXY'] = 'http://127.0.0.1:8083'
+        end
+
+        include_examples "*_PROXY var"
       end
-
-      include_examples "*_PROXY var"
     end
   end
+
 end
