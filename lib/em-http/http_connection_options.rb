@@ -1,5 +1,5 @@
 class HttpConnectionOptions
-  attr_reader :host, :port, :proxy, :tls, :bind, :bind_port
+  attr_reader :host, :port, :tls, :proxy, :bind, :bind_port
   attr_reader :connect_timeout, :inactivity_timeout
 
   def initialize(uri, options)
