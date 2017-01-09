@@ -1,6 +1,6 @@
 require 'helper'
 
-shared_examples "*_PROXY var" do
+shared_examples "*_PROXY var (through proxy)" do
   it "should use HTTP proxy" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new("#{proxy_test_scheme}://127.0.0.1:8090/?q=test").get
@@ -121,7 +121,7 @@ describe EventMachine::HttpRequest do
       end
     end
 
-    context "when parsing *_PROXY vars" do
+    context "when parsing *_PROXY var (through proxy)s" do
       context "with $HTTP_PROXY env" do
         let(:proxy_test_scheme) { :http }
 
@@ -130,7 +130,7 @@ describe EventMachine::HttpRequest do
           ENV['HTTP_PROXY'] = 'http://127.0.0.1:8083'
         end
 
-        include_examples "*_PROXY var"
+        include_examples "*_PROXY var (through proxy)"
       end
 
       context "with $http_proxy env" do
@@ -141,7 +141,7 @@ describe EventMachine::HttpRequest do
           ENV['http_proxy'] = 'http://127.0.0.1:8083'
         end
 
-        include_examples "*_PROXY var"
+        include_examples "*_PROXY var (through proxy)"
       end
 
       ## TODO: Use a Mongrel HTTP server that can handle SSL:
@@ -153,7 +153,7 @@ describe EventMachine::HttpRequest do
           ENV['HTTPS_PROXY'] = 'http://127.0.0.1:8083'
         end
 
-        include_examples "*_PROXY var"
+        include_examples "*_PROXY var (through proxy)"
       end
 
       ## TODO: Use a Mongrel HTTP server that can handle SSL:
@@ -165,7 +165,7 @@ describe EventMachine::HttpRequest do
           ENV['https_proxy'] = 'http://127.0.0.1:8083'
         end
 
-        include_examples "*_PROXY var"
+        include_examples "*_PROXY var (through proxy)"
       end
 
       context "with $ALL_PROXY env" do
@@ -176,7 +176,7 @@ describe EventMachine::HttpRequest do
           ENV['ALL_PROXY'] = 'http://127.0.0.1:8083'
         end
 
-        include_examples "*_PROXY var"
+        include_examples "*_PROXY var (through proxy)"
       end
     end
   end
