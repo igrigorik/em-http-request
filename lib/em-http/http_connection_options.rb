@@ -7,7 +7,6 @@ class HttpConnectionOptions
     @inactivity_timeout  = options[:inactivity_timeout] ||= 10   # default connection inactivity (post-setup) timeout
 
     @tls   = options[:tls] || options[:ssl] || {}
-    @proxy = options[:proxy] || proxy_from_env
 
     if bind = options[:bind]
       @bind = bind[:host] || '0.0.0.0'
@@ -21,6 +20,8 @@ class HttpConnectionOptions
     @https = uri.scheme == "https"
     uri.port ||= (@https ? 443 : 80)
     @tls[:sni_hostname] = uri.host
+
+    @proxy = options[:proxy] || proxy_from_env
 
     if proxy
       @host = proxy[:host]
