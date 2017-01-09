@@ -7,7 +7,6 @@ class HttpConnectionOptions
     @inactivity_timeout  = options[:inactivity_timeout] ||= 10   # default connection inactivity (post-setup) timeout
 
     @tls   = options[:tls] || options[:ssl] || {}
-    @proxy = options[:proxy]
 
     if bind = options[:bind]
       @bind = bind[:host] || '0.0.0.0'
@@ -22,7 +21,9 @@ class HttpConnectionOptions
     uri.port ||= (@https ? 443 : 80)
     @tls[:sni_hostname] = uri.host
 
-    if proxy = options[:proxy]
+    @proxy = options[:proxy] || proxy_from_env
+
+    if proxy
       @host = proxy[:host]
       @port = proxy[:port]
     else
@@ -41,5 +42,28 @@ class HttpConnectionOptions
 
   def socks_proxy?
     @proxy && (@proxy[:type] == :socks5)
+  end
+
+  def proxy_from_env
+    # TODO: Add support for $http_no_proxy or $no_proxy ?
+    proxy_str = if @https
+                  ENV['HTTPS_PROXY'] || ENV['https_proxy']
+                else
+                  ENV['HTTP_PROXY'] || ENV['http_proxy']
+
+                # Fall-back to $ALL_PROXY if none of the above env-vars have values
+                end || ENV['ALL_PROXY']
+
+    # Addressable::URI::parse will return `nil` if given `nil` and an empty URL for an empty string
+    # so, let's short-circuit that:
+    return if !proxy_str || proxy_str.empty?
+
+    proxy_env_uri = Addressable::URI::parse(proxy_str)
+    { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
+
+  rescue Addressable::URI::InvalidURIError
+    # An invalid env-var shouldn't crash the config step, IMHO.
+    # We should somehow log / warn about this, perhaps...
+    return
   end
 end
