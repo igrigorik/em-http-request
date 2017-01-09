@@ -16,6 +16,21 @@ shared_examples "*_PROXY var (through proxy)" do
   end
 end
 
+shared_examples "*_PROXY var (testing var)" do
+  subject { HttpConnectionOptions.new("#{proxy_test_scheme}://example.com", {}) }
+  it { expect(subject.proxy_from_env).to eq({ :host => "127.0.0.1", :port => 8083, :type => :http }) }
+  it { expect(subject.host).to eq "127.0.0.1" }
+  it { expect(subject.port).to be 8083 }
+  it do
+    case proxy_test_scheme.to_sym
+    when :http
+      expect(subject.http_proxy?).to be_truthy
+    when :https
+      expect(subject.connect_proxy?).to be_truthy
+    end
+  end
+end
+
 describe EventMachine::HttpRequest do
 
   context "connections via" do
@@ -181,4 +196,73 @@ describe EventMachine::HttpRequest do
     end
   end
 
+  context "when parsing *_PROXY vars" do
+    context "without a *_PROXY var" do
+      before(:all) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+      end
+
+      subject { HttpConnectionOptions.new("http://example.com", {}) }
+      it { expect(subject.proxy_from_env).to be_nil }
+      it { expect(subject.host).to eq "example.com" }
+      it { expect(subject.port).to be 80 }
+      it { expect(subject.http_proxy?).to be_falsey }
+      it { expect(subject.connect_proxy?).to be_falsey }
+    end
+
+    context "with $HTTP_PROXY env" do
+      let(:proxy_test_scheme) { :http }
+
+      before(:each) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+        ENV['HTTP_PROXY'] = 'http://127.0.0.1:8083'
+      end
+
+      include_examples "*_PROXY var (testing var)"
+    end
+
+    context "with $http_proxy env" do
+      let(:proxy_test_scheme) { :http }
+
+      before(:each) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+        ENV['http_proxy'] = 'http://127.0.0.1:8083'
+      end
+
+      include_examples "*_PROXY var (testing var)"
+    end
+
+    context "with $HTTPS_PROXY env" do
+      let(:proxy_test_scheme) { :https }
+
+      before(:each) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+        ENV['HTTPS_PROXY'] = 'http://127.0.0.1:8083'
+      end
+
+      include_examples "*_PROXY var (testing var)"
+    end
+
+    context "with $https_proxy env" do
+      let(:proxy_test_scheme) { :https }
+
+      before(:each) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+        ENV['https_proxy'] = 'http://127.0.0.1:8083'
+      end
+
+      include_examples "*_PROXY var (testing var)"
+    end
+
+    context "with $ALL_PROXY env" do
+      let(:proxy_test_scheme) { :https }
+
+      before(:each) do
+        PROXY_ENV_VARS.each {|k| ENV.delete k }
+        ENV['ALL_PROXY'] = 'http://127.0.0.1:8083'
+      end
+
+      include_examples "*_PROXY var (testing var)"
+    end
+  end
 end
