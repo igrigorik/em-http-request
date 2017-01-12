@@ -118,6 +118,12 @@ module EventMachine
       end
     end
 
+    # Forcefully close the connection
+    def close!
+      @conn.unbind 'connection terminated'
+      on_error 'connection terminated'
+    end
+
     def on_error(msg = nil)
       @error = msg
       fail(self)
