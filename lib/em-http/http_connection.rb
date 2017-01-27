@@ -30,6 +30,36 @@ module EventMachine
     def unbind(reason=nil)
       @parent.unbind(reason)
     end
+
+    def ssl_verify_peer(cert_str)
+      cert = OpenSSL::X509::Certificate.new(cert_str)
+
+      is_signing_auth = cert_is_signing_auth(cert)
+      result = (is_signing_auth || OpenSSL::SSL.verify_certificate_identity(cert, parent.connopts.host)) &&
+        cert_chain.any? {|c| cert.verify(c.public_key) } &&
+        cert.not_after >= Time.now &&
+        cert.not_before <= Time.now
+
+      cert_chain << cert if result && is_signing_auth
+      result
+    end
+
+    private
+    def cert_chain_str
+      @cert_chain_str ||= File.read(parent.connopts.tls[:cert_chain_file])
+    end
+
+    def cert_chain
+      @cert_chain ||= begin
+        strings = cert_chain_str.lines("-----END CERTIFICATE-----").map{|x| x.strip}.compact.reject{|x| x==''}
+        strings.map{|s| OpenSSL::X509::Certificate.new(s) }
+      end
+    end
+
+    def cert_is_signing_auth(cert)
+      ext = cert.extensions.detect { |ext| ext.oid == "basicConstraints" }
+      ext && ext.value.split(/,\s+/).any? { |val| val == "CA:TRUE" }
+    end
   end
 
   class HttpConnection
