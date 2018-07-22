@@ -230,6 +230,9 @@ module EventMachine
       elsif @req_body.is_a?(Pathname)
         @conn.stream_file_data @req_body.to_path, http_chunks: false
 
+      elsif @req_body.respond_to?(:read) && @req_body.respond_to?(:eof?)   # IO or IO-like object
+        @conn.stream_data @req_body
+
       else
         raise "Don't know how to send request body: #{@req_body.inspect}"
       end

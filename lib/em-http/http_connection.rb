@@ -1,3 +1,5 @@
+require 'em/io_streamer'
+
 module EventMachine
 
   module HTTPMethods
@@ -238,6 +240,10 @@ module EventMachine
 
     def stream_file_data(filename, args = {})
       @conn.stream_file_data filename, args
+    end
+
+    def stream_data(io, opts = {})
+      EventMachine::IOStreamer.new(self, io, opts)
     end
 
     private
