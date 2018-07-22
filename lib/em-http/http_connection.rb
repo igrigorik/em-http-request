@@ -151,7 +151,11 @@ module EventMachine
 
     def receive_data(data)
       begin
-        @p << data
+        if client.request_body_pending? && data.starts_with?('HTTP/1.1 100 Continue')
+          client.send_request_body
+        else
+          @p << data
+        end
       rescue HTTP::Parser::Error => e
         c = @clients.shift
         c.nil? ? unbind(e.message) : c.on_error(e.message)

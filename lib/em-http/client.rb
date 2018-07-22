@@ -199,7 +199,7 @@ module EventMachine
       @conn.send_data request_header
 
       @req_body = body || (@req.file && Pathname.new(@req.file))
-      send_request_body
+      send_request_body unless @req.headers['expect'] == '100-continue'
     end
 
     def on_body_data(data)
@@ -221,6 +221,10 @@ module EventMachine
       else
         @response << data
       end
+    end
+
+    def request_body_pending?
+      !!@req_body
     end
 
     def send_request_body
