@@ -1,12 +1,10 @@
+require 'em/streamer'
+
 # similar to EventMachine::FileStreamer, but for any IO object
 module EventMachine
   class IOStreamer
     include Deferrable
-
-    # Wait until next tick to send more data when 50k is still in the outgoing buffer
-    BackpressureLevel = 50000
-    # Send 16k chunks at a time
-    ChunkSize = 16384
+    CHUNK_SIZE = 16384
 
     # @param [EventMachine::Connection] connection
     # @param [IO] io Data source
@@ -18,7 +16,7 @@ module EventMachine
       @io = io
       @http_chunks = opts[:http_chunks]
 
-      @buff = String.new(capacity: ChunkSize)
+      @buff = String.new(capacity: CHUNK_SIZE)
       @io.binmode if @io.respond_to?(:binmode)
       stream_one_chunk
     end
@@ -35,12 +33,12 @@ module EventMachine
           break
         end
 
-        if @connection.respond_to?(:get_outbound_data_size) && (@connection.get_outbound_data_size > BackpressureLevel)
+        if @connection.respond_to?(:get_outbound_data_size) && (@connection.get_outbound_data_size > FileStreamer::BackpressureLevel)
           EventMachine::next_tick { stream_one_chunk }
           break
         end
 
-        if @io.read(ChunkSize, @buff)
+        if @io.read(CHUNK_SIZE, @buff)
           @connection.send_data("#{@buff.length.to_s(16)}\r\n") if @http_chunks
           @connection.send_data(@buff)
           @connection.send_data("\r\n") if @http_chunks
