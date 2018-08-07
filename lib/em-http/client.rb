@@ -182,7 +182,7 @@ module EventMachine
       # Set the Content-Length if body is given,
       # or we're doing an empty post or put
       if body
-        head['content-length'] = body.bytesize  if body.respond_to?(:bytesize)
+        head['content-length'] ||= body.respond_to?(:bytesize) ? body.bytesize : body.size
       elsif @req.method == 'POST' or @req.method == 'PUT'
         # wont happen if body is set and we already set content-length above
         head['content-length'] ||= 0
@@ -224,6 +224,8 @@ module EventMachine
     end
 
     def send_request_body
+      return  if @req_body.nil?
+
       if @req_body.is_a?(String)
         @conn.send_data @req_body
 
