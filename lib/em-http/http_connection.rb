@@ -117,8 +117,13 @@ module EventMachine
       @p.header_value_type = :mixed
       @p.on_headers_complete = proc do |h|
         if client
-          client.parse_response_header(h, @p.http_version, @p.status_code)
-          :reset if client.req.no_body?
+          if @p.status_code == 100
+            client.send_request_body
+            @p.reset!
+          else
+            client.parse_response_header(h, @p.http_version, @p.status_code)
+            :reset if client.req.no_body?
+          end
         else
           # if we receive unexpected data without a pending client request
           # reset the parser to avoid firing any further callbacks and close
@@ -151,11 +156,7 @@ module EventMachine
 
     def receive_data(data)
       begin
-        if client.request_body_pending? && data.starts_with?('HTTP/1.1 100 Continue')
-          client.send_request_body
-        else
-          @p << data
-        end
+        @p << data
       rescue HTTP::Parser::Error => e
         c = @clients.shift
         c.nil? ? unbind(e.message) : c.on_error(e.message)
