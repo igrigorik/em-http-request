@@ -817,7 +817,7 @@ describe EventMachine::HttpRequest do
       req.callback do
         req = conn.get
 
-        req.callback { failed(http) }
+        req.callback { fail }
         req.errback do
           req.error.should match('connection closed by server')
           EventMachine.stop
