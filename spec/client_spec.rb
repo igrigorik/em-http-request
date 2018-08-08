@@ -256,6 +256,19 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  xit "should support expect-continue header" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090').post :body => "data", :head => { 'expect' => '100-continue' }
+
+      http.errback { failed(http) }
+      http.callback {
+        http.response_header.status.should == 200
+        http.response.should == "data"
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should perform successful GET with custom header" do
     EventMachine.run {
       http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').get :head => {'if-none-match' => 'evar!'}
