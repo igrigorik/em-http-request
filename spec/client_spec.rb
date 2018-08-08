@@ -789,6 +789,28 @@ describe EventMachine::HttpRequest do
     }
   end
 
+  it "streams POST request from disk via Pathname" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').post :body => Pathname.new('spec/fixtures/google.ca')
+      http.errback { failed(http) }
+      http.callback {
+        http.response.should match('google')
+        EventMachine.stop
+      }
+    }
+  end
+
+  it "streams POST request from IO object" do
+    EventMachine.run {
+      http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/').post :body => StringIO.new(File.read('spec/fixtures/google.ca'))
+      http.errback { failed(http) }
+      http.callback {
+        http.response.should match('google')
+        EventMachine.stop
+      }
+    }
+  end
+
   it "should reconnect if connection was closed between requests" do
     EventMachine.run {
       conn = EM::HttpRequest.new('http://127.0.0.1:8090/')
