@@ -1,6 +1,6 @@
 # #--
 # Includes portion originally Copyright (C)2008 Michael Fellinger
-# license See file LICENSE for details
+# MIT License
 # #--
 
 require 'rack'
@@ -53,7 +53,7 @@ module Stallion
 
   def self.run(options = {})
     options = {:Host => "127.0.0.1", :Port => 8090}.merge(options)
-    Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
+    Rack::Handler::Thin.run(Rack::Lint.new(self), options)
   end
 
   def self.call(env)
