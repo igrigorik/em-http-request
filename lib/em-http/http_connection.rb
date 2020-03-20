@@ -192,6 +192,7 @@ module EventMachine
           conn = HttpConnection.new
           client.conn = conn
           conn.connopts = @connopts
+          conn.connopts.https = new_location.scheme == "https"
           conn.uri = client.req.uri
           conn.activate_connection(client)
 

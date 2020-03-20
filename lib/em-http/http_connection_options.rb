@@ -1,6 +1,7 @@
 class HttpConnectionOptions
   attr_reader :host, :port, :tls, :proxy, :bind, :bind_port
   attr_reader :connect_timeout, :inactivity_timeout
+  attr_writer :https
 
   def initialize(uri, options)
     @connect_timeout     = options[:connect_timeout] || 5        # default connection setup timeout
