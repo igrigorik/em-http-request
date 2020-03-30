@@ -22,7 +22,11 @@ module EventMachine
     end
 
     def receive_data(data)
-      @parent.receive_data data
+      begin
+        @parent.receive_data data
+      rescue EventMachine::Connectify::CONNECTError => e
+        @parent.close(e.message)
+      end
     end
 
     def connection_completed
