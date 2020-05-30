@@ -5,6 +5,7 @@ require 'http/parser'
 
 require 'base64'
 require 'socket'
+require 'openssl'
 
 require 'em-http/core_ext/bytesize'
 require 'em-http/http_connection'
