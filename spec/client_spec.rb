@@ -977,4 +977,24 @@ describe EventMachine::HttpRequest do
       }
     end
   end
+
+  context "IPv6" do
+    it "should perform successful GET" do
+      EventMachine.run {
+        @s = StubServer.new({
+          response: "HTTP/1.1 200 OK\r\n\r\nHello IPv6",
+          port: 8091,
+          host: '::1',
+        })
+        http = EventMachine::HttpRequest.new('http://[::1]:8091/').get
+
+        http.errback { failed(http) }
+        http.callback {
+          http.response_header.status.should == 200
+          http.response.should match(/Hello IPv6/)
+          EventMachine.stop
+        }
+      }
+    end
+  end
 end

@@ -34,7 +34,7 @@ class HttpClientOptions
 
     @uri = uri
     @path = uri.path
-    @host = uri.host
+    @host = uri.hostname
     @port = uri.port
     @query = query
 

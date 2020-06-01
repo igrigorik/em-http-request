@@ -20,7 +20,7 @@ class HttpConnectionOptions
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
     @https = uri.scheme == "https"
     uri.port ||= (@https ? 443 : 80)
-    @tls[:sni_hostname] = uri.host
+    @tls[:sni_hostname] = uri.hostname
 
     @proxy = options[:proxy] || proxy_from_env
 
@@ -28,7 +28,7 @@ class HttpConnectionOptions
       @host = proxy[:host]
       @port = proxy[:port]
     else
-      @host = uri.host
+      @host = uri.hostname
       @port = uri.port
     end
   end
