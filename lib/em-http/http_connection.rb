@@ -64,7 +64,7 @@ module EventMachine
     def ssl_handshake_completed
       unless verify_peer?
         warn "[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
-             " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details"
+             " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details" unless parent.connopts.tls.has_key?(:verify_peer)
         return true
       end
 
