@@ -17,6 +17,8 @@ requires_connection do
 
     describe "TLS hostname verification" do
       before do
+        @cve_warning = "[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
+                       " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details"
         @orig_stderr = $stderr
         $stderr = StringIO.new
       end
@@ -31,8 +33,7 @@ requires_connection do
 
           http.callback {
             $stderr.rewind
-            $stderr.string.chomp.should_not eq("[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
-                                               " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details")
+            $stderr.string.chomp.should_not eq(@cve_warning)
 
             EventMachine.stop
           }
@@ -45,8 +46,7 @@ requires_connection do
 
           http.callback {
             $stderr.rewind
-            $stderr.string.chomp.should_not eq("[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
-                                               " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details")
+            $stderr.string.chomp.should_not eq(@cve_warning)
 
             EventMachine.stop
           }
@@ -59,8 +59,7 @@ requires_connection do
 
           http.callback {
             $stderr.rewind
-            $stderr.string.chomp.should eq("[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
-                                           " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details")
+            $stderr.string.chomp.should eq(@cve_warning)
 
             EventMachine.stop
           }
