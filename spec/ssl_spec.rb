@@ -38,6 +38,34 @@ requires_connection do
           }
         }
       end
+
+      it "should not warn if verify_peer is true" do
+        EventMachine.run {
+          http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail', {tls: {verify_peer: true}}).get
+
+          http.callback {
+            $stderr.rewind
+            $stderr.string.chomp.should_not eq("[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
+                                               " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details")
+
+            EventMachine.stop
+          }
+        }
+      end
+
+      it "should warn if verify_peer is unspecified" do
+        EventMachine.run {
+          http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail').get
+
+          http.callback {
+            $stderr.rewind
+            $stderr.string.chomp.should eq("[WARNING; em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
+                                           " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details")
+
+            EventMachine.stop
+          }
+        }
+      end
     end
   end
 
