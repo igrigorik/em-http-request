@@ -53,7 +53,13 @@ module Stallion
 
   def self.run(options = {})
     options = {:Host => "127.0.0.1", :Port => 8090}.merge(options)
-    Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
+
+    ruby_version = RUBY_VERSION.split('.').map(&:to_i)
+    if ruby_version[0] >= 3
+      Rack::Handler::Mongrel.run(Rack::Lint.new(self), **options)
+    else
+      Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
+    end
   end
 
   def self.call(env)
