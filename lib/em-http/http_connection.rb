@@ -174,7 +174,6 @@ module EventMachine
       @pending = []
 
       @p = Http::Parser.new
-      @p.header_value_type = :mixed
       @p.on_headers_complete = proc do |h|
         if client
           if @p.status_code == 100
