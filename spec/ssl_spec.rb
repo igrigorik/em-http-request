@@ -9,7 +9,7 @@ requires_connection do
 
         http.errback { failed(http) }
         http.callback {
-          http.response_header.status.should == 302
+          http.response_header.status.should == 301
           EventMachine.stop
         }
       }

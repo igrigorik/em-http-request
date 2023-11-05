@@ -80,11 +80,10 @@ requires_connection do
     end
 
     it "should detect deflate encoding" do
-      # pending "need an endpoint which supports deflate.. MSN is no longer"
       EventMachine.run {
 
         options = {:head => {"accept-encoding" => "deflate"}, :redirects => 5}
-        http = EventMachine::HttpRequest.new('http://www.libpng.org/').get options
+        http = EventMachine::HttpRequest.new('https://www.bing.com/').get options
 
         http.errback { failed(http) }
         http.callback {
