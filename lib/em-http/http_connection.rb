@@ -190,6 +190,7 @@ module EventMachine
           # the connection because we're processing invalid HTTP
           @p.reset!
           unbind
+          :stop
         end
       end
 
@@ -198,7 +199,7 @@ module EventMachine
       end
 
       @p.on_message_complete = proc do
-        if client && !client.continue?
+        if !client.continue?
           c = @clients.shift
           c.state = :finished
           c.on_request_complete
