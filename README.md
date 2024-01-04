@@ -1,6 +1,7 @@
 # EM-HTTP-Request 
 
-[![Gem Version](https://badge.fury.io/rb/em-http-request.svg)](http://rubygems.org/gems/em-http-request) [![Build Status](https://travis-ci.org/igrigorik/em-http-request.svg)](https://travis-ci.org/igrigorik/em-http-request)
+[![Gem Version](https://badge.fury.io/rb/em-http-request.svg)](http://rubygems.org/gems/em-http-request)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/igrigorik/em-http-request/ci.yml)](https://github.com/igrigorik/em-http-request/actions/workflows/ci.yml)
 
 Async (EventMachine) HTTP client, with support for:
 

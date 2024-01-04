@@ -190,6 +190,7 @@ module EventMachine
           # the connection because we're processing invalid HTTP
           @p.reset!
           unbind
+          :stop
         end
       end
 
