@@ -1,4 +1,4 @@
-PROXY_ENV_VARS = %w[HTTP_PROXY http_proxy HTTPS_PROXY https_proxy ALL_PROXY]
+PROXY_ENV_VARS = %w[HTTP_PROXY http_proxy HTTPS_PROXY https_proxy ALL_PROXY NO_PROXY no_proxy].freeze
 
 RSpec.configure do |config|
   proxy_envs = {}
