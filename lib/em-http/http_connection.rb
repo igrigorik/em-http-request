@@ -55,10 +55,9 @@ module EventMachine
         rescue OpenSSL::X509::StoreError => e
           raise e unless e.message == 'cert already in hash table'
         end
-        true
-      else
-        raise OpenSSL::SSL::SSLError.new(%(unable to verify the server certificate for "#{host}"))
       end
+
+      true
     end
 
     def ssl_handshake_completed
@@ -68,7 +67,8 @@ module EventMachine
         return true
       end
 
-      unless OpenSSL::SSL.verify_certificate_identity(@last_seen_cert, host)
+      unless certificate_store.verify(@last_seen_cert) &&
+             OpenSSL::SSL.verify_certificate_identity(@last_seen_cert, host)
         raise OpenSSL::SSL::SSLError.new(%(host "#{host}" does not match the server certificate))
       else
         true
