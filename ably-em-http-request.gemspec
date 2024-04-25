@@ -3,13 +3,13 @@ $:.push File.expand_path('../lib', __FILE__)
 require 'em-http/version'
 
 Gem::Specification.new do |s|
-  s.name        = 'em-http-request'
+  s.name        = 'ably-em-http-request'
   s.version     = EventMachine::HttpRequest::VERSION
 
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ilya Grigorik"]
-  s.email       = ['ilya@igvita.com']
-  s.homepage    = 'http://github.com/igrigorik/em-http-request'
+  s.email       = ['lawrence.forooghian@ably.com', 'lewis@lmars.net', 'matt@ably.io']
+  s.homepage    = 'https://github.com/ably-forks/em-http-request'
   s.summary     = 'EventMachine based, async HTTP Request client'
   s.description = s.summary
   s.license     = 'MIT'
