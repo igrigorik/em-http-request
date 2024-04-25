@@ -2,13 +2,13 @@ require 'helper'
 
 requires_connection do
 
-  describe EventMachine::HttpRequest do
+  describe EventMachine::AblyHttpRequest::HttpRequest do
 
     it "should perform successful pipelined GETs" do
       EventMachine.run do
 
         # Mongrel doesn't support pipelined requests - bah!
-        conn = EventMachine::HttpRequest.new('http://www.bing.com/')
+        conn = EventMachine::AblyHttpRequest::HttpRequest.new('http://www.bing.com/')
 
         pipe1 = conn.get :keepalive => true
         pipe2 = conn.get :path => '/news', :keepalive => true
@@ -36,7 +36,7 @@ requires_connection do
 
     it "should perform successful pipelined HEAD requests" do
       EventMachine.run do
-        conn = EventMachine::HttpRequest.new('http://www.bing.com/')
+        conn = EventMachine::AblyHttpRequest::HttpRequest.new('http://www.bing.com/')
 
         pipe1 = conn.head :keepalive => true
         pipe2 = conn.head :path => '/news', :keepalive => true

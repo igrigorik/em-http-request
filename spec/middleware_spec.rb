@@ -1,6 +1,6 @@
 require 'helper'
 
-describe EventMachine::HttpRequest do
+describe EventMachine::AblyHttpRequest::HttpRequest do
 
   class EmptyMiddleware; end
 
@@ -13,7 +13,7 @@ describe EventMachine::HttpRequest do
   it "should accept middleware" do
     EventMachine.run {
       lambda {
-        conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+        conn = EM::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090')
         conn.use ResponseMiddleware
         conn.use EmptyMiddleware
 
@@ -37,7 +37,7 @@ describe EventMachine::HttpRequest do
 
     it "should accept middleware initialization parameters" do
       EventMachine.run {
-        conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+        conn = EM::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090')
         conn.use ConfigurableMiddleware, 'conf-value' do
           'block-value'
         end
@@ -62,7 +62,7 @@ describe EventMachine::HttpRequest do
 
     it "should execute response middleware before user callbacks" do
       EventMachine.run {
-        conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+        conn = EM::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090')
         conn.use ResponseMiddleware
 
         req = conn.get
@@ -76,9 +76,9 @@ describe EventMachine::HttpRequest do
 
     it "should execute global response middleware before user callbacks" do
       EventMachine.run {
-        EM::HttpRequest.use GlobalMiddleware
+        EM::AblyHttpRequest::HttpRequest.use GlobalMiddleware
 
-        conn = EM::HttpRequest.new('http://127.0.0.1:8090')
+        conn = EM::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090')
 
         req = conn.get
         req.callback {
@@ -101,7 +101,7 @@ describe EventMachine::HttpRequest do
 
     it "should execute request middleware before dispatching request" do
       EventMachine.run {
-        conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/')
+        conn = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/')
         conn.use RequestMiddleware
 
         req = conn.post :body => "data"
@@ -127,7 +127,7 @@ describe EventMachine::HttpRequest do
 
     it "should use middleware to JSON encode and JSON decode the body" do
       EventMachine.run {
-        conn = EventMachine::HttpRequest.new('http://127.0.0.1:8090/')
+        conn = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/')
         conn.use JSONify
 
         req = conn.post :body => {:ruby => :hash}

@@ -4,7 +4,7 @@ require 'em-http/version'
 
 Gem::Specification.new do |s|
   s.name        = 'ably-em-http-request'
-  s.version     = EventMachine::HttpRequest::VERSION
+  s.version     = EventMachine::AblyHttpRequest::HttpRequest::VERSION
 
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Ilya Grigorik"]

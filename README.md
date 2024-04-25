@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/ably-em-http-request.svg)](http://rubygems.org/gems/ably-em-http-request)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ably-forks/em-http-request/ci.yml)](https://github.com/ably-forks/em-http-request/actions/workflows/ci.yml)
 
-**Note:** This is Ably’s fork of https://github.com/igrigorik/em-http-request. We created it to fix a TLS-related issue in the original library, which seems to be no longer maintained. This fork exists to be used inside our [ably-ruby SDK](https://github.com/ably/ably-ruby). We have only made the changes required to be able to distribute this library as a separate gem; in particular, most of the documentation still refers to the original library.
+**Note:** This is Ably’s fork of https://github.com/igrigorik/em-http-request. We created it to fix a TLS-related issue in the original library, which seems to be no longer maintained. This fork exists to be used inside our [ably-ruby SDK](https://github.com/ably/ably-ruby). We have only made the changes required to be able to distribute this library as a separate gem; in particular, most of the documentation still refers to the original library. The constant names used in this fork have been changed so as not to clash with the original library.
 
 Async (EventMachine) HTTP client, with support for:
 

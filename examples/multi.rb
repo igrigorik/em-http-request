@@ -4,7 +4,7 @@ require 'eventmachine'
 require 'em-http'
 
 EventMachine.run {
-  multi = EventMachine::MultiRequest.new
+  multi = EventMachine::AblyHttpRequest::MultiRequest.new
 
   reqs = [
     'http://google.com/',
@@ -12,7 +12,7 @@ EventMachine.run {
   ]
 
   reqs.each_with_index do |url, idx|
-    http = EventMachine::HttpRequest.new(url, :connect_timeout => 1)
+    http = EventMachine::AblyHttpRequest::HttpRequest.new(url, :connect_timeout => 1)
     req = http.get
     multi.add idx, req
   end
