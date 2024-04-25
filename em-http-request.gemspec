@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.summary     = 'EventMachine based, async HTTP Request client'
   s.description = s.summary
   s.license     = 'MIT'
-  s.rubyforge_project = 'em-http-request'
 
   s.add_dependency 'addressable', '>= 2.3.4'
   s.add_dependency 'cookiejar', '!= 0.3.1'
