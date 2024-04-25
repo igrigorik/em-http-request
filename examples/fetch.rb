@@ -12,7 +12,7 @@ pending = urls.size
 
 EM.run do
   urls.each do |url|
-    http = EM::HttpRequest.new(url).get
+    http = EM::AblyHttpRequest::HttpRequest.new(url).get
     http.callback {
       puts "#{url}\n#{http.response_header.status} - #{http.response.length} bytes\n"
       puts http.response

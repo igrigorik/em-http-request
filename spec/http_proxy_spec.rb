@@ -3,7 +3,7 @@ require 'helper'
 shared_examples "*_PROXY var (through proxy)" do
   it "should use HTTP proxy" do
     EventMachine.run {
-      http = EventMachine::HttpRequest.new("#{proxy_test_scheme}://127.0.0.1:8090/?q=test").get
+      http = EventMachine::AblyHttpRequest::HttpRequest.new("#{proxy_test_scheme}://127.0.0.1:8090/?q=test").get
 
       http.errback { failed(http) }
       http.callback {
@@ -17,7 +17,7 @@ shared_examples "*_PROXY var (through proxy)" do
 end
 
 shared_examples "*_PROXY var (testing var)" do
-  subject { HttpConnectionOptions.new("#{proxy_test_scheme}://example.com", {}) }
+  subject { AblyHttpRequest::HttpConnectionOptions.new("#{proxy_test_scheme}://example.com", {}) }
   it { expect(subject.proxy_from_env).to eq({ :host => "127.0.0.1", :port => 8083, :type => :http }) }
   it { expect(subject.host).to eq "127.0.0.1" }
   it { expect(subject.port).to be 8083 }
@@ -31,7 +31,7 @@ shared_examples "*_PROXY var (testing var)" do
   end
 end
 
-describe EventMachine::HttpRequest do
+describe EventMachine::AblyHttpRequest::HttpRequest do
 
   context "connections via" do
     context "without *_PROXY env" do
@@ -40,7 +40,7 @@ describe EventMachine::HttpRequest do
 
       it "should use HTTP proxy" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/?q=test', proxy).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/?q=test', proxy).get
 
           http.errback { failed(http) }
           http.callback {
@@ -54,7 +54,7 @@ describe EventMachine::HttpRequest do
 
       it "should use HTTP proxy with authentication" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/proxyauth?q=test', authenticated_proxy).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/proxyauth?q=test', authenticated_proxy).get
 
           http.errback { failed(http) }
           http.callback {
@@ -69,7 +69,7 @@ describe EventMachine::HttpRequest do
       it "should send absolute URIs to the proxy server" do
         EventMachine.run {
 
-          http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/?q=test', proxy).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/?q=test', proxy).get
 
           http.errback { failed(http) }
           http.callback {
@@ -87,7 +87,7 @@ describe EventMachine::HttpRequest do
       it "should strip basic auth from before the host in URI sent to proxy" do
         EventMachine.run {
 
-          http = EventMachine::HttpRequest.new('http://user:pass@127.0.0.1:8090/echo_authorization_header', proxy).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://user:pass@127.0.0.1:8090/echo_authorization_header', proxy).get
 
           http.errback { failed(http) }
           http.callback {
@@ -103,7 +103,7 @@ describe EventMachine::HttpRequest do
 
       it "should include query parameters specified in the options" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/', proxy).get :query => { 'q' => 'test' }
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/', proxy).get :query => { 'q' => 'test' }
 
           http.errback { failed(http) }
           http.callback {
@@ -116,7 +116,7 @@ describe EventMachine::HttpRequest do
 
       it "should use HTTP proxy while redirecting" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('http://127.0.0.1:8090/redirect', proxy).get :redirects => 1
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://127.0.0.1:8090/redirect', proxy).get :redirects => 1
 
           http.errback { failed(http) }
           http.callback {
@@ -202,7 +202,7 @@ describe EventMachine::HttpRequest do
         PROXY_ENV_VARS.each {|k| ENV.delete k }
       end
 
-      subject { HttpConnectionOptions.new("http://example.com", {}) }
+      subject { AblyHttpRequest::HttpConnectionOptions.new("http://example.com", {}) }
       it { expect(subject.proxy_from_env).to be_nil }
       it { expect(subject.host).to eq "example.com" }
       it { expect(subject.port).to be 80 }

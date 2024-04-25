@@ -2,10 +2,10 @@ require 'helper'
 
 requires_connection do
 
-  describe EventMachine::HttpRequest do
+  describe EventMachine::AblyHttpRequest::HttpRequest do
     it "should initiate SSL/TLS on HTTPS connections" do
       EventMachine.run {
-        http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail/').get
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('https://mail.google.com:443/mail/').get
 
         http.errback { failed(http) }
         http.callback {
@@ -29,7 +29,7 @@ requires_connection do
 
       it "should not warn if verify_peer is specified" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail', {tls: {verify_peer: false}}).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('https://mail.google.com:443/mail', {tls: {verify_peer: false}}).get
 
           http.callback {
             $stderr.rewind
@@ -42,7 +42,7 @@ requires_connection do
 
       it "should not warn if verify_peer is true" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail', {tls: {verify_peer: true}}).get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('https://mail.google.com:443/mail', {tls: {verify_peer: true}}).get
 
           http.callback {
             $stderr.rewind
@@ -55,7 +55,7 @@ requires_connection do
 
       it "should warn if verify_peer is unspecified" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('https://mail.google.com:443/mail').get
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('https://mail.google.com:443/mail').get
 
           http.callback {
             $stderr.rewind

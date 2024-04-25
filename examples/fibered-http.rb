@@ -9,7 +9,7 @@ require 'fiber'
 
 def async_fetch(url)
   f = Fiber.current
-  http = EventMachine::HttpRequest.new(url, :connect_timeout => 10, :inactivity_timeout => 20).get
+  http = EventMachine::AblyHttpRequest::HttpRequest.new(url, :connect_timeout => 10, :inactivity_timeout => 20).get
 
   http.callback { f.resume(http) }
   http.errback  { f.resume(http) }
