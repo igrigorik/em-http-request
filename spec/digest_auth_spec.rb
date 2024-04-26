@@ -17,7 +17,7 @@ describe 'Digest Auth Authentication header generation' do
       password: 'digest_password'
     }
 
-    middleware = EM::Middleware::DigestAuth.new(www_authenticate, params)
+    middleware = EM::AblyHttpRequest::Middleware::DigestAuth.new(www_authenticate, params)
     middleware.build_auth_digest('GET', '/').should == @reference_header
   end
 
@@ -29,7 +29,7 @@ describe 'Digest Auth Authentication header generation' do
       password: 'digest_password'
     }
 
-    middleware = EM::Middleware::DigestAuth.new(www_authenticate, params)
+    middleware = EM::AblyHttpRequest::Middleware::DigestAuth.new(www_authenticate, params)
     middleware.build_auth_digest('GET', '/').should_not == @reference_header
   end
 
@@ -41,7 +41,7 @@ describe 'Digest Auth Authentication header generation' do
       password: 'digest_password'
     }
 
-    middleware = EM::Middleware::DigestAuth.new(www_authenticate, params)
+    middleware = EM::AblyHttpRequest::Middleware::DigestAuth.new(www_authenticate, params)
     middleware.build_auth_digest('GET', '/').should_not == @reference_header
   end
 

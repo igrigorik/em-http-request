@@ -2,8 +2,8 @@
 
 require 'helper'
 
-describe EventMachine::HttpEncoding do
-  include EventMachine::HttpEncoding
+describe EventMachine::AblyHttpRequest::HttpEncoding do
+  include EventMachine::AblyHttpRequest::HttpEncoding
 
   it "should transform a basic hash into HTTP POST Params" do
     form_encode_body({:a => "alpha", :b => "beta"}).should == "a=alpha&b=beta"

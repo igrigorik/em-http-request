@@ -2,11 +2,11 @@ require 'helper'
 
 requires_connection do
 
-  describe EventMachine::HttpRequest do
+  describe EventMachine::AblyHttpRequest::HttpRequest do
 
     it "should follow redirects on HEAD method (external)" do
       EventMachine.run {
-        http = EventMachine::HttpRequest.new('http://www.google.com/').head :redirects => 1
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('http://www.google.com/').head :redirects => 1
         http.errback { failed(http) }
         http.callback {
           http.response_header.status.should == 200
@@ -17,7 +17,7 @@ requires_connection do
 
     it "should follow redirect to https and initiate the handshake" do
       EventMachine.run {
-        http = EventMachine::HttpRequest.new('http://github.com/').get :redirects => 5
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('http://github.com/').get :redirects => 5
 
         http.errback { failed(http) }
         http.callback {
@@ -31,7 +31,7 @@ requires_connection do
       EventMachine.run {
 
         # digg.com uses chunked encoding
-        http = EventMachine::HttpRequest.new('http://www.httpwatch.com/httpgallery/chunked/').get
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('http://www.httpwatch.com/httpgallery/chunked/').get
 
         http.errback { failed(http) }
         http.callback {
@@ -68,7 +68,7 @@ requires_connection do
         # MUST send a final response after the request has been completed.
 
         url = 'http://ws.serviceobjects.com/lv/LeadValidation.asmx/ValidateLead_V2'
-        http = EventMachine::HttpRequest.new(url).post :body => {:name => :test}
+        http = EventMachine::AblyHttpRequest::HttpRequest.new(url).post :body => {:name => :test}
 
         http.errback { failed(http) }
         http.callback {
@@ -83,7 +83,7 @@ requires_connection do
       EventMachine.run {
 
         options = {:head => {"accept-encoding" => "deflate"}, :redirects => 5}
-        http = EventMachine::HttpRequest.new('https://www.bing.com/').get options
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('https://www.bing.com/').get options
 
         http.errback { failed(http) }
         http.callback {
@@ -99,7 +99,7 @@ requires_connection do
       EventMachine.run {
         options = {:head => {"accept-encoding" => "gzip"}}
         # GitHub sends chunked gzip, time for a little Inception ;)
-        http = EventMachine::HttpRequest.new('https://github.com/igrigorik/em-http-request/commits/master').get options
+        http = EventMachine::AblyHttpRequest::HttpRequest.new('https://github.com/igrigorik/em-http-request/commits/master').get options
 
         http.errback { failed(http) }
         http.callback {
@@ -121,7 +121,7 @@ requires_connection do
       it "should default to non-keepalive" do
         EventMachine.run {
           headers = {'If-Modified-Since' => 'Thu, 05 Aug 2010 22:54:44 GMT'}
-          http = EventMachine::HttpRequest.new('http://www.google.com/images/logos/ps_logo2.png').get :head => headers
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('http://www.google.com/images/logos/ps_logo2.png').get :head => headers
 
           http.errback { fail }
           start = Time.now.to_i
@@ -134,7 +134,7 @@ requires_connection do
 
       it "should work with keep-alive servers" do
         EventMachine.run {
-          http = EventMachine::HttpRequest.new('https://github.com/igrigorik/em-http-request').get :keepalive => true
+          http = EventMachine::AblyHttpRequest::HttpRequest.new('https://github.com/igrigorik/em-http-request').get :keepalive => true
 
           http.errback { failed(http) }
           http.callback {

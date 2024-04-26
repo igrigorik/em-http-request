@@ -21,7 +21,7 @@ with_server do
         error = 0
         n.times do
           EM.next_tick do
-            http = EventMachine::HttpRequest.new(url, :connect_timeout => 1).get
+            http = EventMachine::AblyHttpRequest::HttpRequest.new(url, :connect_timeout => 1).get
 
             http.callback {
               count += 1
@@ -48,7 +48,7 @@ with_server do
       EventMachine.run {
         count = 0
         error = 0
-        conn = EventMachine::HttpRequest.new(url)
+        conn = EventMachine::AblyHttpRequest::HttpRequest.new(url)
 
         n.times do
           http = conn.get :keepalive => true
