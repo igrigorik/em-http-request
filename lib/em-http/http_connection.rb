@@ -40,36 +40,118 @@ module EventMachine
 
       # TLS verification support, original implementation by Mislav Marohnić
       # https://github.com/lostisland/faraday/blob/63cf47c95b573539f047c729bd9ad67560bc83ff/lib/faraday/adapter/em_http_ssl_patch.rb
+      #
+      # Updated by Ably, here’s why:
+      #
+      # We noticed that the existing verification mechanism is failing in the
+      # case where the certificate chain presented by the server contains a
+      # certificate that’s signed by an expired trust anchor. At the time of
+      # writing, this is the case with some Let’s Encrypt certificate chains,
+      # which contain a cross-sign by the expired DST Root X3 CA.
+      #
+      # This isn’t meant to be an issue; the certificate chain presented by the
+      # server still contains a certificate that’s a trust anchor in most
+      # modern systems. So in the case where this trust anchor exists, OpenSSL
+      # would instead construct a certification path that goes straight to that
+      # anchor, bypassing the expired certificate.
+      #
+      # Unfortunately, as described in
+      # https://github.com/eventmachine/eventmachine/issues/954#issue-1014842247,
+      # EventMachine misuses OpenSSL in a variety of ways. One of them is that
+      # it does not configure a list of trust anchors, meaning that OpenSSL is
+      # unable to construct the correct certification path in the manner
+      # described above.
+      #
+      # This means that we end up in a degenerate situation where
+      # ssl_verify_peer just receives the certificates in the chain provided by
+      # the peer. In the scenario described above, one of these certificates is
+      # expired and hence the existing verification mechanism, which "verifies"
+      # each certificate provided to ssl_verify_peer, fails.
+      #
+      # So, instead we remove the existing ad-hoc mechanism for verification
+      # (which did things I’m not sure it should have done, like putting
+      # non-trust-anchors into an OpenSSL::X509::Store) and instead employ
+      # OpenSSL (configured to use the system trust store, and hence able to
+      # construct the correct certification path) to do all the hard work of
+      # constructing the certification path and then verifying the peer
+      # certificate. (This is what, in my opinion, EventMachine ideally would
+      # be allowing OpenSSL to do in the first place. Instead, as far as I can
+      # tell, it pushes all of this responsibility onto its users, and then
+      # provides them with an insufficient API for meeting this
+      # responsibility.)
       def ssl_verify_peer(cert_string)
-        cert = nil
+        # We use ssl_verify_peer simply as a mechanism for gathering the
+        # certificate chain presented by the peer. In ssl_handshake_completed,
+        # we’ll make use of this information in order to verify the peer.
+        @peer_certificate_chain ||= []
         begin
           cert = OpenSSL::X509::Certificate.new(cert_string)
+          @peer_certificate_chain << cert
+          true
         rescue OpenSSL::X509::CertificateError
           return false
-        end
-
-        @last_seen_cert = cert
-
-        if certificate_store.verify(@last_seen_cert)
-          begin
-            certificate_store.add_cert(@last_seen_cert)
-          rescue OpenSSL::X509::StoreError => e
-            raise e unless e.message == 'cert already in hash table'
-          end
-          true
-        else
-          raise OpenSSL::SSL::SSLError.new(%(unable to verify the server certificate for "#{host}"))
         end
       end
 
       def ssl_handshake_completed
+        # It’s not great to have to perform the server certificate verification
+        # after the handshake has completed, because it means:
+        #
+        # - We have to be sure that we don’t send any data over the TLS
+        #   connection until we’ve verified the certificate. Created
+        #   https://github.com/ably/ably-ruby/issues/400 to understand whether
+        #   there’s anything we need to change to be sure of this.
+        #
+        # - If verification does fail, we have no way of failing the handshake
+        #   with a bad_certificate error.
+        #
+        # Unfortunately there doesn’t seem to be a better alternative within
+        # the TLS-related APIs provided to us by EventMachine. (Admittedly I am
+        # not familiar with EventMachine.)
+        #
+        # (Performing the verification post-handshake is not new to the Ably
+        # implementation of certificate verification; the previous
+        # implementation performed hostname verification after the handshake
+        # was complete.)
+
+        # I was quite worried by the description in the aforementioned issue
+        # eventmachine/eventmachine#954 of how EventMachine "ignores all errors
+        # from the chain construction" and hence I don’t know if there is some
+        # weird scenario where, somehow, the calls to ssl_verify_peer terminate
+        # with some intermediate certificate instead of with the certificate of
+        # the server we’re communicating with. (It's quite possible that this
+        # can’t occur and I’m just being paranoid, but I think a bit of
+        # paranoia when it comes to security isn't a bad thing.)
+        #
+        # That's why, instead of the previous code which passed
+        # certificate_store.verify the final certificate received by
+        # ssl_verify_peer, I explicitly use the result of get_peer_cert, to be
+        # sure that the certificate that we’re verifying is the one that the
+        # server has demonstrated that they hold the private key for.
+        server_certificate = OpenSSL::X509::Certificate.new(get_peer_cert)
+
+        # A sense check to confirm my understanding of what’s in @peer_certificate_chain.
+        #
+        # (As mentioned above, unless something has gone very wrong, these two
+        # certificates should be identical.)
+        unless server_certificate == @peer_certificate_chain.last
+          raise OpenSSL::SSL::SSLError.new(%(Peer certificate sense check failed for "#{host}"));
+        end
+
+        # Verify the server’s certificate against the default trust anchors,
+        # aided by the intermediate certificates provided by the server.
+        unless create_certificate_store.verify(server_certificate, @peer_certificate_chain[0...-1])
+          raise OpenSSL::SSL::SSLError.new(%(unable to verify the server certificate for "#{host}"))
+        end
+
         unless verify_peer?
           warn "[WARNING; ably-em-http-request] TLS hostname validation is disabled (use 'tls: {verify_peer: true}'), see" +
                " CVE-2020-13482 and https://github.com/igrigorik/em-http-request/issues/339 for details" unless parent.connopts.tls.has_key?(:verify_peer)
           return true
         end
 
-        unless OpenSSL::SSL.verify_certificate_identity(@last_seen_cert, host)
+        # Verify that the peer’s certificate matches the hostname.
+        unless OpenSSL::SSL.verify_certificate_identity(server_certificate, host)
           raise OpenSSL::SSL::SSLError.new(%(host "#{host}" does not match the server certificate))
         else
           true
@@ -84,14 +166,12 @@ module EventMachine
         parent.connopts.host
       end
 
-      def certificate_store
-        @certificate_store ||= begin
-          store = OpenSSL::X509::Store.new
-          store.set_default_paths
-          ca_file = parent.connopts.tls[:cert_chain_file]
-          store.add_file(ca_file) if ca_file
-          store
-        end
+      def create_certificate_store
+        store = OpenSSL::X509::Store.new
+        store.set_default_paths
+        ca_file = parent.connopts.tls[:cert_chain_file]
+        store.add_file(ca_file) if ca_file
+        store
       end
     end
 
