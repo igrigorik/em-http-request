@@ -61,6 +61,18 @@ Several higher-order Ruby projects have incorporated em-http and other Ruby HTTP
 - [em-eventsource](https://github.com/AF83/em-eventsource) - EventSource client for EventMachine
 - and many others.. drop me a link if you want yours included!
 
+## Release process
+
+(Added for Ably’s fork.)
+
+This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
+
+- Update the version number in [version.rb](./lib/em-http-request/vesrion.rb) and commit the change.
+- TODO how to do CHANGELOG
+- Create and push a tag named by prefixing the version number with the letter `v`; e.g. `git tag v1.1.8 && git push origin v1.1.8`.
+- Visit [https://github.com/ably-forks/em-http-request/tags](https://github.com/ably-forks/em-http-request/tags) and `Add release notes` for the release including links to the changelog entry.
+* Run `rake release` to publish the gem to [Rubygems](https://rubygems.org/gems/ably-em-http-request).
+
 ### License
 
 (MIT License) - Copyright (c) 2011 Ilya Grigorik
