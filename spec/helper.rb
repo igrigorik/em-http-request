@@ -14,10 +14,6 @@ def failed(http = nil)
   http ? fail(http.error) : fail
 end
 
-def requires_connection(&blk)
-  blk.call if system('ping -t1 -c1 google.com 2>&1 > /dev/null')
-end
-
 def requires_port(port, &blk)
   port_open = true
   begin
