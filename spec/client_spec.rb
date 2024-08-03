@@ -50,10 +50,40 @@ describe EventMachine::HttpRequest do
   it "should raise error on invalid URL" do
     EventMachine.run {
       lambda {
-      EventMachine::HttpRequest.new('random?text').get
-    }.should raise_error(Addressable::URI::InvalidURIError)
+        EventMachine::HttpRequest.new('random?text').get
+      }.should raise_error(Addressable::URI::InvalidURIError)
 
-    EM.stop
+      EM.stop
+    }
+  end
+
+  it "should raise error on invalid URL containing spaces in path" do
+    EventMachine.run {
+      lambda {
+        EventMachine::HttpRequest.new('http://127.0.0.1:8090/path with space').get
+      }.should raise_error(Addressable::URI::InvalidURIError)
+
+      EM.stop
+    }
+  end
+
+  it "should raise error on invalid URL containing newlines in path" do
+    EventMachine.run {
+      lambda {
+        EventMachine::HttpRequest.new("http://127.0.0.1:8090/path\nwith\nnewlines").get
+      }.should raise_error(Addressable::URI::InvalidURIError)
+
+      EM.stop
+    }
+  end
+
+  it "should raise error on invalid URL containing spaces in query" do
+    EventMachine.run {
+      lambda {
+        EventMachine::HttpRequest.new('http://127.0.0.1:8090/?query=with space').get
+      }.should raise_error(Addressable::URI::InvalidURIError)
+
+      EM.stop
     }
   end
 
