@@ -55,6 +55,8 @@ module EventMachine
         rescue OpenSSL::X509::StoreError => e
           raise e unless e.message == 'cert already in hash table'
         end
+      else
+        raise OpenSSL::SSL::SSLError.new(%(unable to verify the server certificate for "#{sni_hostname}"))
       end
 
       true
@@ -68,8 +70,8 @@ module EventMachine
       end
 
       unless certificate_store.verify(@last_seen_cert) &&
-             OpenSSL::SSL.verify_certificate_identity(@last_seen_cert, host)
-        raise OpenSSL::SSL::SSLError.new(%(host "#{host}" does not match the server certificate))
+             OpenSSL::SSL.verify_certificate_identity(@last_seen_cert, sni_hostname)
+        raise OpenSSL::SSL::SSLError.new(%(host "#{sni_hostname}" does not match the server certificate))
       else
         true
       end
@@ -81,6 +83,10 @@ module EventMachine
 
     def host
       parent.connopts.host
+    end
+
+    def sni_hostname
+      parent.connopts.tls[:sni_hostname]
     end
 
     def certificate_store
