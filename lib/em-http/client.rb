@@ -1,3 +1,9 @@
+require 'uri'
+
+if !defined?(URI::REGEXP::PATTERN)
+  URI.parser = URI::RFC2396_PARSER
+end
+
 require 'cookiejar'
 
 module EventMachine
