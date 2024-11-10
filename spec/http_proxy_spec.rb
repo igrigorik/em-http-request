@@ -17,8 +17,10 @@ shared_examples "*_PROXY var (through proxy)" do
 end
 
 shared_examples "*_PROXY var (testing var)" do
-  subject { HttpConnectionOptions.new("#{proxy_test_scheme}://example.com", {}) }
-  it { expect(subject.proxy_from_env).to eq({ :host => "127.0.0.1", :port => 8083, :type => :http }) }
+  subject { HttpConnectionOptions.new("#{proxy_test_scheme}://#{request_host}", {}) }
+  let(:request_host) { 'example.com' }
+
+  it { expect(subject.proxy_from_env(request_host)).to eq({ :host => "127.0.0.1", :port => 8083, :type => :http }) }
   it { expect(subject.host).to eq "127.0.0.1" }
   it { expect(subject.port).to be 8083 }
   it do
@@ -201,10 +203,10 @@ describe EventMachine::HttpRequest do
       before(:all) do
         PROXY_ENV_VARS.each {|k| ENV.delete k }
       end
-
-      subject { HttpConnectionOptions.new("http://example.com", {}) }
-      it { expect(subject.proxy_from_env).to be_nil }
-      it { expect(subject.host).to eq "example.com" }
+      let(:request_host) { 'example.com' }
+      subject { HttpConnectionOptions.new("http://#{request_host}", {}) }
+      it { expect(subject.proxy_from_env(request_host)).to be_nil }
+      it { expect(subject.host).to eq request_host }
       it { expect(subject.port).to be 80 }
       it { expect(subject.http_proxy?).to be_falsey }
       it { expect(subject.connect_proxy?).to be_falsey }
@@ -263,6 +265,61 @@ describe EventMachine::HttpRequest do
       end
 
       include_examples "*_PROXY var (testing var)"
+    end
+
+    context 'with $NO_PROXY env' do
+      let(:request_host) { 'ignore.me' }
+      let(:no_proxy_hosts) { ['host1', request_host, 'host2'] }
+      subject { HttpConnectionOptions.new("http://#{request_host}", {}) }
+
+      before(:each) do
+        PROXY_ENV_VARS.each { |k| ENV.delete k }
+        ENV['ALL_PROXY'] = 'http://127.0.0.1:8083'
+        ENV[no_proxy_var_name] = no_proxy_hosts&.join(',')
+      end
+
+      describe 'when $NO_PROXY includes host from current request' do
+        let(:no_proxy_var_name) { 'NO_PROXY' }
+
+        it 'should not apply proxy from env' do
+          expect(subject.proxy_from_env(request_host)).to be_nil
+        end
+      end
+
+      describe 'when $NO_PROXY does not include host from current request' do
+        let(:no_proxy_var_name) { 'NO_PROXY' }
+        let(:no_proxy_hosts) { %w[host1 host2] }
+
+        it 'should apply proxy from env' do
+          expect(subject.proxy_from_env(request_host)).not_to be_nil
+        end
+      end
+
+      describe 'when $no_proxy includes host from current request' do
+        let(:no_proxy_var_name) { 'no_proxy' }
+
+        it 'should not apply proxy from env' do
+          expect(subject.proxy_from_env(request_host)).to be_nil
+        end
+      end
+
+      describe 'when $no_proxy does not include host from current request' do
+        let(:no_proxy_var_name) { 'no_proxy' }
+        let(:no_proxy_hosts) { %w[host1 host2] }
+
+        it 'should apply proxy from env' do
+          expect(subject.proxy_from_env(request_host)).not_to be_nil
+        end
+      end
+
+      describe 'when .domain is set in $no_proxy' do
+        let(:no_proxy_var_name) { 'no_proxy' }
+        let(:no_proxy_hosts) { %w[host1 .me host2] }
+
+        it 'should not apply proxy from env' do
+          expect(subject.proxy_from_env(request_host)).to be_nil
+        end
+      end
     end
   end
 end

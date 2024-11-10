@@ -22,7 +22,7 @@ class HttpConnectionOptions
     uri.port ||= (@https ? 443 : 80)
     @tls[:sni_hostname] = uri.hostname
 
-    @proxy = options[:proxy] || proxy_from_env
+    @proxy = options[:proxy] || proxy_from_env(uri.hostname)
 
     if proxy
       @host = proxy[:host]
@@ -45,8 +45,7 @@ class HttpConnectionOptions
     @proxy && (@proxy[:type] == :socks5)
   end
 
-  def proxy_from_env
-    # TODO: Add support for $http_no_proxy or $no_proxy ?
+  def proxy_from_env(host)
     proxy_str = if @https
                   ENV['HTTPS_PROXY'] || ENV['https_proxy']
                 else
@@ -59,6 +58,9 @@ class HttpConnectionOptions
     # so, let's short-circuit that:
     return if !proxy_str || proxy_str.empty?
 
+    no_proxy_hosts = (ENV['NO_PROXY'] || ENV['no_proxy'] || '').split(',')
+    return if use_env_proxy_for_host?(no_proxy_hosts, host)
+
     proxy_env_uri = Addressable::URI::parse(proxy_str)
     { :host => proxy_env_uri.host, :port => proxy_env_uri.port, :type => :http }
 
@@ -66,5 +68,15 @@ class HttpConnectionOptions
     # An invalid env-var shouldn't crash the config step, IMHO.
     # We should somehow log / warn about this, perhaps...
     return
+  end
+
+  private
+
+  def use_env_proxy_for_host?(no_proxy_hosts, host)
+    return true if no_proxy_hosts.include?(host)
+
+    no_proxy_hosts
+      .select { |h| h.start_with?('.') }
+      .any? { |w| host.end_with?(w) }
   end
 end
