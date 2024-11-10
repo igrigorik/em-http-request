@@ -18,6 +18,7 @@ class HttpConnectionOptions
     end
 
     uri = uri.kind_of?(Addressable::URI) ? uri : Addressable::URI::parse(uri.to_s)
+    raise Addressable::URI::InvalidURIError if uri.to_s =~ /\s/
     @https = uri.scheme == "https"
     uri.port ||= (@https ? 443 : 80)
     @tls[:sni_hostname] = uri.hostname
