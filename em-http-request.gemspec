@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'addressable', '>= 2.3.4'
   s.add_dependency 'cookiejar', '!= 0.3.1'
+  s.add_dependency 'uri', '~> 0.13' # for compatibility with cookiejar. see https://github.com/ruby/uri/issues/131.
   s.add_dependency 'em-socksify', '>= 0.3'
   s.add_dependency 'eventmachine', '>= 1.0.3'
   s.add_dependency 'http_parser.rb', '>= 0.6.0'
