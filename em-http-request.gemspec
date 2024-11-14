@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'addressable', '>= 2.3.4'
   s.add_dependency 'cookiejar', '!= 0.3.1'
+  s.add_dependency 'uri', "!= 1.0.0", "!= 1.0.1" # for compatibility with cookiejar. see https://github.com/igrigorik/em-http-request/pull/367
   s.add_dependency 'em-socksify', '>= 0.3'
   s.add_dependency 'eventmachine', '>= 1.0.3'
   s.add_dependency 'http_parser.rb', '>= 0.6.0'
