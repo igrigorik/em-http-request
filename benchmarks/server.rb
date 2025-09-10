@@ -15,7 +15,7 @@ module Benchmark
   class Server < Sinatra::Base
 
     def self.run
-      Rack::Handler::WEBrick.run(
+      Rackup::Handler.get('webrick').run(
         Benchmark::Server.new,
         :Port => 9292,
         :AccessLog => [],

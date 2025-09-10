@@ -4,6 +4,7 @@
 # #--
 
 require 'rack'
+require 'rackup/handler'
 
 module Stallion
   class Mount
@@ -16,7 +17,7 @@ module Stallion
     end
 
     def match?(request)
-      method = request['REQUEST_METHOD']
+      method = request.env['REQUEST_METHOD']
       @methods.empty? or @methods.include?(method)
     end
   end
@@ -56,9 +57,9 @@ module Stallion
 
     ruby_version = RUBY_VERSION.split('.').map(&:to_i)
     if ruby_version[0] >= 3
-      Rack::Handler::Mongrel.run(Rack::Lint.new(self), **options)
+      Rackup::Handler.default.run(Rack::Lint.new(self), **options)
     else
-      Rack::Handler::Mongrel.run(Rack::Lint.new(self), options)
+      Rackup::Handler.default.run(Rack::Lint.new(self), options)
     end
   end
 
